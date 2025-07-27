@@ -2,7 +2,7 @@ import 'dart:developer';
 import 'package:dropdown_textfield/dropdown_textfield.dart';
 import 'package:flutter/material.dart';
 
-import '../Constants/colors.dart';
+import '../constants/colors.dart';
 
 class CustomText extends StatelessWidget {
   final String text;
@@ -143,14 +143,15 @@ class CustomText extends StatelessWidget {
   }
 }
 
-class CustomTextField extends StatelessWidget {
-  final TextEditingController controller;
+class CustomTextField extends StatefulWidget {
+  final TextEditingController? controller;
   final String hintText;
   final TextStyle? hintStyle;
   final TextStyle? textStyle;
   final IconData? prefixIcon;
   final IconData? suffixIcon;
   final bool obscureText;
+  final bool showObscureToggle; // NEW: show eye icon toggle
   final Color borderColor;
   final Color focusedBorderColor;
   final Color enabledBorderColor;
@@ -173,7 +174,9 @@ class CustomTextField extends StatelessWidget {
   final bool? filled;
   final EdgeInsets contentPadding;
   final TextInputType? keyboardType;
+  final TextInputAction? textInputAction;
   final void Function(String)? onChanged;
+  final void Function(String)? onFieldSubmitted;
   final int? minLines;
   final int? maxLines;
   final int? maxLength;
@@ -182,17 +185,25 @@ class CustomTextField extends StatelessWidget {
   final String? labelText;
   final TextStyle? labelStyle;
   final AutovalidateMode? autovalidateMode;
-  final bool isRequired; // New parameter to indicate if the field is required
-  final Widget? suffix; // Additional widget to display after the label
-  final EdgeInsetsGeometry? labelPadding; // Padding around the label
+  final bool isRequired;
+  final Widget? suffix;
+  final EdgeInsetsGeometry? labelPadding;
+  final bool readOnly;
+  final bool enabled;
+  final void Function()? onTap;
+  final String? initialValue;
+  final TextAlign textAlign;
+  final TextCapitalization textCapitalization;
 
   const CustomTextField({
-    required this.controller,
+    super.key,
+    this.controller,
     required this.hintText,
     this.hintStyle,
     this.prefixIcon,
     this.suffixIcon,
     this.obscureText = false,
+    this.showObscureToggle = false,
     this.borderColor = Colors.grey,
     this.focusedBorderColor = primaryColor,
     this.disabledBorderColor = Colors.grey,
@@ -211,13 +222,13 @@ class CustomTextField extends StatelessWidget {
     this.counterText,
     this.fillColor = Colors.white,
     this.filled = true,
-    this.contentPadding = const EdgeInsets.symmetric(
-      horizontal: 16,
-      vertical: 14,
-    ),
+    this.contentPadding =
+        const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
     this.keyboardType,
+    this.textInputAction,
     this.onChanged,
     this.onTapSuffixIcon,
+    this.onFieldSubmitted,
     this.maxLength,
     this.maxLines,
     this.minLines,
@@ -228,11 +239,29 @@ class CustomTextField extends StatelessWidget {
     this.labelText,
     this.labelStyle,
     this.autovalidateMode = AutovalidateMode.onUserInteraction,
-    this.isRequired = false, // Default to false
+    this.isRequired = false,
     this.suffix,
     this.labelPadding,
-    super.key,
+    this.readOnly = false,
+    this.enabled = true,
+    this.onTap,
+    this.initialValue,
+    this.textAlign = TextAlign.start,
+    this.textCapitalization = TextCapitalization.none,
   });
+
+  @override
+  State<CustomTextField> createState() => _CustomTextFieldState();
+}
+
+class _CustomTextFieldState extends State<CustomTextField> {
+  late bool _obscure;
+
+  @override
+  void initState() {
+    super.initState();
+    _obscure = widget.obscureText;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -240,23 +269,24 @@ class CustomTextField extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
-        if (labelText != null) ...[
+        if (widget.labelText != null) ...[
           Padding(
-            padding: labelPadding ?? const EdgeInsets.only(bottom: 8.0),
+            padding: widget.labelPadding ?? const EdgeInsets.only(bottom: 8.0),
             child: Row(
               children: [
                 Text.rich(
                   TextSpan(
                     children: [
                       TextSpan(
-                        text: labelText,
-                        style: TextStyle(
-                          color: Colors.black,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                        ),
+                        text: widget.labelText,
+                        style: widget.labelStyle ??
+                            const TextStyle(
+                              color: Colors.black,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                            ),
                       ),
-                      if (isRequired)
+                      if (widget.isRequired)
                         const TextSpan(
                           text: ' *',
                           style: TextStyle(color: Colors.red),
@@ -264,90 +294,113 @@ class CustomTextField extends StatelessWidget {
                     ],
                   ),
                 ),
-                if (suffix != null) ...[
+                if (widget.suffix != null) ...[
                   const SizedBox(width: 8),
-                  suffix!,
+                  widget.suffix!,
                 ],
               ],
             ),
           ),
         ],
         TextFormField(
-          controller: controller,
-          obscureText: obscureText,
-          cursorColor: cursorColor,
-          validator: validator,
-          keyboardType: keyboardType,
-          maxLength: maxLength,
-          maxLines: maxLines,
-          minLines: minLines,
-          onChanged: onChanged,
-          style: textStyle,
-          autovalidateMode: autovalidateMode,
-          decoration: customDecoration ??
+          controller: widget.controller,
+          initialValue: widget.initialValue,
+          obscureText: _obscure,
+          cursorColor: widget.cursorColor,
+          validator: widget.validator,
+          keyboardType: widget.keyboardType,
+          textInputAction: widget.textInputAction,
+          maxLength: widget.maxLength,
+          maxLines: widget.maxLines,
+          minLines: widget.minLines,
+          onChanged: widget.onChanged,
+          onFieldSubmitted: widget.onFieldSubmitted,
+          style: widget.textStyle,
+          autovalidateMode: widget.autovalidateMode,
+          readOnly: widget.readOnly,
+          enabled: widget.enabled,
+          onTap: widget.onTap,
+          textAlign: widget.textAlign,
+          textCapitalization: widget.textCapitalization,
+          decoration: widget.customDecoration ??
               InputDecoration(
-                hintText: hintText,
-                prefixIcon: prefixIcon != null
+                hintText: widget.hintText,
+                hintStyle: widget.hintStyle,
+                prefixIcon: widget.prefixIcon != null
                     ? Icon(
-                        prefixIcon,
-                        color: prefixIconColor,
-                        size: prefixIconSize,
+                        widget.prefixIcon,
+                        color: widget.prefixIconColor,
+                        size: widget.prefixIconSize,
                       )
                     : null,
-                suffixIcon: suffixIcon != null
-                    ? (onTapSuffixIcon != null
-                        ? InkWell(
-                            onTap: onTapSuffixIcon,
-                            child: Icon(
-                              suffixIcon,
-                              color: suffixIconColor,
-                              size: suffixIconSize,
-                            ),
-                          )
-                        : Icon(
-                            suffixIcon,
-                            color: suffixIconColor,
-                            size: suffixIconSize,
-                          ))
-                    : null,
+                suffixIcon: widget.showObscureToggle
+                    ? IconButton(
+                        icon: Icon(
+                          _obscure ? Icons.visibility_off : Icons.visibility,
+                          color: widget.suffixIconColor ?? Colors.grey,
+                        ),
+                        onPressed: () {
+                          setState(() => _obscure = !_obscure);
+                        },
+                      )
+                    : widget.suffixIcon != null
+                        ? (widget.onTapSuffixIcon != null
+                            ? InkWell(
+                                onTap: widget.onTapSuffixIcon,
+                                child: Icon(
+                                  widget.suffixIcon,
+                                  color: widget.suffixIconColor,
+                                  size: widget.suffixIconSize,
+                                ),
+                              )
+                            : Icon(
+                                widget.suffixIcon,
+                                color: widget.suffixIconColor,
+                                size: widget.suffixIconSize,
+                              ))
+                        : null,
                 border: OutlineInputBorder(
-                  borderSide:
-                      BorderSide(color: borderColor, width: borderWidth),
-                  borderRadius: BorderRadius.circular(borderRadius),
+                  borderSide: BorderSide(
+                      color: widget.borderColor, width: widget.borderWidth),
+                  borderRadius: BorderRadius.circular(widget.borderRadius),
                 ),
                 focusedBorder: OutlineInputBorder(
-                  borderSide:
-                      BorderSide(color: focusedBorderColor, width: borderWidth),
-                  borderRadius: BorderRadius.circular(borderRadius),
+                  borderSide: BorderSide(
+                      color: widget.focusedBorderColor,
+                      width: widget.borderWidth),
+                  borderRadius: BorderRadius.circular(widget.borderRadius),
                 ),
                 enabledBorder: OutlineInputBorder(
-                  borderSide:
-                      BorderSide(color: enabledBorderColor, width: borderWidth),
-                  borderRadius: BorderRadius.circular(borderRadius),
+                  borderSide: BorderSide(
+                      color: widget.enabledBorderColor,
+                      width: widget.borderWidth),
+                  borderRadius: BorderRadius.circular(widget.borderRadius),
                 ),
                 disabledBorder: OutlineInputBorder(
                   borderSide: BorderSide(
-                      color: disabledBorderColor, width: borderWidth),
-                  borderRadius: BorderRadius.circular(borderRadius),
+                      color: widget.disabledBorderColor,
+                      width: widget.borderWidth),
+                  borderRadius: BorderRadius.circular(widget.borderRadius),
                 ),
                 errorBorder: OutlineInputBorder(
-                  borderSide:
-                      BorderSide(color: errorBorderColor, width: borderWidth),
-                  borderRadius: BorderRadius.circular(borderRadius),
+                  borderSide: BorderSide(
+                      color: widget.errorBorderColor,
+                      width: widget.borderWidth),
+                  borderRadius: BorderRadius.circular(widget.borderRadius),
                 ),
                 focusedErrorBorder: OutlineInputBorder(
                   borderSide: BorderSide(
-                      color: focusedErrorBorderColor, width: borderWidth),
-                  borderRadius: BorderRadius.circular(borderRadius),
+                      color: widget.focusedErrorBorderColor,
+                      width: widget.borderWidth),
+                  borderRadius: BorderRadius.circular(widget.borderRadius),
                 ),
-                constraints: constraints,
-                counterText: counterText,
-                contentPadding: contentPadding,
-                prefixIconConstraints: prefixIconConstraints,
-                suffixIconConstraints: suffixIconConstraints,
-                fillColor: fillColor,
-                filled: filled,
-                hintStyle: hintStyle,
+                constraints: widget.constraints,
+                counterText: widget.counterText,
+                contentPadding: widget.contentPadding,
+                prefixIconConstraints: widget.prefixIconConstraints,
+                suffixIconConstraints: widget.suffixIconConstraints,
+                fillColor: widget.fillColor,
+                filled: widget.filled,
               ),
         ),
       ],

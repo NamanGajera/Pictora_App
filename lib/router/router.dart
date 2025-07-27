@@ -1,7 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:pictora/screens/addPostScreens/add_post_screen.dart';
+import 'package:pictora/screens/authScreens/register_screen.dart';
+import 'package:pictora/screens/homeScreens/home_screen.dart';
+import 'package:pictora/screens/searchScreens/search_screen.dart';
+import 'package:pictora/utils/helper/page_transition.dart';
 import '../screens/authScreens/login_screen.dart';
 import '../screens/authScreens/splash_screen.dart';
+import '../screens/profileScreens/profile_screen.dart';
+import '../screens/widgets/app_bottom_navigation_bar.dart';
 import 'router_name.dart';
 
 final GoRouter appRouter = GoRouter(
@@ -19,107 +26,75 @@ final GoRouter appRouter = GoRouter(
     GoRoute(
       path: RouterName.login.path,
       name: RouterName.login.name,
-      pageBuilder: (BuildContext context, GoRouterState state) =>
-          MaterialPage<void>(
-        key: state.pageKey,
-        child: const LoginScreen(),
-      ),
+      pageBuilder: (context, state) {
+        return SlideTransitionPage(child: LoginScreen());
+      },
     ),
-
-    // StatefulShellRoute.indexedStack(
-    //   builder: (context, state, navigationShell) {
-    //     return AppBottomNavigationBar(navigationShell: navigationShell);
-    //   },
-    //   branches: [
-    //     StatefulShellBranch(
-    //       routes: [
-    //         GoRoute(
-    //           path: RouterName.dashboard.path,
-    //           name: RouterName.dashboard.name,
-    //           pageBuilder: (BuildContext context, GoRouterState state) =>
-    //               NoTransitionPage<void>(
-    //             key: state.pageKey,
-    //             child: const DashboardScreen(),
-    //           ),
-    //         ),
-    //       ],
-    //     ),
-    //     StatefulShellBranch(
-    //       routes: [
-    //         GoRoute(
-    //           path: RouterName.member.path,
-    //           name: RouterName.member.name,
-    //           pageBuilder: (BuildContext context, GoRouterState state) {
-    //             final MembersScreenDataModel data =
-    //                 state.extra as MembersScreenDataModel? ??
-    //                     MembersScreenDataModel();
-    //             return NoTransitionPage<void>(
-    //               key: state.pageKey,
-    //               child: MembersScreen(
-    //                 onBack: () => context.go(RouterName.dashboard.path),
-    //                 pageIndex: data.pageIndex,
-    //               ),
-    //             );
-    //           },
-    //         ),
-    //       ],
-    //     ),
-    //     StatefulShellBranch(
-    //       routes: [
-    //         GoRoute(
-    //           path: RouterName.addPost.path,
-    //           name: RouterName.addPost.name,
-    //           pageBuilder: (BuildContext context, GoRouterState state) =>
-    //               NoTransitionPage<void>(
-    //             key: state.pageKey,
-    //             child: AddPostScreen(
-    //               key: addPostKey,
-    //               onBack: () => context.go(RouterName.dashboard.path),
-    //             ),
-    //           ),
-    //         ),
-    //       ],
-    //     ),
-    //     StatefulShellBranch(
-    //       routes: [
-    //         GoRoute(
-    //           path: RouterName.community.path,
-    //           name: RouterName.community.name,
-    //           pageBuilder: (BuildContext context, GoRouterState state) {
-    //             final CommunityScreenDataModel? data =
-    //                 state.extra as CommunityScreenDataModel?;
-    //             logInfo(message: 'CommunityScreenDataModel ${data?.tabIndex}');
-    //             logInfo(
-    //                 message:
-    //                     'CommunityScreenDataModel ${data?.showUploadFile}');
-    //             return NoTransitionPage<void>(
-    //               key: state.pageKey,
-    //               child: CommunityScreen(
-    //                 onBack: () => context.go(RouterName.dashboard.path),
-    //                 tabIndex: data?.tabIndex ?? 0,
-    //                 showUploadFile: data?.showUploadFile,
-    //               ),
-    //             );
-    //           },
-    //         ),
-    //       ],
-    //     ),
-    //     StatefulShellBranch(
-    //       routes: [
-    //         GoRoute(
-    //           path: RouterName.profile.path,
-    //           name: RouterName.profile.name,
-    //           pageBuilder: (BuildContext context, GoRouterState state) =>
-    //               NoTransitionPage<void>(
-    //             key: state.pageKey,
-    //             child: ProfileScreen(
-    //               onBack: () => context.go(RouterName.dashboard.path),
-    //             ),
-    //           ),
-    //         ),
-    //       ],
-    //     ),
-    //   ],
-    // ),
+    GoRoute(
+      path: RouterName.register.path,
+      name: RouterName.register.name,
+      pageBuilder: (context, state) {
+        return SlideTransitionPage(child: RegisterScreen());
+      },
+    ),
+    StatefulShellRoute.indexedStack(
+      builder: (context, state, navigationShell) {
+        return AppBottomNavigationBar(navigationShell: navigationShell);
+      },
+      branches: [
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              path: RouterName.home.path,
+              name: RouterName.home.name,
+              pageBuilder: (BuildContext context, GoRouterState state) =>
+                  NoTransitionPage<void>(
+                key: state.pageKey,
+                child: const HomeScreen(),
+              ),
+            ),
+          ],
+        ),
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              path: RouterName.search.path,
+              name: RouterName.search.name,
+              pageBuilder: (BuildContext context, GoRouterState state) =>
+                  NoTransitionPage<void>(
+                key: state.pageKey,
+                child: const SearchScreen(),
+              ),
+            ),
+          ],
+        ),
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              path: RouterName.addPost.path,
+              name: RouterName.addPost.name,
+              pageBuilder: (BuildContext context, GoRouterState state) =>
+                  NoTransitionPage<void>(
+                key: state.pageKey,
+                child: const AddPostScreen(),
+              ),
+            ),
+          ],
+        ),
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              path: RouterName.profile.path,
+              name: RouterName.profile.name,
+              pageBuilder: (BuildContext context, GoRouterState state) =>
+                  NoTransitionPage<void>(
+                key: state.pageKey,
+                child: const ProfileScreen(),
+              ),
+            ),
+          ],
+        ),
+      ],
+    ),
   ],
 );

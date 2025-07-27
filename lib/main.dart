@@ -26,7 +26,7 @@ class MyApp extends StatelessWidget {
         theme: ThemeData(
           primaryColor: primaryColor,
           useMaterial3: true,
-          scaffoldBackgroundColor: Colors.white,
+          scaffoldBackgroundColor: scaffoldBgColor,
           popupMenuTheme: const PopupMenuThemeData(
             color: Colors.white,
           ),
@@ -44,6 +44,9 @@ class MyApp extends StatelessWidget {
           progressIndicatorTheme:
               ProgressIndicatorThemeData(color: primaryColor),
         ),
+        builder: (context, child) {
+          return SafeArea(child: child ?? Container());
+        },
         debugShowCheckedModeBanner: false,
         routerConfig: appRouter,
       ),
