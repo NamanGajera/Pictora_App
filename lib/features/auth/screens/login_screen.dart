@@ -6,8 +6,8 @@ import 'package:pictora/router/router_name.dart';
 import 'package:pictora/utils/constants/app_assets.dart';
 import 'package:pictora/utils/extensions/string_extensions.dart';
 
-import '../../utils/constants/colors.dart';
-import '../../utils/widgets/custom_widget.dart';
+import '../../../utils/constants/colors.dart';
+import '../../../utils/widgets/custom_widget.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});

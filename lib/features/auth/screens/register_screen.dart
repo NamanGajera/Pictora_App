@@ -5,8 +5,8 @@ import 'package:pictora/router/router.dart';
 import 'package:pictora/router/router_name.dart';
 import 'package:pictora/utils/constants/colors.dart';
 import 'package:pictora/utils/extensions/string_extensions.dart';
-import '../../utils/constants/app_assets.dart';
-import '../../utils/widgets/custom_widget.dart';
+import '../../../utils/constants/app_assets.dart';
+import '../../../utils/widgets/custom_widget.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});

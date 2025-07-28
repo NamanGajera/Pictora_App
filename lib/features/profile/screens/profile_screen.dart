@@ -56,114 +56,21 @@ class _ProfileScreenState extends State<ProfileScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xffF8FAF9),
-      body: NestedScrollView(
-        headerSliverBuilder: (context, innerBoxIsScrolled) {
-          return [
-            _buildSliverAppBar(),
-          ];
-        },
-        body: Column(
-          children: [
-            _buildProfileInfo(),
-            _buildTabBar(),
-            Expanded(
-              child: TabBarView(
-                controller: _tabController,
-                children: [
-                  _buildPostsGrid(),
-                  _buildReelsGrid(),
-                  _buildTaggedGrid(),
-                ],
-              ),
+      body: Column(
+        children: [
+          _buildProfileInfo(),
+          _buildTabBar(),
+          Expanded(
+            child: TabBarView(
+              controller: _tabController,
+              children: [
+                _buildPostsGrid(),
+                _buildReelsGrid(),
+                _buildTaggedGrid(),
+              ],
             ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSliverAppBar() {
-    return SliverAppBar(
-      expandedHeight: 200,
-      floating: false,
-      pinned: true,
-      backgroundColor: const Color(0xff235347),
-      leading: IconButton(
-        icon: const Icon(Icons.arrow_back, color: Colors.white),
-        onPressed: () => Navigator.pop(context),
-      ),
-      actions: [
-        if (isOwnProfile) ...[
-          IconButton(
-            icon: const Icon(Icons.add_box_outlined, color: Colors.white),
-            onPressed: () {
-              // Handle create post
-            },
           ),
-          IconButton(
-            icon: const Icon(Icons.menu, color: Colors.white),
-            onPressed: () {
-              _showProfileOptions();
-            },
-          ),
-        ] else
-          IconButton(
-            icon: const Icon(Icons.more_vert, color: Colors.white),
-            onPressed: () {
-              _showUserOptions();
-            },
-          ),
-      ],
-      flexibleSpace: FlexibleSpaceBar(
-        background: Stack(
-          fit: StackFit.expand,
-          children: [
-            // Cover photo
-            Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    const Color(0xff235347),
-                    const Color(0xff235347).withOpacity(0.8),
-                  ],
-                ),
-              ),
-              child: userProfile.coverImage.isNotEmpty
-                  ? Image.network(
-                      userProfile.coverImage,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) {
-                        return Container(
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              colors: [
-                                const Color(0xff235347),
-                                const Color(0xff235347).withOpacity(0.7),
-                              ],
-                            ),
-                          ),
-                        );
-                      },
-                    )
-                  : null,
-            ),
-            // Gradient overlay
-            Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    Colors.transparent,
-                    Colors.black.withOpacity(0.3),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
+        ],
       ),
     );
   }
@@ -577,103 +484,6 @@ class _ProfileScreenState extends State<ProfileScreen>
           color: Colors.grey,
         ),
       ),
-    );
-  }
-
-  void _showProfileOptions() {
-    showModalBottomSheet(
-      context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (context) {
-        return Container(
-          padding: const EdgeInsets.symmetric(vertical: 20),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              _buildBottomSheetOption(
-                icon: Icons.settings,
-                title: 'Settings',
-                onTap: () {
-                  Navigator.pop(context);
-                },
-              ),
-              _buildBottomSheetOption(
-                icon: Icons.archive_outlined,
-                title: 'Archive',
-                onTap: () {
-                  Navigator.pop(context);
-                },
-              ),
-              _buildBottomSheetOption(
-                icon: Icons.history,
-                title: 'Your Activity',
-                onTap: () {
-                  Navigator.pop(context);
-                },
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  void _showUserOptions() {
-    showModalBottomSheet(
-      context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (context) {
-        return Container(
-          padding: const EdgeInsets.symmetric(vertical: 20),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              _buildBottomSheetOption(
-                icon: Icons.block,
-                title: 'Block',
-                onTap: () {
-                  Navigator.pop(context);
-                },
-                isDestructive: true,
-              ),
-              _buildBottomSheetOption(
-                icon: Icons.report,
-                title: 'Report',
-                onTap: () {
-                  Navigator.pop(context);
-                },
-                isDestructive: true,
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildBottomSheetOption({
-    required IconData icon,
-    required String title,
-    required VoidCallback onTap,
-    bool isDestructive = false,
-  }) {
-    return ListTile(
-      leading: Icon(
-        icon,
-        color: isDestructive ? Colors.red : Colors.black87,
-      ),
-      title: Text(
-        title,
-        style: TextStyle(
-          color: isDestructive ? Colors.red : Colors.black87,
-          fontSize: 16,
-        ),
-      ),
-      onTap: onTap,
     );
   }
 

@@ -1,151 +1,9 @@
-import 'package:flutter/material.dart';
+import "package:flutter/material.dart";
+import "package:flutter_svg/flutter_svg.dart";
+import "package:pictora/utils/constants/app_assets.dart";
 
-import '../../utils/constants/colors.dart';
-
-class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
-
-  @override
-  State<HomeScreen> createState() => _HomeScreenState();
-}
-
-class _HomeScreenState extends State<HomeScreen> {
-  // Sample data for posts
-  final List<PostModel> posts = [
-    PostModel(
-      id: '1',
-      username: 'john_doe',
-      userAvatar: 'https://via.placeholder.com/40',
-      timeAgo: '2h',
-      caption: 'Beautiful sunset at the beach! 🌅 #sunset #beach #photography',
-      mediaUrls: [
-        'https://via.placeholder.com/400x300',
-        'https://via.placeholder.com/400x300/FF0000',
-        'https://via.placeholder.com/400x300/00FF00',
-      ],
-      likes: 1234,
-      isLiked: false,
-      isSaved: false,
-      comments: 56,
-    ),
-    PostModel(
-      id: '2',
-      username: 'sarah_smith',
-      userAvatar: 'https://via.placeholder.com/40',
-      timeAgo: '4h',
-      caption: 'Morning coffee vibes ☕️ Starting the day right!',
-      mediaUrls: [
-        'https://via.placeholder.com/400x300/FFA500',
-      ],
-      likes: 892,
-      isLiked: true,
-      isSaved: true,
-      comments: 23,
-    ),
-    PostModel(
-      id: '3',
-      username: 'travel_diaries',
-      userAvatar: 'https://via.placeholder.com/40',
-      timeAgo: '6h',
-      caption:
-          'Exploring the mountains! The view from up here is incredible. Nature never fails to amaze me 🏔️⛰️ #mountains #hiking #nature #adventure',
-      mediaUrls: [
-        'https://via.placeholder.com/400x300/87CEEB',
-        'https://via.placeholder.com/400x300/90EE90',
-      ],
-      likes: 2156,
-      isLiked: false,
-      isSaved: false,
-      comments: 89,
-    ),
-  ];
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: scaffoldBgColor,
-      appBar: _buildAppBar(),
-      body: RefreshIndicator(
-        onRefresh: () async {
-          // Handle refresh
-          await Future.delayed(const Duration(seconds: 1));
-        },
-        child: ListView.builder(
-          itemCount: posts.length,
-          padding: EdgeInsets.symmetric(horizontal: 6),
-          itemBuilder: (context, index) {
-            return PostWidget(
-              post: posts[index],
-              onLike: (postId) => _handleLike(postId),
-              onSave: (postId) => _handleSave(postId),
-              onComment: (postId) => _handleComment(postId),
-              onShare: (postId) => _handleShare(postId),
-            );
-          },
-        ),
-      ),
-    );
-  }
-
-  PreferredSizeWidget _buildAppBar() {
-    return AppBar(
-      backgroundColor: Colors.white,
-      elevation: 0,
-      title: const Text(
-        'Pictora',
-        style: TextStyle(
-          color: primaryColor,
-          fontSize: 24,
-          fontWeight: FontWeight.bold,
-        ),
-      ),
-      actions: [
-        IconButton(
-          icon: const Icon(Icons.favorite_border, color: primaryColor),
-          onPressed: () {
-            // Handle notifications
-          },
-        ),
-        IconButton(
-          icon: const Icon(Icons.send_outlined, color: primaryColor),
-          onPressed: () {
-            // Handle messages
-          },
-        ),
-        const SizedBox(width: 8),
-      ],
-    );
-  }
-
-  void _handleLike(String postId) {
-    setState(() {
-      final postIndex = posts.indexWhere((post) => post.id == postId);
-      if (postIndex != -1) {
-        posts[postIndex].isLiked = !posts[postIndex].isLiked;
-        posts[postIndex].likes += posts[postIndex].isLiked ? 1 : -1;
-      }
-    });
-  }
-
-  void _handleSave(String postId) {
-    setState(() {
-      final postIndex = posts.indexWhere((post) => post.id == postId);
-      if (postIndex != -1) {
-        posts[postIndex].isSaved = !posts[postIndex].isSaved;
-      }
-    });
-  }
-
-  void _handleComment(String postId) {
-    // Navigate to comments screen
-    print('Comment on post: $postId');
-  }
-
-  void _handleShare(String postId) {
-    // Handle share functionality
-    print('Share post: $postId');
-  }
-}
+import "../../../utils/constants/colors.dart";
+import "../models/post_details_model.dart";
 
 class PostWidget extends StatefulWidget {
   final PostModel post;
@@ -180,7 +38,7 @@ class _PostWidgetState extends State<PostWidget> {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
@@ -214,7 +72,7 @@ class _PostWidgetState extends State<PostWidget> {
               gradient: LinearGradient(
                 colors: [
                   primaryColor,
-                  primaryColor.withOpacity(0.6),
+                  primaryColor.withValues(alpha: 0.6),
                 ],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
@@ -228,7 +86,7 @@ class _PostWidgetState extends State<PostWidget> {
               ),
               child: CircleAvatar(
                 radius: 18,
-                backgroundColor: primaryColor.withOpacity(0.1),
+                backgroundColor: primaryColor.withValues(alpha: 0.1),
                 backgroundImage: widget.post.userAvatar.isNotEmpty
                     ? NetworkImage(widget.post.userAvatar)
                     : null,
@@ -362,20 +220,20 @@ class _PostWidgetState extends State<PostWidget> {
                   },
                   errorBuilder: (context, error, stackTrace) {
                     return Container(
-                      color: primaryColor.withOpacity(0.05),
+                      color: primaryColor.withValues(alpha: 0.05),
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Icon(
                             Icons.image_outlined,
                             size: 50,
-                            color: primaryColor.withOpacity(0.6),
+                            color: primaryColor.withValues(alpha: 0.6),
                           ),
                           const SizedBox(height: 8),
                           Text(
                             'Photo ${index + 1}',
                             style: TextStyle(
-                              color: primaryColor.withOpacity(0.8),
+                              color: primaryColor.withValues(alpha: 0.8),
                               fontSize: 14,
                               fontWeight: FontWeight.w500,
                             ),
@@ -398,7 +256,7 @@ class _PostWidgetState extends State<PostWidget> {
                 padding:
                     const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                 decoration: BoxDecoration(
-                  color: Colors.black.withOpacity(0.6),
+                  color: Colors.black.withValues(alpha: 0.6),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
@@ -431,7 +289,7 @@ class _PostWidgetState extends State<PostWidget> {
                       shape: BoxShape.circle,
                       color: currentMediaIndex == index
                           ? Colors.white
-                          : Colors.white.withOpacity(0.6),
+                          : Colors.white.withValues(alpha: 0.6),
                     ),
                   ),
                 ),
@@ -451,38 +309,42 @@ class _PostWidgetState extends State<PostWidget> {
             onTap: () => widget.onLike(widget.post.id),
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 200),
-              child: Icon(
-                widget.post.isLiked ? Icons.favorite : Icons.favorite_border,
+              child: SvgPicture.asset(
+                widget.post.isLiked ? AppAssets.heartFill : AppAssets.heart,
                 color: widget.post.isLiked ? Colors.red : Colors.black87,
-                size: 26,
+                height: 26,
+                width: 26,
               ),
             ),
           ),
           const SizedBox(width: 16),
           GestureDetector(
             onTap: () => widget.onComment(widget.post.id),
-            child: const Icon(
-              Icons.chat_bubble_outline,
+            child: SvgPicture.asset(
+              AppAssets.comment,
               color: Colors.black87,
-              size: 26,
+              height: 26,
+              width: 26,
             ),
           ),
           const SizedBox(width: 16),
           GestureDetector(
             onTap: () => widget.onShare(widget.post.id),
-            child: const Icon(
-              Icons.send_outlined,
+            child: SvgPicture.asset(
+              AppAssets.share,
               color: Colors.black87,
-              size: 26,
+              height: 26,
+              width: 26,
             ),
           ),
           const Spacer(),
           GestureDetector(
             onTap: () => widget.onSave(widget.post.id),
-            child: Icon(
-              widget.post.isSaved ? Icons.bookmark : Icons.bookmark_border,
+            child: SvgPicture.asset(
+              widget.post.isSaved ? AppAssets.saveFill : AppAssets.save,
               color: widget.post.isSaved ? primaryColor : Colors.black87,
-              size: 26,
+              height: 26,
+              width: 26,
             ),
           ),
         ],
@@ -615,31 +477,4 @@ class _PostWidgetState extends State<PostWidget> {
     }
     return number.toString();
   }
-}
-
-// Post Model
-class PostModel {
-  final String id;
-  final String username;
-  final String userAvatar;
-  final String timeAgo;
-  final String caption;
-  final List<String> mediaUrls;
-  int likes;
-  bool isLiked;
-  bool isSaved;
-  final int comments;
-
-  PostModel({
-    required this.id,
-    required this.username,
-    required this.userAvatar,
-    required this.timeAgo,
-    required this.caption,
-    required this.mediaUrls,
-    required this.likes,
-    required this.isLiked,
-    required this.isSaved,
-    required this.comments,
-  });
 }

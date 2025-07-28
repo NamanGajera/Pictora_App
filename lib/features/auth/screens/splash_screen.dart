@@ -3,9 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:pictora/utils/extensions/build_context_extension.dart';
 import 'package:pictora/utils/services/custom_logger.dart';
 
-import '../../router/router.dart';
-import '../../router/router_name.dart';
-import '../../utils/constants/app_assets.dart';
+import '../../../router/router.dart';
+import '../../../router/router_name.dart';
+import '../../../utils/constants/app_assets.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});

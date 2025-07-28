@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:pictora/screens/addPostScreens/add_post_screen.dart';
-import 'package:pictora/screens/authScreens/register_screen.dart';
-import 'package:pictora/screens/homeScreens/home_screen.dart';
-import 'package:pictora/screens/searchScreens/search_screen.dart';
+import 'package:pictora/features/post/screens/add_post_screen.dart';
+import 'package:pictora/features/auth/screens/register_screen.dart';
+import 'package:pictora/features/home/screens/home_screen.dart';
+import 'package:pictora/features/search/screens/search_screen.dart';
 import 'package:pictora/utils/helper/page_transition.dart';
-import '../screens/authScreens/login_screen.dart';
-import '../screens/authScreens/splash_screen.dart';
-import '../screens/profileScreens/profile_screen.dart';
-import '../screens/widgets/app_bottom_navigation_bar.dart';
+import '../features/auth/screens/login_screen.dart';
+import '../features/auth/screens/splash_screen.dart';
+import '../features/profile/screens/profile_screen.dart';
+import '../features/widgets/app_bottom_navigation_bar.dart';
 import 'router_name.dart';
 
 final GoRouter appRouter = GoRouter(
