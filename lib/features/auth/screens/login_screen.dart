@@ -1,12 +1,16 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
+import 'package:pictora/features/auth/bloc/auth_bloc.dart';
 import 'package:pictora/router/router.dart';
 import 'package:pictora/router/router_name.dart';
 import 'package:pictora/utils/constants/app_assets.dart';
+import 'package:pictora/utils/constants/bloc_instances.dart';
 import 'package:pictora/utils/extensions/string_extensions.dart';
 
 import '../../../utils/constants/colors.dart';
+import '../../../utils/constants/enums.dart';
 import '../../../utils/widgets/custom_widget.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -120,7 +124,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       const SizedBox(height: 24),
                       CustomTextField(
-                        controller: emailController,
+                        controller: passwordController,
                         hintText: 'Enter your password',
                         labelText: 'Password',
                         hintStyle: TextStyle(
@@ -162,13 +166,25 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ),
                       const SizedBox(height: 32),
-                      CustomButton(
-                        text: "Sign In",
-                        onTap: () {
-                          appRouter.push(RouterName.home.path);
-                        },
-                        height: 52,
-                      ),
+                      BlocBuilder<AuthBloc, AuthState>(
+                          builder: (context, state) {
+                        return CustomButton(
+                          text: "Sign In",
+                          onTap: () {
+                            if (_formKey.currentState!.validate()) {
+                              final body = {
+                                "email": emailController.text.trim(),
+                                "password": passwordController.text.trim(),
+                              };
+
+                              authBloc.add(LoginUserEvent(body: body));
+                            }
+                          },
+                          height: 52,
+                          showLoader:
+                              state.loginUserApiStatus == ApiStatus.loading,
+                        );
+                      }),
                       const SizedBox(height: 10),
                     ],
                   ),

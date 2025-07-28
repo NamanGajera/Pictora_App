@@ -2,7 +2,9 @@ import '../services/app_env_manager.dart';
 
 String baseUrl = "${AppEnvManager.baseUrl}$apiPreFix";
 
-String apiPreFix = "/api/v1";
+String apiPreFix = "/api";
 
-/// Login api
-// String logInAPIEnd = "/client/login";
+/// Auth api
+String loginApiEndPoint = "/auth/login";
+
+String registerApiEndPoint = "/auth/register";

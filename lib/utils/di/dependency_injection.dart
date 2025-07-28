@@ -1,4 +1,5 @@
 import 'package:get_it/get_it.dart';
+import 'package:pictora/features/auth/bloc/auth_bloc.dart';
 
 import '../../network/api_client.dart';
 import '../../network/repository.dart';
@@ -13,5 +14,5 @@ Future<void> setupDependencies() async {
   getIt.registerSingleton<Repository>(Repository(getIt<ApiClient>()));
 
   /// Blocs
-  // getIt.registerSingleton<LoginScreenBloc>(LoginScreenBloc(getIt<Repository>()));
+  getIt.registerSingleton<AuthBloc>(AuthBloc(getIt<Repository>()));
 }

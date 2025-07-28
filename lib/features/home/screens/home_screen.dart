@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:pictora/utils/constants/constants.dart';
 
 import '../../../utils/constants/colors.dart';
 import '../../post/models/post_details_model.dart';
@@ -93,29 +94,14 @@ class _HomeScreenState extends State<HomeScreen> {
     return AppBar(
       backgroundColor: Colors.white,
       elevation: 0,
-      title: const Text(
-        'Pictora',
+      title: Text(
+        "@$userName",
         style: TextStyle(
           color: primaryColor,
-          fontSize: 24,
+          fontSize: 20,
           fontWeight: FontWeight.bold,
         ),
       ),
-      actions: [
-        IconButton(
-          icon: const Icon(Icons.favorite_border, color: primaryColor),
-          onPressed: () {
-            // Handle notifications
-          },
-        ),
-        IconButton(
-          icon: const Icon(Icons.send_outlined, color: primaryColor),
-          onPressed: () {
-            // Handle messages
-          },
-        ),
-        const SizedBox(width: 8),
-      ],
     );
   }
 

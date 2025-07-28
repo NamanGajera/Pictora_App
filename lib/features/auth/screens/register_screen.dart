@@ -1,11 +1,15 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
+import 'package:pictora/features/auth/bloc/auth_bloc.dart';
 import 'package:pictora/router/router.dart';
 import 'package:pictora/router/router_name.dart';
 import 'package:pictora/utils/constants/colors.dart';
+import 'package:pictora/utils/constants/enums.dart';
 import 'package:pictora/utils/extensions/string_extensions.dart';
 import '../../../utils/constants/app_assets.dart';
+import '../../../utils/constants/bloc_instances.dart';
 import '../../../utils/widgets/custom_widget.dart';
 
 class RegisterScreen extends StatefulWidget {
@@ -239,13 +243,29 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       const SizedBox(height: 20),
                       _buildTermsCheckbox(),
                       const SizedBox(height: 32),
-                      CustomButton(
-                        text: "Create Account",
-                        onTap: () {},
-                        height: 52,
-                        backgroundColor:
-                            _agreeToTerms ? primaryColor : Colors.grey,
-                      ),
+                      BlocBuilder<AuthBloc, AuthState>(
+                          builder: (context, state) {
+                        return CustomButton(
+                          text: "Create Account",
+                          onTap: () {
+                            if (_formKey.currentState!.validate()) {
+                              final body = {
+                                "email": emailController.text.trim(),
+                                "password": passwordController.text.trim(),
+                                "fullName": fullNameController.text.trim(),
+                                "userName": userNameController.text.trim(),
+                              };
+
+                              authBloc.add(RegisterUserEvent(body: body));
+                            }
+                          },
+                          height: 52,
+                          showLoader:
+                              state.registerUserApiStatus == ApiStatus.loading,
+                          backgroundColor:
+                              _agreeToTerms ? primaryColor : Colors.grey,
+                        );
+                      }),
                     ],
                   ),
                 ),
