@@ -4,8 +4,10 @@ enum RouterName {
   register('/register', "register"),
   home('/home', "home"),
   search('/search', "search"),
+  profile('/profile', "profile"),
+  postAssetPicker('/postAssetPicker', "postAssetPicker"),
   addPost('/addPost', "addPost"),
-  profile('/profile', "profile");
+  videoCoverSelector('/videoCoverSelector', "videoCoverSelector");
 
   final String path;
   final String name;

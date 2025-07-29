@@ -39,4 +39,9 @@ class SharedPrefsHelper {
   Future<void> remove(String key) async {
     await _prefs?.remove(key);
   }
+
+  /// Clear All Stored Data
+  Future<void> clear() async {
+    await _prefs?.clear();
+  }
 }

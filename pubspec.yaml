@@ -36,6 +36,12 @@ dependencies:
   flutter_launcher_icons: ^0.14.4
   flutter_keyboard_visibility: ^6.0.0
   flutter_svg: ^2.2.0
+  insta_assets_picker: ^3.3.0
+  shimmer: ^3.0.0
+  video_player: ^2.10.0
+  photo_manager: ^3.7.1
+  carousel_slider: ^5.1.1
+  video_thumbnail: ^0.5.6
 
 dev_dependencies:
   flutter_test:

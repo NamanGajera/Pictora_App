@@ -8,3 +8,6 @@ String apiPreFix = "/api";
 String loginApiEndPoint = "/auth/login";
 
 String registerApiEndPoint = "/auth/register";
+
+/// Post api
+String postCreateApiEndPoint = "/post/create";

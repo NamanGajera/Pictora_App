@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:pictora/features/post/screens/add_post_screen.dart';
+import 'package:pictora/features/post/screens/post_asset_picker_screen.dart';
 import 'package:pictora/features/auth/screens/register_screen.dart';
 import 'package:pictora/features/home/screens/home_screen.dart';
 import 'package:pictora/features/search/screens/search_screen.dart';
 import 'package:pictora/utils/helper/page_transition.dart';
 import '../features/auth/screens/login_screen.dart';
 import '../features/auth/screens/splash_screen.dart';
+import '../features/post/screens/video_cover_selector_screen.dart';
 import '../features/profile/screens/profile_screen.dart';
 import '../features/widgets/app_bottom_navigation_bar.dart';
 import 'router_name.dart';
@@ -71,12 +73,12 @@ final GoRouter appRouter = GoRouter(
         StatefulShellBranch(
           routes: [
             GoRoute(
-              path: RouterName.addPost.path,
-              name: RouterName.addPost.name,
+              path: RouterName.postAssetPicker.path,
+              name: RouterName.postAssetPicker.name,
               pageBuilder: (BuildContext context, GoRouterState state) =>
                   NoTransitionPage<void>(
                 key: state.pageKey,
-                child: const AddPostScreen(),
+                child: const PostAssetPickerScreen(),
               ),
             ),
           ],
@@ -95,6 +97,33 @@ final GoRouter appRouter = GoRouter(
           ],
         ),
       ],
+    ),
+    GoRoute(
+      path: RouterName.addPost.path,
+      name: RouterName.addPost.name,
+      pageBuilder: (context, state) {
+        AddPostScreenDataModel screenData =
+            state.extra as AddPostScreenDataModel;
+        return SlideTransitionPage(
+          child: AddPostScreen(
+            selectedAssets: screenData.selectedAssets,
+          ),
+        );
+      },
+    ),
+    GoRoute(
+      path: RouterName.videoCoverSelector.path,
+      name: RouterName.videoCoverSelector.name,
+      pageBuilder: (context, state) {
+        VideoCoverSelectorDataModel screenData =
+            state.extra as VideoCoverSelectorDataModel;
+        return SlideTransitionPage(
+          child: VideoCoverSelector(
+            covers: screenData.covers,
+            videoFile: screenData.videoFile,
+          ),
+        );
+      },
     ),
   ],
 );

@@ -23,7 +23,7 @@ class ApiClient {
     if (isAccessToken != null) {
       headers = {
         "Content-Type": "application/json",
-        "Authorization": 'Bearer $isAccessToken',
+        "Authorization": '$isAccessToken',
       };
     } else {
       headers = {"Content-Type": "application/json"};
@@ -58,7 +58,7 @@ class ApiClient {
     if (isAccessToken != null) {
       headers = {
         "Content-Type": "application/json",
-        "Authorization": 'Bearer $isAccessToken',
+        "Authorization": '$isAccessToken',
       };
     } else {
       headers = {"Content-Type": "application/json"};
@@ -97,7 +97,7 @@ class ApiClient {
     if (isAccessToken != null) {
       headers = {
         "Content-Type": "application/json",
-        "Authorization": 'Bearer $isAccessToken',
+        "Authorization": '$isAccessToken',
       };
     } else {
       headers = {"Content-Type": "application/json"};
@@ -128,7 +128,7 @@ class ApiClient {
     if (isAccessToken != null) {
       headers = {
         "Content-Type": "application/json",
-        "Authorization": 'Bearer $isAccessToken',
+        "Authorization": '$isAccessToken',
       };
     } else {
       headers = {"Content-Type": "application/json"};
@@ -149,208 +149,164 @@ class ApiClient {
     return postResponseJson;
   }
 
-  Future<dynamic> multipartPostApiCall(
-    String baseUrl,
-    String endPoint, {
-    String? isAccessToken,
-    String? isFireBaseToken,
-    required List<String> fileKey,
+  Future<dynamic> multipartPostApiCall({
+    required String baseUrl,
+    required String endPoint,
+    String? authorizationToken,
+    Map<String, String>? additionalHeaders,
     required Map<String, dynamic> fields,
+    required Map<String, dynamic> fileFields,
   }) async {
-    var getUrl = '$baseUrl$endPoint';
-    var request = http.MultipartRequest('POST', Uri.parse(getUrl));
+    final url = Uri.parse('$baseUrl$endPoint');
+    final request = http.MultipartRequest('POST', url);
 
-    Map<String, String>? headers;
-
-    if (isAccessToken != null) {
-      headers = {
-        "Authorization": 'Bearer $isAccessToken',
-      };
-    } else {
-      headers = {};
-    }
-
+    // Set headers
+    final headers = <String, String>{
+      if (authorizationToken != null) 'Authorization': authorizationToken,
+      ...?additionalHeaders,
+    };
     request.headers.addAll(headers);
 
-    // Add form fields if provided
-
-    for (var key in fields.keys) {
-      var value = fields[key];
-      if ((fileKey).contains(key) && value is List<File>) {
-        List<File> attachments = value;
-        for (var entry in attachments) {
-          String fileExtension = entry.path.split('.').last.toLowerCase();
-          MediaType contentType;
-
-          if (['jpg', 'jpeg', 'png', 'gif', 'bmp'].contains(fileExtension)) {
-            contentType = MediaType('image', fileExtension);
-          } else if (['mp4', 'mov', 'avi', 'mkv', 'flv']
-              .contains(fileExtension)) {
-            contentType = MediaType('video', fileExtension);
-          } else if (['aac', 'mp3', 'wav', 'ogg', 'm4a']
-              .contains(fileExtension)) {
-            contentType = MediaType(
-                'audio', fileExtension == 'aac' ? 'aac' : fileExtension);
-          } else {
-            continue; // Skip unsupported files
-          }
-
-          request.files.add(await http.MultipartFile.fromPath(key, entry.path,
-              contentType: contentType));
-        }
-      } else if ((fileKey).contains(key) && value is File) {
-        String fileExtension = value.path.split('.').last.toLowerCase();
-        MediaType contentType;
-
-        if (['jpg', 'jpeg', 'png', 'gif', 'bmp'].contains(fileExtension)) {
-          contentType = MediaType('image', fileExtension);
-        } else if (['mp4', 'mov', 'avi', 'mkv', 'flv']
-            .contains(fileExtension)) {
-          contentType = MediaType('video', fileExtension);
-        } else if (['aac', 'mp3', 'wav', 'ogg', 'm4a']
-            .contains(fileExtension)) {
-          contentType = MediaType(
-              'audio', fileExtension == 'aac' ? 'aac' : fileExtension);
-        } else {
-          continue;
-        }
-        request.files.add(await http.MultipartFile.fromPath(key, value.path,
-            contentType: contentType));
-      } else {
-        request.fields[key] = value.toString();
-      }
+    // Add regular form fields
+    for (final entry in fields.entries) {
+      request.fields[entry.key] = entry.value.toString();
     }
 
-    log("Multipart POST URL: $getUrl");
-    log("Headers: $headers");
-    log("Fields: $fields");
-    log("Request: $request");
+    // Process file fields
+    try {
+      await _addFileFields(request, fileFields);
+    } catch (e) {
+      throw Exception('Error processing files: $e');
+    }
+
+    _logRequestDetails(url, headers, fields, fileFields);
 
     try {
-      var streamedResponse = await request.send();
-      var response = await http.Response.fromStream(streamedResponse);
-
-      return parseApiResponse(response); // Use your existing response handler
+      final streamedResponse = await request.send();
+      final response = await http.Response.fromStream(streamedResponse);
+      return parseApiResponse(response); // Your existing response handler
     } on SocketException {
-      throw FetchDataException("No internet connection");
+      throw FetchDataException('No internet connection');
     } on FormatException {
-      throw FetchDataException("Invalid format");
+      throw FetchDataException('Invalid format');
     } catch (e) {
-      log("Error: $e");
-      throw Exception("Error during multipart POST request");
+      log('Error: $e');
+      throw Exception('Error during multipart POST request: $e');
     }
   }
 
   Future<dynamic> multipartPutApiCall(
     String baseUrl,
     String endPoint, {
-    String? isAccessToken,
-    String? isFireBaseToken,
-    required List<String> fileKey,
-    Map<String, dynamic>? fields,
-    // Map<String, File>? files,
+    String? authorizationToken,
+    Map<String, String>? additionalHeaders,
+    required Map<String, dynamic> fields,
+    required Map<String, dynamic> fileFields,
   }) async {
-    var getUrl = '$baseUrl$endPoint';
-    var request = http.MultipartRequest('PUT', Uri.parse(getUrl));
+    final url = Uri.parse('$baseUrl$endPoint');
+    final request = http.MultipartRequest('PUT', url);
 
-    Map<String, String>? headers;
-
-    if (isAccessToken != null) {
-      headers = {
-        // "Content-Type": "application/json",
-        "Authorization": 'Bearer $isAccessToken',
-      };
-    } else if (isFireBaseToken != null) {
-      headers = {
-        // "Content-Type": "application/json",
-        "firebase": isFireBaseToken,
-      };
-    } else {
-      headers = {};
-      // headers = {"Content-Type": "application/json"};
-    }
-
+    // Set headers
+    final headers = <String, String>{
+      if (authorizationToken != null) 'Authorization': '$authorizationToken',
+      ...?additionalHeaders,
+    };
     request.headers.addAll(headers);
 
-    // Add form fields if provided
-    if (fields != null) {
-      fields.forEach((key, value) async {
-        if ((fileKey).contains(key) && value is List<File>) {
-          // log(value.runtimeType.toString());
-          // log(value.toString());
-
-          List<File> attachments = value;
-
-          for (var entry in attachments) {
-            // log(entry);
-
-            // String? mimeType = lookupMimeType(entry.path);
-            // var contentType = mimeType != null ? MediaType('image', mimeType) : null;
-
-            String fileExtension = entry.path.split('.').last.toLowerCase();
-            MediaType contentType;
-
-            // Check for image type
-            if (['jpg', 'jpeg', 'png', 'gif', 'bmp'].contains(fileExtension)) {
-              contentType = MediaType('image', fileExtension);
-            }
-            // Check for video type
-            else if (['mp4', 'mov', 'avi', 'mkv', 'flv']
-                .contains(fileExtension)) {
-              contentType = MediaType('video', fileExtension);
-            } else if (['aac', 'mp3', 'wav', 'ogg', 'm4a']
-                .contains(fileExtension)) {
-              contentType = MediaType(
-                  'audio', fileExtension == 'aac' ? 'aac' : fileExtension);
-            } else {
-              continue; // Skip unsupported files
-            }
-
-            request.files.add(await http.MultipartFile.fromPath(key, entry.path,
-                contentType: contentType));
-          }
-        } else if ((fileKey).contains(key) && value is File) {
-          String fileExtension = value.path.split('.').last.toLowerCase();
-          MediaType contentType;
-
-          // Check for image type
-          if (['jpg', 'jpeg', 'png', 'gif', 'bmp'].contains(fileExtension)) {
-            contentType = MediaType('image', fileExtension);
-            request.files.add(await http.MultipartFile.fromPath(key, value.path,
-                contentType: contentType));
-          }
-          // Check for video type
-          else if (['mp4', 'mov', 'avi', 'mkv', 'flv']
-              .contains(fileExtension)) {
-            contentType = MediaType('video', fileExtension);
-            request.files.add(await http.MultipartFile.fromPath(key, value.path,
-                contentType: contentType));
-          } else if (['aac', 'mp3', 'wav', 'ogg', 'm4a']
-              .contains(fileExtension)) {
-            contentType = MediaType(
-                'audio', fileExtension == 'aac' ? 'aac' : fileExtension);
-            request.files.add(await http.MultipartFile.fromPath(key, value.path,
-                contentType: contentType));
-          } else {}
-          // contentType = MediaType('audio', fileExtension == 'aac' ? 'aac' : fileExtension);
-        } else {
-          request.fields[key] = value.toString();
-        }
-      });
+    // Add regular form fields
+    for (final entry in fields.entries) {
+      request.fields[entry.key] = entry.value.toString();
     }
 
-    log("Multipart POST URL: $getUrl");
-    log("Headers: $headers");
-    log("Fields: $fields");
-    log("Request: $request");
+    // Process file fields
+    try {
+      await _addFileFields(request, fileFields);
+    } catch (e) {
+      throw Exception('Error processing files: $e');
+    }
+
+    _logRequestDetails(url, headers, fields, fileFields);
 
     try {
-      var streamedResponse = await request.send();
-      var response = await http.Response.fromStream(streamedResponse);
-      return parseApiResponse(response);
+      final streamedResponse = await request.send();
+      final response = await http.Response.fromStream(streamedResponse);
+      return parseApiResponse(response); // Your existing response handler
     } on SocketException {
-      throw FetchDataException("No internet connection");
+      throw FetchDataException('No internet connection');
+    } on FormatException {
+      throw FetchDataException('Invalid format');
+    } catch (e) {
+      log('Error: $e');
+      throw Exception('Error during multipart POST request: $e');
     }
+  }
+
+  Future<void> _addFileFields(
+    http.MultipartRequest request,
+    Map<String, dynamic> fileFields,
+  ) async {
+    for (final entry in fileFields.entries) {
+      final fieldName = entry.key;
+      final fieldValue = entry.value;
+
+      if (fieldValue is List<File>) {
+        for (final file in fieldValue) {
+          await _addFileToRequest(request, fieldName, file);
+        }
+      } else if (fieldValue is File) {
+        await _addFileToRequest(request, fieldName, fieldValue);
+      } else {
+        throw ArgumentError(
+            'File field "$fieldName" must be either File or List<File>');
+      }
+    }
+  }
+
+  Future<void> _addFileToRequest(
+    http.MultipartRequest request,
+    String fieldName,
+    File file,
+  ) async {
+    final fileExtension = file.path.split('.').last.toLowerCase();
+    final contentType = _determineContentType(fileExtension);
+
+    if (contentType == null) {
+      throw ArgumentError('Unsupported file type: $fileExtension');
+    }
+
+    request.files.add(await http.MultipartFile.fromPath(
+      fieldName,
+      file.path,
+      contentType: contentType,
+    ));
+  }
+
+  MediaType? _determineContentType(String fileExtension) {
+    const imageTypes = ['jpg', 'jpeg', 'png', 'gif', 'bmp'];
+    const videoTypes = ['mp4', 'mov', 'avi', 'mkv', 'flv'];
+    const audioTypes = ['aac', 'mp3', 'wav', 'ogg', 'm4a'];
+
+    if (imageTypes.contains(fileExtension)) {
+      return MediaType('image', fileExtension);
+    } else if (videoTypes.contains(fileExtension)) {
+      return MediaType('video', fileExtension);
+    } else if (audioTypes.contains(fileExtension)) {
+      return MediaType('audio', fileExtension == 'aac' ? 'aac' : fileExtension);
+    }
+    return null;
+  }
+
+  void _logRequestDetails(
+    Uri url,
+    Map<String, String> headers,
+    Map<String, dynamic> fields,
+    Map<String, dynamic> fileFields,
+  ) {
+    log('Multipart POST URL: $url');
+    log('Headers: $headers');
+    log('Fields: $fields');
+    log('File Fields: ${fileFields.keys.toList()}');
+    log('File Counts: ${fileFields.map((k, v) => MapEntry(k, v is List ? v.length : 1))}');
   }
 
   Future<dynamic> parseApiResponse(http.Response response) async {

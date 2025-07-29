@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pictora/features/auth/bloc/auth_bloc.dart';
+import 'package:pictora/features/post/bloc/post_bloc.dart';
 import 'package:pictora/utils/Constants/enums.dart';
 import 'package:pictora/utils/services/app_env_manager.dart';
 import 'router/router.dart';
@@ -29,6 +30,7 @@ class MyApp extends StatelessWidget {
     return MultiBlocProvider(
       providers: [
         BlocProvider(create: (_) => getIt<AuthBloc>()),
+        BlocProvider(create: (_) => getIt<PostBloc>()),
       ],
       child: MediaQuery(
         data: MediaQuery.of(context).copyWith(textScaler: TextScaler.noScaling),

@@ -34,8 +34,8 @@ class _AppBottomNavigationBarState extends State<AppBottomNavigationBar> {
       iconPath: AppAssets.search,
     ),
     BottomBarItem(
-      path: RouterName.addPost.path,
-      name: RouterName.addPost.name,
+      path: RouterName.postAssetPicker.path,
+      name: RouterName.postAssetPicker.name,
       label: 'Add Post',
       iconPath: AppAssets.addPost,
     ),

@@ -45,6 +45,10 @@ int _determineStatusCode(dynamic error) {
 
 void logoutUser() {
   appRouter.go(RouterName.login.path);
+
+  SharedPrefsHelper().clear();
+
+  accessToken = null;
 }
 
 Future<void> getUserData() async {
