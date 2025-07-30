@@ -1,5 +1,6 @@
 import 'package:pictora/features/auth/model/auth_model.dart';
 import 'package:pictora/features/post/models/post_create_model.dart';
+import 'package:pictora/features/post/models/post_data_model.dart';
 import 'package:pictora/utils/constants/api_end_points.dart';
 import 'package:pictora/utils/constants/constants.dart';
 
@@ -49,6 +50,20 @@ class Repository {
         fileFields: fileFields,
       );
       return PostCreateModel.fromJson(json);
+    } on CustomException {
+      rethrow;
+    }
+  }
+
+  Future<PostDataModel> getAllPost(dynamic body) async {
+    try {
+      Map<String, dynamic> json = await apiClient.postApiCall(
+        endPoint: getAllPostApiEndPoint,
+        isAccessToken: accessToken,
+        postBody: body,
+      );
+
+      return PostDataModel.fromJson(json);
     } on CustomException {
       rethrow;
     }

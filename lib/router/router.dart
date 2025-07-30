@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:pictora/features/post/screens/add_post_screen.dart';
@@ -49,11 +51,16 @@ final GoRouter appRouter = GoRouter(
             GoRoute(
               path: RouterName.home.path,
               name: RouterName.home.name,
-              pageBuilder: (BuildContext context, GoRouterState state) =>
-                  NoTransitionPage<void>(
-                key: state.pageKey,
-                child: const HomeScreen(),
-              ),
+              pageBuilder: (BuildContext context, GoRouterState state) {
+                HomeScreenDataModel? screenData =
+                    state.extra as HomeScreenDataModel?;
+                return NoTransitionPage<void>(
+                  key: state.pageKey,
+                  child: HomeScreen(
+                    fileImage: screenData?.fileImage ?? File(''),
+                  ),
+                );
+              },
             ),
           ],
         ),

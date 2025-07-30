@@ -6,9 +6,11 @@ import 'package:pictora/utils/Constants/enums.dart';
 import 'package:pictora/utils/services/app_env_manager.dart';
 import 'router/router.dart';
 import 'utils/constants/colors.dart';
+import 'utils/helper/date_formatter.dart';
 import 'utils/helper/shared_prefs_helper.dart';
 import 'utils/services/device_info_service.dart';
 import 'utils/di/dependency_injection.dart';
+import 'package:timeago/timeago.dart' as timeago;
 
 void main() async {
   AppEnvManager.currentEnv = AppEnv.local;
@@ -18,6 +20,7 @@ void main() async {
   await SharedPrefsHelper.init();
   await DeviceInfoService().init();
   await setupDependencies();
+  timeago.setLocaleMessages('en_short_clean', ShortEnMessages());
 
   runApp(const MyApp());
 }

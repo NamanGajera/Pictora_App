@@ -11,3 +11,5 @@ String registerApiEndPoint = "/auth/register";
 
 /// Post api
 String postCreateApiEndPoint = "/post/create";
+
+String getAllPostApiEndPoint = "/post";

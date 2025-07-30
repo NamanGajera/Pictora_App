@@ -1,4 +1,5 @@
 import 'package:intl/intl.dart';
+import 'package:timeago/timeago.dart' as timeago;
 
 class DateFormatter {
   static const String defaultFormat = 'yyyy-MM-dd';
@@ -94,7 +95,8 @@ class DateFormatter {
     } else if (difference.inDays < 7) {
       return '${difference.inDays} days ago';
     } else {
-      return formatDate(dateInput: dateTime, format: monthDayYear) ?? 'Invalid date';
+      return formatDate(dateInput: dateTime, format: monthDayYear) ??
+          'Invalid date';
     }
   }
 
@@ -104,7 +106,9 @@ class DateFormatter {
     if (dateTime == null) return false;
 
     final now = DateTime.now();
-    return dateTime.year == now.year && dateTime.month == now.month && dateTime.day == now.day;
+    return dateTime.year == now.year &&
+        dateTime.month == now.month &&
+        dateTime.day == now.day;
   }
 
   /// Gets the day name (e.g., "Monday")
@@ -124,4 +128,53 @@ class DateFormatter {
       inputFormat: inputFormat,
     );
   }
+
+  static String timeAgoShort(dynamic dateInput,
+      {String? inputFormat, String locale = 'en_short_clean'}) {
+    final dateTime = _parseDate(dateInput, inputFormat);
+    if (dateTime == null) return 'Invalid date';
+
+    return timeago
+        .format(
+          dateTime,
+          locale: locale,
+          allowFromNow: false,
+        )
+        .trim();
+  }
+}
+
+class ShortEnMessages implements timeago.LookupMessages {
+  @override
+  String prefixAgo() => '';
+  @override
+  String prefixFromNow() => '';
+  @override
+  String suffixAgo() => 'ago';
+  @override
+  String suffixFromNow() => 'from now';
+  @override
+  String lessThanOneMinute(int seconds) => 'now';
+  @override
+  String aboutAMinute(int minutes) => '1m';
+  @override
+  String minutes(int minutes) => '${minutes}m';
+  @override
+  String aboutAnHour(int minutes) => '1h';
+  @override
+  String hours(int hours) => '${hours}h';
+  @override
+  String aDay(int hours) => '1d';
+  @override
+  String days(int days) => '${days}d';
+  @override
+  String aboutAMonth(int days) => '1mo';
+  @override
+  String months(int months) => '${months}mo';
+  @override
+  String aboutAYear(int year) => '1y';
+  @override
+  String years(int years) => '${years}y';
+  @override
+  String wordSeparator() => ' ';
 }

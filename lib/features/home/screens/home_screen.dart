@@ -1,67 +1,35 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:pictora/features/post/bloc/post_bloc.dart';
+import 'package:pictora/utils/constants/bloc_instances.dart';
 import 'package:pictora/utils/constants/constants.dart';
+import 'package:pictora/utils/constants/enums.dart';
+import 'package:pictora/utils/extensions/build_context_extension.dart';
+import 'package:pictora/utils/services/custom_logger.dart';
+import 'package:pictora/utils/widgets/custom_widget.dart';
 
 import '../../../utils/constants/colors.dart';
-import '../../post/models/post_details_model.dart';
-import '../../post/screens/post_widget.dart';
+import '../../post/models/post_data.dart';
+import '../../post/screens/widgets/post_widget.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+  final File fileImage;
+  const HomeScreen({super.key, required this.fileImage});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  // Sample data for posts
-  final List<PostModel> posts = [
-    PostModel(
-      id: '1',
-      username: 'john_doe',
-      userAvatar: 'https://via.placeholder.com/40',
-      timeAgo: '2h',
-      caption: 'Beautiful sunset at the beach! 🌅 #sunset #beach #photography',
-      mediaUrls: [
-        'https://via.placeholder.com/400x300',
-        'https://via.placeholder.com/400x300/FF0000',
-        'https://via.placeholder.com/400x300/00FF00',
-      ],
-      likes: 1234,
-      isLiked: false,
-      isSaved: false,
-      comments: 56,
-    ),
-    PostModel(
-      id: '2',
-      username: 'sarah_smith',
-      userAvatar: 'https://via.placeholder.com/40',
-      timeAgo: '4h',
-      caption: 'Morning coffee vibes ☕️ Starting the day right!',
-      mediaUrls: [
-        'https://via.placeholder.com/400x300/FFA500',
-      ],
-      likes: 892,
-      isLiked: true,
-      isSaved: true,
-      comments: 23,
-    ),
-    PostModel(
-      id: '3',
-      username: 'travel_diaries',
-      userAvatar: 'https://via.placeholder.com/40',
-      timeAgo: '6h',
-      caption:
-          'Exploring the mountains! The view from up here is incredible. Nature never fails to amaze me 🏔️⛰️ #mountains #hiking #nature #adventure',
-      mediaUrls: [
-        'https://via.placeholder.com/400x300/87CEEB',
-        'https://via.placeholder.com/400x300/90EE90',
-      ],
-      likes: 2156,
-      isLiked: false,
-      isSaved: false,
-      comments: 89,
-    ),
-  ];
+  @override
+  void initState() {
+    super.initState();
+    postBloc.add(GetAllPostEvent(body: {"skip": 0, "take": 10}));
+  }
+
+  final ScrollController _scrollController = ScrollController();
 
   @override
   Widget build(BuildContext context) {
@@ -73,18 +41,79 @@ class _HomeScreenState extends State<HomeScreen> {
           // Handle refresh
           await Future.delayed(const Duration(seconds: 1));
         },
-        child: ListView.builder(
-          itemCount: posts.length,
-          padding: EdgeInsets.symmetric(horizontal: 6),
-          itemBuilder: (context, index) {
-            return PostWidget(
-              post: posts[index],
-              onLike: (postId) => _handleLike(postId),
-              onSave: (postId) => _handleSave(postId),
-              onComment: (postId) => _handleComment(postId),
-              onShare: (postId) => _handleShare(postId),
-            );
-          },
+        child: Column(
+          children: [
+            BlocBuilder<PostBloc, PostState>(
+              builder: (context, state) {
+                if (state.createPostApiStatus == ApiStatus.loading) {
+                  return Container(
+                    margin:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+                    padding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      boxShadow: [
+                        BoxShadow(
+                          blurRadius: 4,
+                          color: Colors.grey.withValues(alpha: 0.2),
+                          offset: Offset(0, 2),
+                          spreadRadius: 1,
+                        ),
+                      ],
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Row(
+                      children: [
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(10),
+                          child: Image.file(
+                            widget.fileImage,
+                            height: 50,
+                            width: 50,
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                        const SizedBox(width: 14),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            CustomText("Posting..."),
+                            const SizedBox(height: 10),
+                            SizedBox(
+                              width: context.screenWidth * 0.68,
+                              child: LinearProgressIndicator(
+                                borderRadius: BorderRadius.circular(8),
+                                backgroundColor: Colors.grey.shade300,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  );
+                }
+                return SizedBox.shrink();
+              },
+            ),
+            BlocBuilder<PostBloc, PostState>(
+              builder: (context, state) {
+                return Expanded(
+                  child: ListView.builder(
+                    controller: _scrollController,
+                    itemCount: state.allPostData?.length ?? 0,
+                    physics: ClampingScrollPhysics(),
+                    padding: EdgeInsets.symmetric(horizontal: 6),
+                    itemBuilder: (context, index) {
+                      return PostWidget(
+                        key: ValueKey("post_$index"),
+                        post: state.allPostData?[index],
+                      );
+                    },
+                  ),
+                );
+              },
+            ),
+          ],
         ),
       ),
     );
@@ -104,33 +133,9 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
+}
 
-  void _handleLike(String postId) {
-    setState(() {
-      final postIndex = posts.indexWhere((post) => post.id == postId);
-      if (postIndex != -1) {
-        posts[postIndex].isLiked = !posts[postIndex].isLiked;
-        posts[postIndex].likes += posts[postIndex].isLiked ? 1 : -1;
-      }
-    });
-  }
-
-  void _handleSave(String postId) {
-    setState(() {
-      final postIndex = posts.indexWhere((post) => post.id == postId);
-      if (postIndex != -1) {
-        posts[postIndex].isSaved = !posts[postIndex].isSaved;
-      }
-    });
-  }
-
-  void _handleComment(String postId) {
-    // Navigate to comments screen
-    print('Comment on post: $postId');
-  }
-
-  void _handleShare(String postId) {
-    // Handle share functionality
-    print('Share post: $postId');
-  }
+class HomeScreenDataModel {
+  final File fileImage;
+  HomeScreenDataModel({required this.fileImage});
 }

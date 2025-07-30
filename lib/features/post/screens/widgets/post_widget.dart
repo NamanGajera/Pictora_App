@@ -2,23 +2,17 @@ import "package:flutter/material.dart";
 import "package:flutter_svg/flutter_svg.dart";
 import "package:pictora/utils/constants/app_assets.dart";
 
-import "../../../utils/constants/colors.dart";
-import "../models/post_details_model.dart";
+import "../../../../utils/constants/colors.dart";
+import "../../../../utils/helper/date_formatter.dart";
+import "../../models/post_data.dart";
+import "post_media_display.dart";
 
 class PostWidget extends StatefulWidget {
-  final PostModel post;
-  final Function(String) onLike;
-  final Function(String) onSave;
-  final Function(String) onComment;
-  final Function(String) onShare;
+  final PostData? post;
 
   const PostWidget({
     super.key,
     required this.post,
-    required this.onLike,
-    required this.onSave,
-    required this.onComment,
-    required this.onShare,
   });
 
   @override
@@ -48,7 +42,10 @@ class _PostWidgetState extends State<PostWidget> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _buildPostHeader(),
-          _buildMediaSection(),
+          PostMediaDisplay(
+            mediaData: widget.post?.mediaData,
+            postId: widget.post?.id ?? '',
+          ),
           _buildActionButtons(),
           _buildLikesSection(),
           _buildCaptionSection(),
@@ -64,7 +61,6 @@ class _PostWidgetState extends State<PostWidget> {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: Row(
         children: [
-          // Enhanced profile picture with gradient border
           Container(
             padding: const EdgeInsets.all(2),
             decoration: BoxDecoration(
@@ -87,10 +83,15 @@ class _PostWidgetState extends State<PostWidget> {
               child: CircleAvatar(
                 radius: 18,
                 backgroundColor: primaryColor.withValues(alpha: 0.1),
-                backgroundImage: widget.post.userAvatar.isNotEmpty
-                    ? NetworkImage(widget.post.userAvatar)
+                backgroundImage: (widget
+                                .post?.userData?.profile?.profilePicture ??
+                            '')
+                        .isNotEmpty
+                    ? NetworkImage(
+                        widget.post?.userData?.profile?.profilePicture ?? '')
                     : null,
-                child: widget.post.userAvatar.isEmpty
+                child: (widget.post?.userData?.profile?.profilePicture ?? '')
+                        .isEmpty
                     ? const Icon(Icons.person, color: primaryColor, size: 20)
                     : null,
               ),
@@ -104,7 +105,7 @@ class _PostWidgetState extends State<PostWidget> {
                 Row(
                   children: [
                     Text(
-                      widget.post.username,
+                      widget.post?.userData?.fullName ?? '',
                       style: const TextStyle(
                         fontWeight: FontWeight.w700,
                         fontSize: 15,
@@ -113,11 +114,11 @@ class _PostWidgetState extends State<PostWidget> {
                     ),
                     const SizedBox(width: 4),
                     // Verified badge (optional)
-                    Icon(
-                      Icons.verified,
-                      size: 16,
-                      color: primaryColor,
-                    ),
+                    // Icon(
+                    //   Icons.verified,
+                    //   size: 16,
+                    //   color: primaryColor,
+                    // ),
                   ],
                 ),
                 const SizedBox(height: 2),
@@ -130,7 +131,7 @@ class _PostWidgetState extends State<PostWidget> {
                     ),
                     const SizedBox(width: 4),
                     Text(
-                      widget.post.timeAgo,
+                      DateFormatter.timeAgoShort(widget.post?.createdAt),
                       style: TextStyle(
                         color: Colors.grey[500],
                         fontSize: 12,
@@ -185,133 +186,22 @@ class _PostWidgetState extends State<PostWidget> {
     );
   }
 
-  Widget _buildMediaSection() {
-    return SizedBox(
-      height: 320,
-      child: Stack(
-        children: [
-          PageView.builder(
-            controller: pageController,
-            onPageChanged: (index) {
-              setState(() {
-                currentMediaIndex = index;
-              });
-            },
-            itemCount: widget.post.mediaUrls.length,
-            itemBuilder: (context, index) {
-              return Container(
-                width: double.infinity,
-                height: 320,
-                color: Colors.grey[100],
-                child: Image.network(
-                  widget.post.mediaUrls[index],
-                  fit: BoxFit.cover,
-                  loadingBuilder: (context, child, loadingProgress) {
-                    if (loadingProgress == null) return child;
-                    return Container(
-                      color: Colors.grey[100],
-                      child: Center(
-                        child: CircularProgressIndicator(
-                          color: primaryColor,
-                          strokeWidth: 2,
-                        ),
-                      ),
-                    );
-                  },
-                  errorBuilder: (context, error, stackTrace) {
-                    return Container(
-                      color: primaryColor.withValues(alpha: 0.05),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.image_outlined,
-                            size: 50,
-                            color: primaryColor.withValues(alpha: 0.6),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            'Photo ${index + 1}',
-                            style: TextStyle(
-                              color: primaryColor.withValues(alpha: 0.8),
-                              fontSize: 14,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  },
-                ),
-              );
-            },
-          ),
-
-          // Simple media counter
-          if (widget.post.mediaUrls.length > 1)
-            Positioned(
-              top: 12,
-              right: 12,
-              child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                decoration: BoxDecoration(
-                  color: Colors.black.withValues(alpha: 0.6),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Text(
-                  '${currentMediaIndex + 1}/${widget.post.mediaUrls.length}',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ),
-            ),
-
-          // Clean dots indicator
-          if (widget.post.mediaUrls.length > 1)
-            Positioned(
-              bottom: 12,
-              left: 0,
-              right: 0,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: List.generate(
-                  widget.post.mediaUrls.length,
-                  (index) => AnimatedContainer(
-                    duration: const Duration(milliseconds: 200),
-                    margin: const EdgeInsets.symmetric(horizontal: 2),
-                    width: currentMediaIndex == index ? 8 : 6,
-                    height: currentMediaIndex == index ? 8 : 6,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: currentMediaIndex == index
-                          ? Colors.white
-                          : Colors.white.withValues(alpha: 0.6),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildActionButtons() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Row(
         children: [
           GestureDetector(
-            onTap: () => widget.onLike(widget.post.id),
+            onTap: () {},
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 200),
               child: SvgPicture.asset(
-                widget.post.isLiked ? AppAssets.heartFill : AppAssets.heart,
-                color: widget.post.isLiked ? Colors.red : Colors.black87,
+                (widget.post?.isLiked ?? false)
+                    ? AppAssets.heartFill
+                    : AppAssets.heart,
+                color: (widget.post?.isLiked ?? false)
+                    ? Colors.red
+                    : Colors.black87,
                 height: 26,
                 width: 26,
               ),
@@ -319,7 +209,7 @@ class _PostWidgetState extends State<PostWidget> {
           ),
           const SizedBox(width: 16),
           GestureDetector(
-            onTap: () => widget.onComment(widget.post.id),
+            onTap: () {},
             child: SvgPicture.asset(
               AppAssets.comment,
               color: Colors.black87,
@@ -329,7 +219,7 @@ class _PostWidgetState extends State<PostWidget> {
           ),
           const SizedBox(width: 16),
           GestureDetector(
-            onTap: () => widget.onShare(widget.post.id),
+            onTap: () {},
             child: SvgPicture.asset(
               AppAssets.share,
               color: Colors.black87,
@@ -339,10 +229,14 @@ class _PostWidgetState extends State<PostWidget> {
           ),
           const Spacer(),
           GestureDetector(
-            onTap: () => widget.onSave(widget.post.id),
+            onTap: () {},
             child: SvgPicture.asset(
-              widget.post.isSaved ? AppAssets.saveFill : AppAssets.save,
-              color: widget.post.isSaved ? primaryColor : Colors.black87,
+              (widget.post?.isSaved ?? false)
+                  ? AppAssets.saveFill
+                  : AppAssets.save,
+              color: (widget.post?.isSaved ?? false)
+                  ? primaryColor
+                  : Colors.black87,
               height: 26,
               width: 26,
             ),
@@ -356,7 +250,7 @@ class _PostWidgetState extends State<PostWidget> {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Text(
-        '${_formatNumber(widget.post.likes)} likes',
+        '${_formatNumber(widget.post?.likeCount ?? 0)} likes',
         style: const TextStyle(
           fontWeight: FontWeight.w600,
           fontSize: 14,
@@ -373,7 +267,7 @@ class _PostWidgetState extends State<PostWidget> {
         text: TextSpan(
           children: [
             TextSpan(
-              text: '${widget.post.username} ',
+              text: '${widget.post?.userData?.userName} ',
               style: const TextStyle(
                 fontWeight: FontWeight.w600,
                 color: Colors.black87,
@@ -381,7 +275,7 @@ class _PostWidgetState extends State<PostWidget> {
               ),
             ),
             TextSpan(
-              text: widget.post.caption,
+              text: widget.post?.caption ?? '',
               style: const TextStyle(
                 color: Colors.black87,
                 fontSize: 14,
@@ -399,9 +293,9 @@ class _PostWidgetState extends State<PostWidget> {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: GestureDetector(
-        onTap: () => widget.onComment(widget.post.id),
+        onTap: () {},
         child: Text(
-          'View all ${widget.post.comments} comments',
+          'View all ${widget.post?.commentCount} comments',
           style: TextStyle(
             color: Colors.grey[600],
             fontSize: 14,

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:insta_assets_picker/insta_assets_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:photo_manager/photo_manager.dart';
+import 'package:pictora/features/home/screens/home_screen.dart';
 import 'package:pictora/features/post/bloc/post_bloc.dart';
 import 'package:pictora/utils/constants/bloc_instances.dart';
 import 'package:pictora/utils/constants/colors.dart';
@@ -163,30 +164,9 @@ class _AddPostScreenState extends State<AddPostScreen> {
   Future<List<File>> _getAllAssetFiles() async {
     List<File> files = [];
     for (int i = 0; i < assets.length; i++) {
-      if (assets[i].type == AssetType.image) {
-        // Use cached file if available
-        if (_imageFileCache.containsKey(i)) {
-          files.add(_imageFileCache[i]!);
-        } else {
-          final file = await assets[i].file;
-          if (file != null) {
-            files.add(file);
-            _imageFileCache[i] = file; // Cache it for future use
-          }
-        }
-      } else if (assets[i].type == AssetType.video) {
-        // Use selected cover if available, otherwise use generated thumbnail
-        if (selectedVideoCovers.containsKey(i)) {
-          files.add(selectedVideoCovers[i]!);
-        } else if (videoThumbnails[i] != null) {
-          files.add(videoThumbnails[i]!);
-        } else {
-          // Fallback to video file itself if needed
-          final file = await assets[i].file;
-          if (file != null) {
-            files.add(file);
-          }
-        }
+      final file = await assets[i].file;
+      if (file != null) {
+        files.add(file);
       }
     }
     return files;
@@ -223,16 +203,32 @@ class _AddPostScreenState extends State<AddPostScreen> {
             text: "Post",
             onTap: () async {
               final List<File> mediaFiles = await _getAllAssetFiles();
-
               final List<File> thumbnailFiles = [];
+
+              // Generate thumbnails for videos
               for (int i = 0; i < assets.length; i++) {
                 if (assets[i].type == AssetType.video) {
                   if (selectedVideoCovers.containsKey(i)) {
                     thumbnailFiles.add(selectedVideoCovers[i]!);
                   } else if (videoThumbnails[i] != null) {
                     thumbnailFiles.add(videoThumbnails[i]!);
+                  } else {
+                    // Fallback: generate thumbnail if none exists
+                    final thumbnail = await _generateVideoThumbnail(assets[i]);
+                    if (thumbnail != null) {
+                      thumbnailFiles.add(thumbnail);
+                    }
                   }
                 }
+              }
+
+              File previewFileImage;
+              if (assets[0].type == AssetType.video) {
+                previewFileImage = thumbnailFiles.isNotEmpty
+                    ? thumbnailFiles[0]
+                    : mediaFiles[0];
+              } else {
+                previewFileImage = mediaFiles[0];
               }
 
               final postData = {
@@ -247,6 +243,7 @@ class _AddPostScreenState extends State<AddPostScreen> {
                 caption: captionController.text.trim(),
                 mediaData: mediaFiles,
                 thumbnailData: thumbnailFiles,
+                previewFile: previewFileImage,
               ));
             },
           ).withPadding(

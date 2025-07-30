@@ -32,8 +32,16 @@ class _SplashScreenState extends State<SplashScreen> {
     if ((accessToken ?? '').isEmpty) {
       appRouter.go(RouterName.login.path);
     } else {
+      await setUserData();
       appRouter.go(RouterName.home.path);
     }
+  }
+
+  Future<void> setUserData() async {
+    userId = SharedPrefsHelper().getString(SharedPrefKeys.userId);
+    userFullName = SharedPrefsHelper().getString(SharedPrefKeys.userEmail);
+    userEmail = SharedPrefsHelper().getString(SharedPrefKeys.userFullName);
+    userName = SharedPrefsHelper().getString(SharedPrefKeys.userName);
   }
 
   @override
