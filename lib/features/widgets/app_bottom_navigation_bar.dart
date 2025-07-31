@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import '../../router/router_name.dart';
 import '../../utils/constants/app_assets.dart';
 import '../../utils/constants/colors.dart';
+import '../../utils/constants/constants.dart';
 
 class AppBottomNavigationBar extends StatefulWidget {
   final StatefulNavigationShell navigationShell;
@@ -49,6 +50,7 @@ class _AppBottomNavigationBarState extends State<AppBottomNavigationBar> {
 
   @override
   Widget build(BuildContext context) {
+    bottomBarContext = context;
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, result) {
@@ -75,8 +77,7 @@ class _AppBottomNavigationBarState extends State<AppBottomNavigationBar> {
                 if (widget.navigationShell.currentIndex != index) {
                   widget.navigationShell.goBranch(
                     index,
-                    initialLocation:
-                        index == widget.navigationShell.currentIndex,
+                    initialLocation: index == widget.navigationShell.currentIndex,
                   );
                 }
               },

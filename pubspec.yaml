@@ -45,6 +45,7 @@ dependencies:
   timeago: ^3.7.1
   visibility_detector: ^0.4.0+2
   pinch_zoom_release_unzoom: ^2.0.0
+  cached_network_image: ^3.4.1
 
 dev_dependencies:
   flutter_test:

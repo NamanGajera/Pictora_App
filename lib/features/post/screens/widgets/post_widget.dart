@@ -1,8 +1,10 @@
 import "package:flutter/material.dart";
 import "package:flutter_svg/flutter_svg.dart";
+import "package:pictora/features/post/screens/comment_screen.dart";
 import "package:pictora/utils/constants/app_assets.dart";
 
 import "../../../../utils/constants/colors.dart";
+import "../../../../utils/constants/constants.dart";
 import "../../../../utils/helper/date_formatter.dart";
 import "../../models/post_data.dart";
 import "post_media_display.dart";
@@ -83,17 +85,8 @@ class _PostWidgetState extends State<PostWidget> {
               child: CircleAvatar(
                 radius: 18,
                 backgroundColor: primaryColor.withValues(alpha: 0.1),
-                backgroundImage: (widget
-                                .post?.userData?.profile?.profilePicture ??
-                            '')
-                        .isNotEmpty
-                    ? NetworkImage(
-                        widget.post?.userData?.profile?.profilePicture ?? '')
-                    : null,
-                child: (widget.post?.userData?.profile?.profilePicture ?? '')
-                        .isEmpty
-                    ? const Icon(Icons.person, color: primaryColor, size: 20)
-                    : null,
+                backgroundImage: (widget.post?.userData?.profile?.profilePicture ?? '').isNotEmpty ? NetworkImage(widget.post?.userData?.profile?.profilePicture ?? '') : null,
+                child: (widget.post?.userData?.profile?.profilePicture ?? '').isEmpty ? const Icon(Icons.person, color: primaryColor, size: 20) : null,
               ),
             ),
           ),
@@ -196,12 +189,8 @@ class _PostWidgetState extends State<PostWidget> {
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 200),
               child: SvgPicture.asset(
-                (widget.post?.isLiked ?? false)
-                    ? AppAssets.heartFill
-                    : AppAssets.heart,
-                color: (widget.post?.isLiked ?? false)
-                    ? Colors.red
-                    : Colors.black87,
+                (widget.post?.isLiked ?? false) ? AppAssets.heartFill : AppAssets.heart,
+                color: (widget.post?.isLiked ?? false) ? Colors.red : Colors.black87,
                 height: 26,
                 width: 26,
               ),
@@ -209,7 +198,30 @@ class _PostWidgetState extends State<PostWidget> {
           ),
           const SizedBox(width: 16),
           GestureDetector(
-            onTap: () {},
+            onTap: () {
+              showModalBottomSheet(
+                context: bottomBarContext ?? context,
+                isScrollControlled: true,
+                backgroundColor: Colors.transparent,
+                transitionAnimationController: AnimationController(
+                  vsync: Navigator.of(context),
+                  duration: const Duration(milliseconds: 300),
+                ),
+                builder: (context) => Container(
+                  height: MediaQuery.of(context).size.height * 0.9,
+                  decoration: const BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                  ),
+                  child: ClipRRect(
+                    borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+                    child: CommentScreen(
+                      postId: "${widget.post?.id}",
+                    ),
+                  ),
+                ),
+              );
+            },
             child: SvgPicture.asset(
               AppAssets.comment,
               color: Colors.black87,
@@ -231,12 +243,8 @@ class _PostWidgetState extends State<PostWidget> {
           GestureDetector(
             onTap: () {},
             child: SvgPicture.asset(
-              (widget.post?.isSaved ?? false)
-                  ? AppAssets.saveFill
-                  : AppAssets.save,
-              color: (widget.post?.isSaved ?? false)
-                  ? primaryColor
-                  : Colors.black87,
+              (widget.post?.isSaved ?? false) ? AppAssets.saveFill : AppAssets.save,
+              color: (widget.post?.isSaved ?? false) ? primaryColor : Colors.black87,
               height: 26,
               width: 26,
             ),

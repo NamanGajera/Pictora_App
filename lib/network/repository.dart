@@ -1,4 +1,5 @@
 import 'package:pictora/features/auth/model/auth_model.dart';
+import 'package:pictora/features/post/models/post_comment_data_model.dart';
 import 'package:pictora/features/post/models/post_create_model.dart';
 import 'package:pictora/features/post/models/post_data_model.dart';
 import 'package:pictora/utils/constants/api_end_points.dart';
@@ -39,8 +40,7 @@ class Repository {
   }
 
   /// POST: CREATE POST
-  Future<PostCreateModel> createPost(
-      {dynamic fields, dynamic fileFields}) async {
+  Future<PostCreateModel> createPost({dynamic fields, dynamic fileFields}) async {
     try {
       Map<String, dynamic> json = await apiClient.multipartPostApiCall(
         baseUrl: baseUrl,
@@ -64,6 +64,20 @@ class Repository {
       );
 
       return PostDataModel.fromJson(json);
+    } on CustomException {
+      rethrow;
+    }
+  }
+
+  Future<PostCommentDataModel> getPostComment(dynamic body) async {
+    try {
+      Map<String, dynamic> json = await apiClient.postApiCall(
+        endPoint: getAllCommentApiEndPoint,
+        isAccessToken: accessToken,
+        postBody: body,
+      );
+
+      return PostCommentDataModel.fromJson(json);
     } on CustomException {
       rethrow;
     }

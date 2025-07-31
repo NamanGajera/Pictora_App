@@ -54,8 +54,7 @@ class _PostMediaDisplayState extends State<PostMediaDisplay> {
         final fileUrl = '${mediaItems?[i].mediaUrl}';
         if (VideoExtension(fileUrl).isVideoUrl) {
           final videoKey = '${widget.postId}_$i';
-          videoControllers[videoKey] =
-              VideoPlayerController.networkUrl(Uri.parse(fileUrl));
+          videoControllers[videoKey] = VideoPlayerController.networkUrl(Uri.parse(fileUrl));
           isInitialized[videoKey] = false;
           isPlaying[videoKey] = false;
           hasVideos = true;
@@ -153,17 +152,14 @@ class _PostMediaDisplayState extends State<PostMediaDisplay> {
     return VisibilityDetector(
       key: Key('video-${widget.postId}'),
       onVisibilityChanged: (info) {
-        final currentMedia =
-            mediaItems.isNotEmpty ? mediaItems[currentPage] : null;
+        final currentMedia = mediaItems.isNotEmpty ? mediaItems[currentPage] : null;
 
         if (currentMedia != null && currentMedia['type'] == 'video') {
           final videoKey = currentMedia['key'];
 
           if (info.visibleFraction > 0.9) {
-            logWarn(
-                message: 'Post ${widget.postId} is visible - playing video');
-            if (videoControllers[videoKey] != null &&
-                !videoControllers[videoKey]!.value.isPlaying) {
+            logWarn(message: 'Post ${widget.postId} is visible - playing video');
+            if (videoControllers[videoKey] != null && !videoControllers[videoKey]!.value.isPlaying) {
               videoControllers.forEach((key, controller) {
                 if (key != videoKey && controller.value.isPlaying) {
                   controller.pause();
@@ -175,11 +171,8 @@ class _PostMediaDisplayState extends State<PostMediaDisplay> {
               isPlaying[videoKey] = true;
             }
           } else {
-            logWarn(
-                message:
-                    'Post ${widget.postId} is not visible - pausing video');
-            if (videoControllers[videoKey] != null &&
-                videoControllers[videoKey]!.value.isPlaying) {
+            logWarn(message: 'Post ${widget.postId} is not visible - pausing video');
+            if (videoControllers[videoKey] != null && videoControllers[videoKey]!.value.isPlaying) {
               videoControllers[videoKey]!.pause();
               isPlaying[videoKey] = false;
             }
@@ -189,7 +182,7 @@ class _PostMediaDisplayState extends State<PostMediaDisplay> {
       child: GestureDetector(
         onDoubleTap: _handleDoubleTap,
         child: Container(
-          height: 260,
+          height: 380,
           width: double.infinity,
           decoration: BoxDecoration(
             color: Colors.transparent,
@@ -232,8 +225,7 @@ class _PostMediaDisplayState extends State<PostMediaDisplay> {
                   top: 12,
                   right: 12,
                   child: Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                     decoration: BoxDecoration(
                       color: Colors.black.withValues(alpha: 0.6),
                       borderRadius: BorderRadius.circular(12),
@@ -265,9 +257,7 @@ class _PostMediaDisplayState extends State<PostMediaDisplay> {
                         height: currentPage == index ? 8 : 6,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          color: currentPage == index
-                              ? Colors.white
-                              : Colors.white.withValues(alpha: 0.6),
+                          color: currentPage == index ? Colors.white : Colors.white.withValues(alpha: 0.6),
                         ),
                       ),
                     ),
@@ -278,8 +268,7 @@ class _PostMediaDisplayState extends State<PostMediaDisplay> {
               Positioned.fill(
                 child: Center(
                   child: ValueListenableBuilder(
-                    valueListenable: isLikedNotifierAnimation[widget.postId] ??
-                        ValueNotifier(false),
+                    valueListenable: isLikedNotifierAnimation[widget.postId] ?? ValueNotifier(false),
                     builder: (BuildContext context, bool value, Widget? child) {
                       return Opacity(
                         opacity: value ? 1 : 0,
@@ -287,10 +276,8 @@ class _PostMediaDisplayState extends State<PostMediaDisplay> {
                           isAnimating: value,
                           duration: const Duration(milliseconds: 400),
                           onEnd: () {
-                            if (isLikedNotifierAnimation
-                                .containsKey(widget.postId)) {
-                              isLikedNotifierAnimation[widget.postId]!.value =
-                                  false;
+                            if (isLikedNotifierAnimation.containsKey(widget.postId)) {
+                              isLikedNotifierAnimation[widget.postId]!.value = false;
                             }
                           },
                           child: const Icon(
@@ -330,8 +317,7 @@ class MediaPageItem extends StatefulWidget {
   State<MediaPageItem> createState() => _MediaPageItemState();
 }
 
-class _MediaPageItemState extends State<MediaPageItem>
-    with AutomaticKeepAliveClientMixin {
+class _MediaPageItemState extends State<MediaPageItem> with AutomaticKeepAliveClientMixin {
   @override
   bool get wantKeepAlive => true;
 
@@ -432,19 +418,7 @@ class _CustomVideoPlayerState extends State<CustomVideoPlayer> {
 }
 
 extension VideoExtension on String {
-  static final List<String> _videoExtensions = [
-    '.mp4',
-    '.mov',
-    '.avi',
-    '.mkv',
-    '.flv',
-    '.wmv',
-    '.webm',
-    '.3gp',
-    '.mpeg',
-    '.mpg',
-    '.m4v'
-  ];
+  static final List<String> _videoExtensions = ['.mp4', '.mov', '.avi', '.mkv', '.flv', '.wmv', '.webm', '.3gp', '.mpeg', '.mpg', '.m4v'];
 
   bool get isVideoUrl {
     final path = toLowerCase(); // Normalize to lowercase

@@ -11,6 +11,7 @@ import 'package:bloc_concurrency/bloc_concurrency.dart';
 import '../../../utils/helper/helper_function.dart';
 import '../../../utils/helper/theme_helper.dart';
 import '../../home/screens/home_screen.dart';
+import '../models/post_comment_data_model.dart';
 import '../models/post_data.dart';
 
 part 'post_event.dart';
@@ -21,14 +22,13 @@ class PostBloc extends Bloc<PostEvent, PostState> {
   PostBloc(this.repository) : super(PostState()) {
     on<CreatePostEvent>(_createPost, transformer: droppable());
     on<GetAllPostEvent>(_getAllPost);
+    on<GetPostCommentDataEvent>(_getPostComment, transformer: droppable());
   }
 
-  Future<void> _createPost(
-      CreatePostEvent event, Emitter<PostState> emit) async {
+  Future<void> _createPost(CreatePostEvent event, Emitter<PostState> emit) async {
     try {
       emit(state.copyWith(createPostApiStatus: ApiStatus.loading));
-      appRouter.go(RouterName.home.path,
-          extra: HomeScreenDataModel(fileImage: event.previewFile));
+      appRouter.go(RouterName.home.path, extra: HomeScreenDataModel(fileImage: event.previewFile));
 
       Map<String, dynamic> fields = {
         "caption": event.caption,
@@ -43,8 +43,7 @@ class PostBloc extends Bloc<PostEvent, PostState> {
 
       logDebug(message: "Data-->>, $fileFields $fields");
 
-      final data =
-          await repository.createPost(fields: fields, fileFields: fileFields);
+      final data = await repository.createPost(fields: fields, fileFields: fileFields);
 
       logDebug(message: data.toString());
       emit(state.copyWith(createPostApiStatus: ApiStatus.success));
@@ -63,8 +62,7 @@ class PostBloc extends Bloc<PostEvent, PostState> {
     }
   }
 
-  Future<void> _getAllPost(
-      GetAllPostEvent event, Emitter<PostState> emit) async {
+  Future<void> _getAllPost(GetAllPostEvent event, Emitter<PostState> emit) async {
     try {
       emit(state.copyWith(getAllPostApiStatus: ApiStatus.loading));
       final data = await repository.getAllPost(event.body);
@@ -75,6 +73,30 @@ class PostBloc extends Bloc<PostEvent, PostState> {
       ));
     } catch (error, stackTrace) {
       emit(state.copyWith(getAllPostApiStatus: ApiStatus.failure));
+      ThemeHelper.showToastMessage("$error");
+      handleError(
+        error: error,
+        stackTrace: stackTrace,
+        emit: emit,
+        stateCopyWith: (statusCode, errorMessage) => state.copyWith(
+          statusCode: statusCode,
+          errorMessage: errorMessage,
+        ),
+      );
+    }
+  }
+
+  Future<void> _getPostComment(GetPostCommentDataEvent event, Emitter<PostState> emit) async {
+    try {
+      emit(state.copyWith(getPostCommentListApiStatus: ApiStatus.loading));
+      final data = await repository.getPostComment({"postId": event.postId});
+
+      emit(state.copyWith(
+        getPostCommentListApiStatus: ApiStatus.success,
+        commentDataList: data.data,
+      ));
+    } catch (error, stackTrace) {
+      emit(state.copyWith(getPostCommentListApiStatus: ApiStatus.failure));
       ThemeHelper.showToastMessage("$error");
       handleError(
         error: error,

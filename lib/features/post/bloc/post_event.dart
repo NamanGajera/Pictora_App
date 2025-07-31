@@ -20,3 +20,8 @@ class GetAllPostEvent extends PostEvent {
   final Map<String, dynamic> body;
   GetAllPostEvent({required this.body});
 }
+
+class GetPostCommentDataEvent extends PostEvent {
+  final String postId;
+  GetPostCommentDataEvent({required this.postId});
+}

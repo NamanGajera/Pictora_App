@@ -4,6 +4,7 @@ class AppAssets {
 
   /// Images
   static const String appLogo = '${imageFolderPath}app_logo.png';
+  static const String profilePng = '${imageFolderPath}profile.png';
 
   /// Svgs
   static const String home = '${svgFolderPath}home.svg';
