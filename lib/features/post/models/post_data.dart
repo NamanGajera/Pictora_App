@@ -1,3 +1,5 @@
+import '../../../model/user_model.dart';
+
 class PostData {
   String? id;
   String? userId;
@@ -12,7 +14,7 @@ class PostData {
   bool? isLiked;
   bool? isSaved;
   List<MediaData>? mediaData;
-  UserData? userData;
+  User? userData;
   PostData({
     this.id,
     this.userId,
@@ -49,9 +51,7 @@ class PostData {
         mediaData!.add(new MediaData.fromJson(v));
       });
     }
-    userData = json['userData'] != null
-        ? new UserData.fromJson(json['userData'])
-        : null;
+    userData = json['userData'] != null ? new User.fromJson(json['userData']) : null;
   }
 
   Map<String, dynamic> toJson() {
@@ -76,6 +76,40 @@ class PostData {
     }
     return data;
   }
+
+  PostData copyWith({
+    String? id,
+    String? userId,
+    String? caption,
+    int? likeCount,
+    int? commentCount,
+    int? shareCount,
+    int? saveCount,
+    int? viewCount,
+    String? createdAt,
+    String? updatedAt,
+    bool? isLiked,
+    bool? isSaved,
+    List<MediaData>? mediaData,
+    User? userData,
+  }) {
+    return PostData(
+      id: id ?? this.id,
+      userId: userId ?? this.userId,
+      caption: caption ?? this.caption,
+      likeCount: likeCount ?? this.likeCount,
+      commentCount: commentCount ?? this.commentCount,
+      shareCount: shareCount ?? this.shareCount,
+      saveCount: saveCount ?? this.saveCount,
+      viewCount: viewCount ?? this.viewCount,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      isLiked: isLiked ?? this.isLiked,
+      isSaved: isSaved ?? this.isSaved,
+      mediaData: mediaData ?? this.mediaData,
+      userData: userData ?? this.userData,
+    );
+  }
 }
 
 class MediaData {
@@ -87,14 +121,7 @@ class MediaData {
   String? createdAt;
   String? updatedAt;
 
-  MediaData(
-      {this.id,
-      this.postId,
-      this.mediaUrl,
-      this.thumbnail,
-      this.mediaType,
-      this.createdAt,
-      this.updatedAt});
+  MediaData({this.id, this.postId, this.mediaUrl, this.thumbnail, this.mediaType, this.createdAt, this.updatedAt});
 
   MediaData.fromJson(Map<String, dynamic> json) {
     id = json['id'];
@@ -115,53 +142,6 @@ class MediaData {
     data['mediaType'] = this.mediaType;
     data['createdAt'] = this.createdAt;
     data['updatedAt'] = this.updatedAt;
-    return data;
-  }
-}
-
-class UserData {
-  String? id;
-  String? fullName;
-  String? userName;
-  String? email;
-  Profile? profile;
-
-  UserData({this.id, this.fullName, this.userName, this.email, this.profile});
-
-  UserData.fromJson(Map<String, dynamic> json) {
-    id = json['id'];
-    fullName = json['fullName'];
-    userName = json['userName'];
-    email = json['email'];
-    profile =
-        json['profile'] != null ? new Profile.fromJson(json['profile']) : null;
-  }
-
-  Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['id'] = this.id;
-    data['fullName'] = this.fullName;
-    data['userName'] = this.userName;
-    data['email'] = this.email;
-    if (this.profile != null) {
-      data['profile'] = this.profile!.toJson();
-    }
-    return data;
-  }
-}
-
-class Profile {
-  dynamic profilePicture;
-
-  Profile({this.profilePicture});
-
-  Profile.fromJson(Map<String, dynamic> json) {
-    profilePicture = json['profilePicture'];
-  }
-
-  Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['profilePicture'] = this.profilePicture;
     return data;
   }
 }

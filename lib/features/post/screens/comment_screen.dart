@@ -1,4 +1,5 @@
 import 'dart:ui';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -51,26 +52,13 @@ class _CommentScreenState extends State<CommentScreen> {
   Future<void> _postComment() async {
     if (_commentController.text.trim().isEmpty) return;
 
-    if (selectedCommentId.value != null) {
-      // communityBloc.add(
-      //   AddCommentReplyEvent(
-      //     postId: widget.postId,
-      //     comment: _commentController.text.trim(),
-      //     userName: userName ?? '',
-      //     profilePic: userProfilePic ?? '',
-      //     commentId: selectedCommentId.value ?? '',
-      //   ),
-      // );
-    } else {
-      // communityBloc.add(
-      //   AddCommentEvent(
-      //     postId: widget.postId,
-      //     comment: _commentController.text.trim(),
-      //     userName: userName ?? '',
-      //     profilePic: userProfilePic ?? '',
-      //   ),
-      // );
-    }
+    postBloc.add(CreateCommentEvent(
+      comment: _commentController.text.trim(),
+      postId: widget.postId,
+      userId: userId,
+      commentParentId: selectedCommentId.value,
+    ));
+
     selectedCommentId.value = null;
     _commentController.clear();
   }
@@ -154,9 +142,29 @@ class _CommentScreenState extends State<CommentScreen> {
       child: SafeArea(
         child: Row(
           children: [
-            const CircleAvatar(
-              radius: 20,
-              backgroundImage: AssetImage(AppAssets.profilePng),
+            ClipOval(
+              child: CachedNetworkImage(
+                height: 38,
+                width: 38,
+                imageUrl: userProfilePic ?? '',
+                fit: BoxFit.cover,
+                errorWidget: (context, url, error) {
+                  return Image.asset(
+                    AppAssets.profilePng,
+                    height: 38,
+                    width: 38,
+                    fit: BoxFit.cover,
+                  );
+                },
+                placeholder: (context, url) {
+                  return Image.asset(
+                    AppAssets.profilePng,
+                    height: 38,
+                    width: 38,
+                    fit: BoxFit.cover,
+                  );
+                },
+              ),
             ),
             const SizedBox(width: 8),
             Expanded(
@@ -195,7 +203,7 @@ class _CommentScreenState extends State<CommentScreen> {
                 padding: const EdgeInsets.only(left: 11, right: 8, top: 11, bottom: 11),
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: _commentController.text.trim().isEmpty ? primaryColor.withOpacity(0.8) : Theme.of(context).primaryColor,
+                  color: _commentController.text.trim().isEmpty ? primaryColor.withOpacity(0.6) : Theme.of(context).primaryColor,
                 ),
                 alignment: Alignment.center,
                 child: const Icon(
@@ -405,59 +413,62 @@ class _CommentItemState extends State<CommentItem> {
                   backgroundColor: Colors.grey.shade200, // Optional background color
                   child: ClipOval(
                     child: CachedNetworkImage(
-                      // imageUrl: widget.comment?.user?.profilePic ?? '',
-                      imageUrl: '',
+                      imageUrl: widget.comment?.user?.profile?.profilePicture ?? '',
                       width: 36,
                       height: 36,
                       fit: BoxFit.cover,
-                      placeholder: (context, url) => Image.asset(
-                        AppAssets.profile,
-                        fit: BoxFit.cover,
-                        width: 36,
-                        height: 36,
+                      errorWidget: (context, url, error) {
+                        return Image.asset(
+                          AppAssets.profilePng,
+                          height: 38,
+                          width: 38,
+                          fit: BoxFit.cover,
+                        );
+                      },
+                      placeholder: (context, url) {
+                        return Image.asset(
+                          AppAssets.profilePng,
+                          height: 38,
+                          width: 38,
+                          fit: BoxFit.cover,
+                        );
+                      },
+                    ),
+                  ),
+                ),
+                if (widget.comment?.apiStatus == PostCommentApiStatus.posting)
+                  Positioned(
+                    right: 0,
+                    bottom: 0,
+                    child: Container(
+                      width: 12,
+                      height: 12,
+                      decoration: BoxDecoration(
+                        color: Colors.amber,
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Theme.of(context).scaffoldBackgroundColor, width: 1.5),
                       ),
-                      errorWidget: (context, url, error) => Image.asset(
-                        AppAssets.profile,
-                        fit: BoxFit.cover,
-                        width: 36,
-                        height: 36,
+                    ),
+                  ),
+                if (widget.comment?.apiStatus == PostCommentApiStatus.failure)
+                  Positioned(
+                    right: -2,
+                    bottom: -2,
+                    child: Container(
+                      width: 16,
+                      height: 16,
+                      decoration: BoxDecoration(
+                        color: Colors.red,
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Theme.of(context).scaffoldBackgroundColor, width: 1.5),
+                      ),
+                      child: const Icon(
+                        Icons.error_outline,
+                        color: Colors.white,
+                        size: 10,
                       ),
                     ),
                   ),
-                ),
-                // if (widget.comment?.postCommentApiStatus == PostCommentApiStatus.posting)
-                Positioned(
-                  right: 0,
-                  bottom: 0,
-                  child: Container(
-                    width: 12,
-                    height: 12,
-                    decoration: BoxDecoration(
-                      color: Colors.amber,
-                      shape: BoxShape.circle,
-                      border: Border.all(color: Theme.of(context).scaffoldBackgroundColor, width: 1.5),
-                    ),
-                  ),
-                ),
-                // if (widget.comment?.postCommentApiStatus == PostCommentApiStatus.failure)
-                Positioned(
-                  right: -2,
-                  bottom: -2,
-                  child: Container(
-                    width: 16,
-                    height: 16,
-                    decoration: BoxDecoration(
-                      color: Colors.red,
-                      shape: BoxShape.circle,
-                      border: Border.all(color: Theme.of(context).scaffoldBackgroundColor, width: 1.5),
-                    ),
-                    child: const Icon(
-                      Icons.error_outline,
-                      color: Colors.white,
-                      size: 10,
-                    ),
-                  ),
-                ),
               ],
             ),
             const SizedBox(width: 12),
@@ -471,38 +482,38 @@ class _CommentItemState extends State<CommentItem> {
                       Row(
                         children: [
                           Text(
-                            widget.comment?.user?.username ?? '',
+                            widget.comment?.user?.userName ?? '',
                             style: const TextStyle(
                               fontWeight: FontWeight.bold,
                               fontSize: 14,
                             ),
                           ),
                           const SizedBox(width: 8),
-                          // if (widget.comment?.postCommentApiStatus == PostCommentApiStatus.posting) ...[
-                          const CustomText(
-                            'Posting...',
-                            fontSize: 12,
-                            color: Color(0xFF8B8B8B),
-                            fontStyle: FontStyle.italic,
-                          ),
-                          // ],
-                          // if (widget.comment?.postCommentApiStatus == PostCommentApiStatus.deleting) ...[
-                          const CustomText(
-                            'Deleting...',
-                            fontSize: 12,
-                            color: Color(0xFF8B8B8B),
-                            fontStyle: FontStyle.italic,
-                          ),
-                          // ],
-                          // if (!([PostCommentApiStatus.posting, PostCommentApiStatus.failure, PostCommentApiStatus.deleting].contains(widget.comment?.postCommentApiStatus))) ...[
-                          Text(
-                            DateFormatter.getRelativeTime(widget.comment?.createdAt),
-                            style: TextStyle(
-                              color: Colors.grey.shade600,
+                          if (widget.comment?.apiStatus == PostCommentApiStatus.posting) ...[
+                            const CustomText(
+                              'Posting...',
                               fontSize: 12,
+                              color: Color(0xFF8B8B8B),
+                              fontStyle: FontStyle.italic,
                             ),
-                          ),
-                          // ],
+                          ],
+                          if (widget.comment?.apiStatus == PostCommentApiStatus.deleting) ...[
+                            const CustomText(
+                              'Deleting...',
+                              fontSize: 12,
+                              color: Color(0xFF8B8B8B),
+                              fontStyle: FontStyle.italic,
+                            ),
+                          ],
+                          if (!([PostCommentApiStatus.posting, PostCommentApiStatus.failure, PostCommentApiStatus.deleting].contains(widget.comment?.apiStatus))) ...[
+                            Text(
+                              DateFormatter.getRelativeTime(widget.comment?.createdAt),
+                              style: TextStyle(
+                                color: Colors.grey.shade600,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ],
                         ],
                       ),
                       if (widget.comment?.userId == userId) const SizedBox(height: 4),
@@ -510,40 +521,40 @@ class _CommentItemState extends State<CommentItem> {
                         widget.comment?.comment ?? '',
                         style: const TextStyle(fontSize: 14),
                       ),
-                      // if (widget.comment?.postCommentApiStatus == PostCommentApiStatus.failure) ...[
-                      const SizedBox(height: 3),
-                      Row(
-                        children: [
-                          Text(
-                            'Failed to post. ',
-                            style: TextStyle(
-                              color: Colors.red.shade400,
-                              fontSize: 12,
-                            ),
-                          ),
-                          GestureDetector(
-                            onTap: () {
-                              // communityBloc.add(
-                              //   AddCommentEvent(
-                              //     postId: widget.postId,
-                              //     comment: widget.comment?.commentText ?? '',
-                              //     userName: userName ?? '',
-                              //     profilePic: userProfilePic ?? '',
-                              //   ),
-                              // );
-                            },
-                            child: Text(
-                              'Retry',
+                      if (widget.comment?.apiStatus == PostCommentApiStatus.failure) ...[
+                        const SizedBox(height: 3),
+                        Row(
+                          children: [
+                            Text(
+                              'Failed to post. ',
                               style: TextStyle(
-                                color: Theme.of(context).primaryColor,
-                                fontWeight: FontWeight.bold,
+                                color: Colors.red.shade400,
                                 fontSize: 12,
                               ),
                             ),
-                          ),
-                        ],
-                      ),
-                      // ],
+                            GestureDetector(
+                              onTap: () {
+                                // communityBloc.add(
+                                //   AddCommentEvent(
+                                //     postId: widget.postId,
+                                //     comment: widget.comment?.commentText ?? '',
+                                //     userName: userName ?? '',
+                                //     profilePic: userProfilePic ?? '',
+                                //   ),
+                                // );
+                              },
+                              child: Text(
+                                'Retry',
+                                style: TextStyle(
+                                  color: Theme.of(context).primaryColor,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
                       SizedBox(
                         height: 2,
                       ),
@@ -628,7 +639,6 @@ class _CommentItemState extends State<CommentItem> {
                       //             );
                       //     },
                       //   )
-                      // ],
                     ],
                   ),
                   if (widget.comment?.id != null)
@@ -1103,7 +1113,7 @@ class HighlightedComment extends StatelessWidget {
                   children: [
                     Text(
                       // comment?.user?.name ?? childComment?.user?.name ?? '',
-                      comment?.user?.username ?? '',
+                      comment?.user?.userName ?? '',
                       style: const TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 14,

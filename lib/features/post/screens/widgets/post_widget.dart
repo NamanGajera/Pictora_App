@@ -2,6 +2,7 @@ import "package:flutter/material.dart";
 import "package:flutter_svg/flutter_svg.dart";
 import "package:pictora/features/post/screens/comment_screen.dart";
 import "package:pictora/utils/constants/app_assets.dart";
+import "package:pictora/utils/widgets/custom_widget.dart";
 
 import "../../../../utils/constants/colors.dart";
 import "../../../../utils/constants/constants.dart";
@@ -222,14 +223,26 @@ class _PostWidgetState extends State<PostWidget> {
                 ),
               );
             },
-            child: SvgPicture.asset(
-              AppAssets.comment,
-              color: Colors.black87,
-              height: 26,
-              width: 26,
+            child: Row(
+              children: [
+                SvgPicture.asset(
+                  AppAssets.comment,
+                  color: Colors.black87,
+                  height: 26,
+                  width: 26,
+                ),
+                SizedBox(width: widget.post?.commentCount != 0 ? 8 : 5),
+                if (widget.post?.commentCount != 0)
+                  CustomText(
+                    _formatNumber(widget.post?.commentCount ?? 0),
+                    fontWeight: FontWeight.w600,
+                    fontSize: 14,
+                    color: Colors.black87,
+                  ),
+              ],
             ),
           ),
-          const SizedBox(width: 16),
+          const SizedBox(width: 6),
           GestureDetector(
             onTap: () {},
             child: SvgPicture.asset(
@@ -257,13 +270,11 @@ class _PostWidgetState extends State<PostWidget> {
   Widget _buildLikesSection() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Text(
+      child: CustomText(
         '${_formatNumber(widget.post?.likeCount ?? 0)} likes',
-        style: const TextStyle(
-          fontWeight: FontWeight.w600,
-          fontSize: 14,
-          color: Colors.black87,
-        ),
+        fontWeight: FontWeight.w600,
+        fontSize: 14,
+        color: Colors.black87,
       ),
     );
   }

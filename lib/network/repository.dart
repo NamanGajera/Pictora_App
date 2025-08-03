@@ -82,4 +82,32 @@ class Repository {
       rethrow;
     }
   }
+
+  Future<CommentData> createComment(dynamic body) async {
+    try {
+      Map<String, dynamic> json = await apiClient.postApiCall(
+        endPoint: createCommentApiEndPoint,
+        isAccessToken: accessToken,
+        postBody: body,
+      );
+
+      return CommentData.fromJson(json);
+    } on CustomException {
+      rethrow;
+    }
+  }
+
+  Future<PostCommentDataModel> getCommentReplies(dynamic body) async {
+    try {
+      Map<String, dynamic> json = await apiClient.postApiCall(
+        endPoint: getCommentRepliesApiEndPoint,
+        isAccessToken: accessToken,
+        postBody: body,
+      );
+
+      return PostCommentDataModel.fromJson(json);
+    } on CustomException {
+      rethrow;
+    }
+  }
 }

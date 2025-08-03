@@ -1,10 +1,10 @@
 import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pictora/features/post/bloc/post_bloc.dart';
 import 'package:pictora/utils/extensions/widget_extension.dart';
 import 'package:pinch_zoom_release_unzoom/pinch_zoom_release_unzoom.dart';
-
 import 'package:video_player/video_player.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 
@@ -360,14 +360,10 @@ class _MediaPageItemState extends State<MediaPageItem> with AutomaticKeepAliveCl
 
     // Wrap individual media item with zoom
     return PinchZoomReleaseUnzoomWidget(
-      twoFingersOn: () {
-        // communityBloc.add(BlocScrollEvent(blockScroll: true));
-      },
+      twoFingersOn: () {},
       twoFingersOff: () => Future.delayed(
         PinchZoomReleaseUnzoomWidget.defaultResetDuration,
-        () {
-          // communityBloc.add(BlocScrollEvent(blockScroll: false));
-        },
+        () {},
       ),
       fingersRequiredToPinch: 2,
       log: true,

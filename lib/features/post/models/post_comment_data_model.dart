@@ -1,3 +1,6 @@
+import '../../../model/user_model.dart';
+import '../../../utils/constants/enums.dart';
+
 class PostCommentDataModel {
   int? statusCode;
   String? message;
@@ -43,8 +46,25 @@ class CommentData {
   int? repliesCount;
   User? user;
   bool? isLiked;
+  PostCommentApiStatus? apiStatus;
+  List<CommentData>? repliesData;
 
-  CommentData({this.id, this.postId, this.userId, this.comment, this.parentCommentId, this.likeCount, this.isPinned, this.createdAt, this.updatedAt, this.repliesCount, this.user, this.isLiked});
+  CommentData({
+    this.id,
+    this.postId,
+    this.userId,
+    this.comment,
+    this.parentCommentId,
+    this.likeCount,
+    this.isPinned,
+    this.createdAt,
+    this.updatedAt,
+    this.repliesCount,
+    this.user,
+    this.isLiked,
+    this.apiStatus = PostCommentApiStatus.success,
+    this.repliesData,
+  });
 
   CommentData.fromJson(Map<String, dynamic> json) {
     id = json['id'];
@@ -79,50 +99,38 @@ class CommentData {
     data['isLiked'] = this.isLiked;
     return data;
   }
-}
 
-class User {
-  String? id;
-  String? username;
-  Profile? profile;
-
-  User({this.id, this.username, this.profile});
-
-  User.fromJson(Map<String, dynamic> json) {
-    id = json['id'];
-    username = json['username'];
-    profile = json['profile'] != null ? new Profile.fromJson(json['profile']) : null;
-  }
-
-  Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['id'] = this.id;
-    data['username'] = this.username;
-    if (this.profile != null) {
-      data['profile'] = this.profile!.toJson();
-    }
-    return data;
-  }
-}
-
-class Profile {
-  String? id;
-  String? userId;
-  dynamic profilePicture;
-
-  Profile({this.id, this.userId, this.profilePicture});
-
-  Profile.fromJson(Map<String, dynamic> json) {
-    id = json['id'];
-    userId = json['userId'];
-    profilePicture = json['profilePicture'];
-  }
-
-  Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['id'] = this.id;
-    data['userId'] = this.userId;
-    data['profilePicture'] = this.profilePicture;
-    return data;
+  CommentData copyWith({
+    String? id,
+    String? postId,
+    String? userId,
+    String? comment,
+    dynamic? parentCommentId,
+    int? likeCount,
+    bool? isPinned,
+    String? createdAt,
+    String? updatedAt,
+    int? repliesCount,
+    User? user,
+    bool? isLiked,
+    PostCommentApiStatus? apiStatus,
+    List<CommentData>? repliesData,
+  }) {
+    return CommentData(
+      id: id ?? this.id,
+      postId: postId ?? this.postId,
+      userId: userId ?? this.userId,
+      comment: comment ?? this.comment,
+      parentCommentId: parentCommentId ?? this.parentCommentId,
+      likeCount: likeCount ?? this.likeCount,
+      isPinned: isPinned ?? this.isPinned,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      repliesCount: repliesCount ?? this.repliesCount,
+      user: user ?? this.user,
+      isLiked: isLiked ?? this.isLiked,
+      apiStatus: apiStatus ?? this.apiStatus,
+      repliesData: repliesData ?? this.repliesData,
+    );
   }
 }

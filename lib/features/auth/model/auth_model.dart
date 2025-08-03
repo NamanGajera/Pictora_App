@@ -51,15 +51,18 @@ class User {
   String? password;
   String? createdAt;
   String? updatedAt;
+  Profile? profile;
 
-  User(
-      {this.id,
-      this.fullName,
-      this.userName,
-      this.email,
-      this.password,
-      this.createdAt,
-      this.updatedAt});
+  User({
+    this.id,
+    this.fullName,
+    this.userName,
+    this.email,
+    this.password,
+    this.createdAt,
+    this.updatedAt,
+    this.profile,
+  });
 
   User.fromJson(Map<String, dynamic> json) {
     id = json['id'];
@@ -69,6 +72,8 @@ class User {
     password = json['password'];
     createdAt = json['createdAt'];
     updatedAt = json['updatedAt'];
+    profile =
+        json['profile'] != null ? new Profile.fromJson(json['profile']) : null;
   }
 
   Map<String, dynamic> toJson() {
@@ -80,6 +85,31 @@ class User {
     data['password'] = this.password;
     data['createdAt'] = this.createdAt;
     data['updatedAt'] = this.updatedAt;
+    if (this.profile != null) {
+      data['profile'] = this.profile!.toJson();
+    }
+    return data;
+  }
+}
+
+class Profile {
+  String? profilePicture;
+  String? gender;
+  bool? isPrivate;
+
+  Profile({this.profilePicture, this.gender, this.isPrivate});
+
+  Profile.fromJson(Map<String, dynamic> json) {
+    profilePicture = json['profilePicture'];
+    gender = json['gender'];
+    isPrivate = json['isPrivate'];
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = new Map<String, dynamic>();
+    data['profilePicture'] = this.profilePicture;
+    data['gender'] = this.gender;
+    data['isPrivate'] = this.isPrivate;
     return data;
   }
 }

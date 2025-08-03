@@ -15,3 +15,7 @@ String postCreateApiEndPoint = "/post/create";
 String getAllPostApiEndPoint = "/post";
 
 String getAllCommentApiEndPoint = "/comment";
+
+String createCommentApiEndPoint = "/comment/create";
+
+String getCommentRepliesApiEndPoint = "/comment/replies";

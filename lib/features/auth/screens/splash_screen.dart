@@ -42,6 +42,8 @@ class _SplashScreenState extends State<SplashScreen> {
     userFullName = SharedPrefsHelper().getString(SharedPrefKeys.userEmail);
     userEmail = SharedPrefsHelper().getString(SharedPrefKeys.userFullName);
     userName = SharedPrefsHelper().getString(SharedPrefKeys.userName);
+    userProfilePic =
+        SharedPrefsHelper().getString(SharedPrefKeys.userProfilePic);
   }
 
   @override
