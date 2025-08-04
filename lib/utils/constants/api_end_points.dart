@@ -19,3 +19,5 @@ String getAllCommentApiEndPoint = "/comment";
 String createCommentApiEndPoint = "/comment/create";
 
 String getCommentRepliesApiEndPoint = "/comment/replies";
+
+String commentToggleLikeApiEndPoint = '/comment/like';

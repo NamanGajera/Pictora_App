@@ -5,6 +5,7 @@ class PostState extends Equatable {
   final ApiStatus getAllPostApiStatus;
   final ApiStatus getPostCommentListApiStatus;
   final ApiStatus getRepliesApiStatus;
+  final Map<String, bool>? showReplies;
   final List<PostData>? allPostData;
   final List<CommentData>? commentDataList;
   final int? statusCode;
@@ -15,6 +16,7 @@ class PostState extends Equatable {
     this.getAllPostApiStatus = ApiStatus.initial,
     this.getPostCommentListApiStatus = ApiStatus.initial,
     this.getRepliesApiStatus = ApiStatus.initial,
+    this.showReplies,
     this.commentDataList,
     this.allPostData,
     this.errorMessage,
@@ -27,6 +29,7 @@ class PostState extends Equatable {
     ApiStatus? getPostCommentListApiStatus,
     ApiStatus? getRepliesApiStatus,
     List<PostData>? allPostData,
+    Map<String, bool>? showReplies,
     List<CommentData>? commentDataList,
     int? statusCode,
     String? errorMessage,
@@ -34,8 +37,10 @@ class PostState extends Equatable {
     return PostState(
       createPostApiStatus: createPostApiStatus ?? this.createPostApiStatus,
       getAllPostApiStatus: getAllPostApiStatus ?? this.getAllPostApiStatus,
-      getPostCommentListApiStatus: getPostCommentListApiStatus ?? this.getPostCommentListApiStatus,
+      getPostCommentListApiStatus:
+          getPostCommentListApiStatus ?? this.getPostCommentListApiStatus,
       getRepliesApiStatus: getRepliesApiStatus ?? this.getRepliesApiStatus,
+      showReplies: showReplies ?? this.showReplies,
       allPostData: allPostData ?? this.allPostData,
       commentDataList: commentDataList ?? this.commentDataList,
       errorMessage: errorMessage,
@@ -50,6 +55,7 @@ class PostState extends Equatable {
         getPostCommentListApiStatus,
         getRepliesApiStatus,
         allPostData,
+        showReplies,
         commentDataList,
         errorMessage,
         statusCode,

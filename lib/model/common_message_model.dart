@@ -1,13 +1,13 @@
-class AuthModel {
+class CommonMessageModel {
   int? statusCode;
   String? message;
 
-  AuthModel({
+  CommonMessageModel({
     this.statusCode,
     this.message,
   });
 
-  AuthModel.fromJson(Map<String, dynamic> json) {
+  CommonMessageModel.fromJson(Map<String, dynamic> json) {
     statusCode = json['statusCode'];
     message = json['message'];
   }
