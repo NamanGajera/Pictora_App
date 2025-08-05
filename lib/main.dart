@@ -14,7 +14,7 @@ import 'package:timeago/timeago.dart' as timeago;
 
 void main() async {
   AppEnvManager.currentEnv = AppEnv.local;
-  AppEnvManager.setLocalBaseUrl("http://192.168.1.34:5000");
+  AppEnvManager.setLocalBaseUrl("http://192.168.1.150:5000");
 
   WidgetsFlutterBinding.ensureInitialized();
   await SharedPrefsHelper.init();
@@ -57,8 +57,7 @@ class MyApp extends StatelessWidget {
               surfaceTintColor: Colors.white,
               iconTheme: IconThemeData(color: Colors.white),
             ),
-            progressIndicatorTheme:
-                ProgressIndicatorThemeData(color: primaryColor),
+            progressIndicatorTheme: ProgressIndicatorThemeData(color: primaryColor),
           ),
           builder: (context, child) {
             return SafeArea(child: child ?? Container());

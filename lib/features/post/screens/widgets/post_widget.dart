@@ -86,8 +86,11 @@ class _PostWidgetState extends State<PostWidget> {
               child: CircleAvatar(
                 radius: 18,
                 backgroundColor: primaryColor.withValues(alpha: 0.1),
-                backgroundImage: (widget.post?.userData?.profile?.profilePicture ?? '').isNotEmpty ? NetworkImage(widget.post?.userData?.profile?.profilePicture ?? '') : null,
-                child: (widget.post?.userData?.profile?.profilePicture ?? '').isEmpty ? const Icon(Icons.person, color: primaryColor, size: 20) : null,
+                backgroundImage: (widget.post?.userData?.profile?.profilePicture ?? '').isNotEmpty
+                    ? NetworkImage(widget.post?.userData?.profile?.profilePicture ?? '')
+                    : null,
+                child:
+                    (widget.post?.userData?.profile?.profilePicture ?? '').isEmpty ? const Icon(Icons.person, color: primaryColor, size: 20) : null,
               ),
             ),
           ),
@@ -218,6 +221,7 @@ class _PostWidgetState extends State<PostWidget> {
                     borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
                     child: CommentScreen(
                       postId: "${widget.post?.id}",
+                      postUserId: widget.post?.userId ?? '',
                     ),
                   ),
                 ),

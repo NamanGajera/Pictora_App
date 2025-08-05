@@ -30,8 +30,7 @@ class GetCommentRepliesEvent extends PostEvent {
   final String commentId;
   final int skip;
   final int take;
-  GetCommentRepliesEvent(
-      {required this.commentId, this.skip = 0, this.take = 10});
+  GetCommentRepliesEvent({required this.commentId, this.skip = 0, this.take = 10});
 }
 
 class CreateCommentEvent extends PostEvent {
@@ -49,11 +48,22 @@ class CreateCommentEvent extends PostEvent {
 
 class ClearRepliesData extends PostEvent {}
 
-class ToggleCommentLike extends PostEvent {
+class ToggleCommentLikeEvent extends PostEvent {
   final String commentId;
   final bool isLike;
-  ToggleCommentLike({
+  ToggleCommentLikeEvent({
     required this.commentId,
     required this.isLike,
   });
+}
+
+class DeleteCommentEvent extends PostEvent {
+  final String commentId;
+  final String postId;
+  DeleteCommentEvent({required this.commentId, required this.postId});
+}
+
+class PinCommentEvent extends PostEvent {
+  final String commentId;
+  PinCommentEvent({required this.commentId});
 }

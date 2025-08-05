@@ -1,5 +1,5 @@
 import 'dart:io';
-
+import 'dart:math' as math;
 import 'package:bloc_concurrency/bloc_concurrency.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -33,15 +33,15 @@ class PostBloc extends Bloc<PostEvent, PostState> {
     on<CreateCommentEvent>(_createComment, transformer: droppable());
     on<GetCommentRepliesEvent>(_getReplies, transformer: droppable());
     on<ClearRepliesData>(_clearRepliesData, transformer: droppable());
-    on<ToggleCommentLike>(_toggleCommentLike);
+    on<ToggleCommentLikeEvent>(_toggleCommentLike, transformer: sequential());
+    on<DeleteCommentEvent>(_deleteComment, transformer: droppable());
+    on<PinCommentEvent>(_pinComment, transformer: droppable());
   }
 
-  Future<void> _createPost(
-      CreatePostEvent event, Emitter<PostState> emit) async {
+  Future<void> _createPost(CreatePostEvent event, Emitter<PostState> emit) async {
     try {
       emit(state.copyWith(createPostApiStatus: ApiStatus.loading));
-      appRouter.go(RouterName.home.path,
-          extra: HomeScreenDataModel(fileImage: event.previewFile));
+      appRouter.go(RouterName.home.path, extra: HomeScreenDataModel(fileImage: event.previewFile));
 
       Map<String, dynamic> fields = {
         "caption": event.caption,
@@ -56,8 +56,7 @@ class PostBloc extends Bloc<PostEvent, PostState> {
 
       logDebug(message: "Data-->>, $fileFields $fields");
 
-      final data =
-          await repository.createPost(fields: fields, fileFields: fileFields);
+      final data = await repository.createPost(fields: fields, fileFields: fileFields);
 
       logDebug(message: data.toString());
       emit(state.copyWith(createPostApiStatus: ApiStatus.success));
@@ -76,8 +75,7 @@ class PostBloc extends Bloc<PostEvent, PostState> {
     }
   }
 
-  Future<void> _getAllPost(
-      GetAllPostEvent event, Emitter<PostState> emit) async {
+  Future<void> _getAllPost(GetAllPostEvent event, Emitter<PostState> emit) async {
     try {
       emit(state.copyWith(getAllPostApiStatus: ApiStatus.loading));
       final data = await repository.getAllPost(event.body);
@@ -101,8 +99,7 @@ class PostBloc extends Bloc<PostEvent, PostState> {
     }
   }
 
-  Future<void> _getPostComment(
-      GetPostCommentDataEvent event, Emitter<PostState> emit) async {
+  Future<void> _getPostComment(GetPostCommentDataEvent event, Emitter<PostState> emit) async {
     try {
       emit(state.copyWith(getPostCommentListApiStatus: ApiStatus.loading));
       final data = await repository.getPostComment({"postId": event.postId});
@@ -126,8 +123,7 @@ class PostBloc extends Bloc<PostEvent, PostState> {
     }
   }
 
-  Future<void> _createComment(
-      CreateCommentEvent event, Emitter<PostState> emit) async {
+  Future<void> _createComment(CreateCommentEvent event, Emitter<PostState> emit) async {
     final tempId = uuid.v4();
 
     final newComment = CommentData(
@@ -177,8 +173,7 @@ class PostBloc extends Bloc<PostEvent, PostState> {
         apiStatus: PostCommentApiStatus.success,
         commentData: data,
       );
-      _updatePostLists(
-          emit: emit, postId: event.postId, updateCommentCount: true);
+      _updatePostLists(emit: emit, postId: event.postId, updateCommentCount: true);
       ThemeHelper.showToastMessage("Comment add successfully");
     } catch (error, stackTrace) {
       _updateComment(
@@ -186,8 +181,7 @@ class PostBloc extends Bloc<PostEvent, PostState> {
         emit: emit,
         apiStatus: PostCommentApiStatus.failure,
       );
-      _updatePostLists(
-          emit: emit, postId: event.postId, updateCommentCount: false);
+      _updatePostLists(emit: emit, postId: event.postId, updateCommentCount: false);
 
       ThemeHelper.showToastMessage("$error");
       handleError(
@@ -202,8 +196,7 @@ class PostBloc extends Bloc<PostEvent, PostState> {
     }
   }
 
-  Future<void> _getReplies(
-      GetCommentRepliesEvent event, Emitter<PostState> emit) async {
+  Future<void> _getReplies(GetCommentRepliesEvent event, Emitter<PostState> emit) async {
     try {
       final Map<String, bool> repliesIdData = {};
       if (repliesIdData.containsKey(event.commentId)) {
@@ -220,8 +213,7 @@ class PostBloc extends Bloc<PostEvent, PostState> {
         "commentId": event.commentId,
       });
 
-      final List<CommentData> updatedList =
-          (state.commentDataList ?? []).map((comment) {
+      final List<CommentData> updatedList = (state.commentDataList ?? []).map((comment) {
         if (comment.id == event.commentId) {
           return comment.copyWith(repliesData: data.data);
         }
@@ -251,26 +243,93 @@ class PostBloc extends Bloc<PostEvent, PostState> {
     }
   }
 
-  Future<void> _clearRepliesData(
-      ClearRepliesData event, Emitter<PostState> emit) async {
+  Future<void> _clearRepliesData(ClearRepliesData event, Emitter<PostState> emit) async {
     logDebug(message: "Replies data clear-->>");
     emit(state.copyWith(showReplies: {}));
   }
 
-  Future<void> _toggleCommentLike(
-      ToggleCommentLike event, Emitter<PostState> emit) async {
+  Future<void> _toggleCommentLike(ToggleCommentLikeEvent event, Emitter<PostState> emit) async {
     try {
-      _updateComment(
-          commentId: event.commentId, emit: emit, isLiked: event.isLike);
-      final data = await repository.toggleCommentLike({
+      _updateComment(commentId: event.commentId, emit: emit, isLiked: event.isLike);
+      await repository.toggleCommentLike({
         "commentId": event.commentId,
         "isLike": event.isLike,
       });
+    } catch (error, stackTrace) {
+      _updateComment(commentId: event.commentId, emit: emit, isLiked: !event.isLike);
+      ThemeHelper.showToastMessage("$error");
+      handleError(
+        error: error,
+        stackTrace: stackTrace,
+        emit: emit,
+        stateCopyWith: (statusCode, errorMessage) => state.copyWith(
+          statusCode: statusCode,
+          errorMessage: errorMessage,
+        ),
+      );
+    }
+  }
 
-      ThemeHelper.showToastMessage(data.message ?? '');
+  Future<void> _deleteComment(DeleteCommentEvent event, Emitter<PostState> emit) async {
+    try {
+      _updateComment(
+        commentId: event.commentId,
+        emit: emit,
+        apiStatus: PostCommentApiStatus.deleting,
+      );
+
+      final data = await repository.deleteComment(event.commentId);
+
+      final CommentData? comment = (state.commentDataList ?? []).firstWhere((comment) => comment.id == event.commentId, orElse: () => CommentData());
+      int repliesCount = 0;
+      if (comment?.parentCommentId == null) {
+        repliesCount = comment?.repliesCount ?? 0;
+      }
+      _updateComment(
+        commentId: event.commentId,
+        emit: emit,
+        isDelete: true,
+      );
+      _updatePostLists(
+        emit: emit,
+        postId: event.postId,
+        updateCommentCount: false,
+        repliesCount: repliesCount,
+      );
+      ThemeHelper.showToastMessage(data.message ?? 'Comment deleted');
     } catch (error, stackTrace) {
       _updateComment(
-          commentId: event.commentId, emit: emit, isLiked: !event.isLike);
+        commentId: event.commentId,
+        emit: emit,
+        apiStatus: PostCommentApiStatus.failedToDelete,
+      );
+      ThemeHelper.showToastMessage("$error");
+      handleError(
+        error: error,
+        stackTrace: stackTrace,
+        emit: emit,
+        stateCopyWith: (statusCode, errorMessage) => state.copyWith(
+          statusCode: statusCode,
+          errorMessage: errorMessage,
+        ),
+      );
+    }
+  }
+
+  Future<void> _pinComment(PinCommentEvent event, Emitter<PostState> emit) async {
+    try {
+      final List<CommentData> commentList = state.commentDataList ?? [];
+      final CommentData commentData = commentList.firstWhere((item) => item.id == event.commentId, orElse: () => CommentData());
+      final commentIndex = commentList.indexWhere((item) => item.id == event.commentId);
+      final data = await repository.pinComment(event.commentId, {});
+
+      if (commentIndex != -1) {
+        commentList.removeAt(commentIndex);
+        commentList.insert(0, commentData);
+      }
+
+      emit(state.copyWith(commentDataList: commentList));
+    } catch (error, stackTrace) {
       ThemeHelper.showToastMessage("$error");
       handleError(
         error: error,
@@ -290,23 +349,40 @@ class PostBloc extends Bloc<PostEvent, PostState> {
     required Emitter<PostState> emit,
     CommentData? commentData,
     bool? isLiked,
+    bool? isDelete,
   }) {
-    final List<CommentData> updatedList =
-        (state.commentDataList ?? []).map((item) {
+    final List<CommentData> updatedList = (state.commentDataList ?? []).where((item) {
+      if (item.id == commentId && isDelete == true) {
+        return false;
+      }
+      return true;
+    }).map((item) {
       if (item.id == commentId) {
+        int likeCount = item.likeCount ?? 0;
         return item.copyWith(
           id: commentData?.id,
           apiStatus: apiStatus,
           isLiked: isLiked ?? item.isLiked,
+          likeCount: isLiked != null
+              ? isLiked
+                  ? ++likeCount
+                  : --likeCount
+              : item.likeCount,
         );
       }
 
       final updatedReplies = (item.repliesData ?? []).map((reply) {
         if (reply.id == commentId) {
+          int likeCount = reply.likeCount ?? 0;
           return reply.copyWith(
             id: commentData?.id,
             apiStatus: apiStatus,
             isLiked: isLiked ?? item.isLiked,
+            likeCount: isLiked != null
+                ? isLiked
+                    ? ++likeCount
+                    : --likeCount
+                : item.likeCount,
           );
         }
         return reply;
@@ -326,12 +402,14 @@ class PostBloc extends Bloc<PostEvent, PostState> {
     required Emitter<PostState> emit,
     required String postId,
     bool? updateCommentCount,
+    int? repliesCount,
   }) {
     emit(state.copyWith(
       allPostData: _updatePostData(
         postList: state.allPostData ?? [],
         postId: postId,
         updateCommentCount: updateCommentCount,
+        repliesCount: repliesCount,
       ),
     ));
   }
@@ -340,14 +418,16 @@ class PostBloc extends Bloc<PostEvent, PostState> {
     required List<PostData> postList,
     required String postId,
     bool? updateCommentCount,
+    int? repliesCount,
   }) {
     final List<PostData> updatedList = postList.map((post) {
       if (post.id == postId) {
         int commentCount = post.commentCount ?? 0;
         return post.copyWith(
-            commentCount: updateCommentCount != null
-                ? (updateCommentCount ? ++commentCount : --commentCount)
-                : post.commentCount);
+          commentCount: updateCommentCount != null
+              ? (updateCommentCount ? commentCount + 1 + (repliesCount ?? 0) : math.max(0, (commentCount - (1 + (repliesCount ?? 0)))))
+              : post.commentCount,
+        );
       }
       return post;
     }).toList();

@@ -9,15 +9,18 @@ String loginApiEndPoint = "/auth/login";
 
 String registerApiEndPoint = "/auth/register";
 
-/// Post api
-String postCreateApiEndPoint = "/post/create";
+/// Post Api Routes
+String postRoute = '/post';
 
-String getAllPostApiEndPoint = "/post";
+String postCreateApiEndPoint = "$postRoute/create";
 
-String getAllCommentApiEndPoint = "/comment";
+/// Comment Api Route
+String commentRoute = '/comment';
 
-String createCommentApiEndPoint = "/comment/create";
+String createCommentApiEndPoint = "$commentRoute/create";
 
-String getCommentRepliesApiEndPoint = "/comment/replies";
+String getCommentRepliesApiEndPoint = "$commentRoute/replies";
 
-String commentToggleLikeApiEndPoint = '/comment/like';
+String commentToggleLikeApiEndPoint = '$commentRoute/like';
+
+String pinCommentApiEndPoint = '$commentRoute/pin';

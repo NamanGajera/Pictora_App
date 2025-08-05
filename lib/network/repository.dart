@@ -41,8 +41,7 @@ class Repository {
   }
 
   /// POST: CREATE POST
-  Future<PostCreateModel> createPost(
-      {dynamic fields, dynamic fileFields}) async {
+  Future<PostCreateModel> createPost({dynamic fields, dynamic fileFields}) async {
     try {
       Map<String, dynamic> json = await apiClient.multipartPostApiCall(
         baseUrl: baseUrl,
@@ -60,7 +59,7 @@ class Repository {
   Future<PostDataModel> getAllPost(dynamic body) async {
     try {
       Map<String, dynamic> json = await apiClient.postApiCall(
-        endPoint: getAllPostApiEndPoint,
+        endPoint: postRoute,
         isAccessToken: accessToken,
         postBody: body,
       );
@@ -74,7 +73,7 @@ class Repository {
   Future<PostCommentDataModel> getPostComment(dynamic body) async {
     try {
       Map<String, dynamic> json = await apiClient.postApiCall(
-        endPoint: getAllCommentApiEndPoint,
+        endPoint: commentRoute,
         isAccessToken: accessToken,
         postBody: body,
       );
@@ -119,6 +118,34 @@ class Repository {
         endPoint: commentToggleLikeApiEndPoint,
         isAccessToken: accessToken,
         postBody: body,
+      );
+
+      return CommonMessageModel.fromJson(json);
+    } on CustomException {
+      rethrow;
+    }
+  }
+
+  Future<CommonMessageModel> deleteComment(String commentId) async {
+    try {
+      Map<String, dynamic> json = await apiClient.deleteAPICalls(
+        baseUrl: baseUrl,
+        endPoint: '$commentRoute/$commentId',
+        isAccessToken: accessToken,
+      );
+
+      return CommonMessageModel.fromJson(json);
+    } on CustomException {
+      rethrow;
+    }
+  }
+
+  Future<CommonMessageModel> pinComment(String commentId, dynamic body) async {
+    try {
+      Map<String, dynamic> json = await apiClient.putAPICallsWithBody(
+        endPoint: '$pinCommentApiEndPoint/$commentId',
+        putBody: body,
+        isAccessToken: accessToken,
       );
 
       return CommonMessageModel.fromJson(json);
