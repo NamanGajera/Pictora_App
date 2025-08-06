@@ -5,6 +5,8 @@ class PostState extends Equatable {
   final ApiStatus getAllPostApiStatus;
   final ApiStatus getPostCommentListApiStatus;
   final ApiStatus getRepliesApiStatus;
+  final ApiStatus deletePostApiStatus;
+  final ApiStatus archivePostApiStatus;
   final Map<String, bool>? showReplies;
   final List<PostData>? allPostData;
   final List<CommentData>? commentDataList;
@@ -16,6 +18,8 @@ class PostState extends Equatable {
     this.getAllPostApiStatus = ApiStatus.initial,
     this.getPostCommentListApiStatus = ApiStatus.initial,
     this.getRepliesApiStatus = ApiStatus.initial,
+    this.deletePostApiStatus = ApiStatus.initial,
+    this.archivePostApiStatus = ApiStatus.initial,
     this.showReplies,
     this.commentDataList,
     this.allPostData,
@@ -28,6 +32,8 @@ class PostState extends Equatable {
     ApiStatus? getAllPostApiStatus,
     ApiStatus? getPostCommentListApiStatus,
     ApiStatus? getRepliesApiStatus,
+    ApiStatus? deletePostApiStatus,
+    ApiStatus? archivePostApiStatus,
     List<PostData>? allPostData,
     Map<String, bool>? showReplies,
     List<CommentData>? commentDataList,
@@ -37,9 +43,10 @@ class PostState extends Equatable {
     return PostState(
       createPostApiStatus: createPostApiStatus ?? this.createPostApiStatus,
       getAllPostApiStatus: getAllPostApiStatus ?? this.getAllPostApiStatus,
-      getPostCommentListApiStatus:
-          getPostCommentListApiStatus ?? this.getPostCommentListApiStatus,
+      getPostCommentListApiStatus: getPostCommentListApiStatus ?? this.getPostCommentListApiStatus,
       getRepliesApiStatus: getRepliesApiStatus ?? this.getRepliesApiStatus,
+      deletePostApiStatus: deletePostApiStatus ?? this.deletePostApiStatus,
+      archivePostApiStatus: archivePostApiStatus ?? this.archivePostApiStatus,
       showReplies: showReplies ?? this.showReplies,
       allPostData: allPostData ?? this.allPostData,
       commentDataList: commentDataList ?? this.commentDataList,
@@ -54,6 +61,8 @@ class PostState extends Equatable {
         getAllPostApiStatus,
         getPostCommentListApiStatus,
         getRepliesApiStatus,
+        deletePostApiStatus,
+        archivePostApiStatus,
         allPostData,
         showReplies,
         commentDataList,

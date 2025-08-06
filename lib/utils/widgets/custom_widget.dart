@@ -1,4 +1,5 @@
 import 'dart:developer';
+
 import 'package:dropdown_textfield/dropdown_textfield.dart';
 import 'package:flutter/material.dart';
 
@@ -222,8 +223,7 @@ class CustomTextField extends StatefulWidget {
     this.counterText,
     this.fillColor = Colors.white,
     this.filled = true,
-    this.contentPadding =
-        const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+    this.contentPadding = const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
     this.keyboardType,
     this.textInputAction,
     this.onChanged,
@@ -360,38 +360,27 @@ class _CustomTextFieldState extends State<CustomTextField> {
                               ))
                         : null,
                 border: OutlineInputBorder(
-                  borderSide: BorderSide(
-                      color: widget.borderColor, width: widget.borderWidth),
+                  borderSide: BorderSide(color: widget.borderColor, width: widget.borderWidth),
                   borderRadius: BorderRadius.circular(widget.borderRadius),
                 ),
                 focusedBorder: OutlineInputBorder(
-                  borderSide: BorderSide(
-                      color: widget.focusedBorderColor,
-                      width: widget.borderWidth),
+                  borderSide: BorderSide(color: widget.focusedBorderColor, width: widget.borderWidth),
                   borderRadius: BorderRadius.circular(widget.borderRadius),
                 ),
                 enabledBorder: OutlineInputBorder(
-                  borderSide: BorderSide(
-                      color: widget.enabledBorderColor,
-                      width: widget.borderWidth),
+                  borderSide: BorderSide(color: widget.enabledBorderColor, width: widget.borderWidth),
                   borderRadius: BorderRadius.circular(widget.borderRadius),
                 ),
                 disabledBorder: OutlineInputBorder(
-                  borderSide: BorderSide(
-                      color: widget.disabledBorderColor,
-                      width: widget.borderWidth),
+                  borderSide: BorderSide(color: widget.disabledBorderColor, width: widget.borderWidth),
                   borderRadius: BorderRadius.circular(widget.borderRadius),
                 ),
                 errorBorder: OutlineInputBorder(
-                  borderSide: BorderSide(
-                      color: widget.errorBorderColor,
-                      width: widget.borderWidth),
+                  borderSide: BorderSide(color: widget.errorBorderColor, width: widget.borderWidth),
                   borderRadius: BorderRadius.circular(widget.borderRadius),
                 ),
                 focusedErrorBorder: OutlineInputBorder(
-                  borderSide: BorderSide(
-                      color: widget.focusedErrorBorderColor,
-                      width: widget.borderWidth),
+                  borderSide: BorderSide(color: widget.focusedErrorBorderColor, width: widget.borderWidth),
                   borderRadius: BorderRadius.circular(widget.borderRadius),
                 ),
                 constraints: widget.constraints,
@@ -466,13 +455,9 @@ class CustomDropdownButton extends StatelessWidget {
     List<DropDownValueModel> finalDropDownList = [];
 
     if (showLoading) {
-      finalDropDownList = [
-        DropDownValueModel(name: loadingText!, value: '__LOADING__')
-      ];
+      finalDropDownList = [DropDownValueModel(name: loadingText!, value: '__LOADING__')];
     } else if (showNoData) {
-      finalDropDownList = [
-        DropDownValueModel(name: noDataText!, value: '__NO_DATA__')
-      ];
+      finalDropDownList = [DropDownValueModel(name: noDataText!, value: '__NO_DATA__')];
     } else {
       finalDropDownList = dropDownList;
     }
@@ -505,8 +490,7 @@ class CustomDropdownButton extends StatelessWidget {
         if (label != null) const SizedBox(height: 8),
         DropDownTextField(
           initialValue: initialValue,
-          textStyle: TextStyle(
-              color: Colors.black, fontSize: fontSize, fontWeight: fontWeight),
+          textStyle: TextStyle(color: Colors.black, fontSize: fontSize, fontWeight: fontWeight),
           controller: controller,
           listPadding: ListPadding(bottom: 12, top: 12),
           listSpace: -8,
@@ -549,8 +533,7 @@ class CustomDropdownButton extends StatelessWidget {
               color: hintTextColor,
               fontWeight: hintFontWeight,
             ),
-            suffixStyle: TextStyle(
-                color: Colors.green, fontSize: 14, fontWeight: FontWeight.w500),
+            suffixStyle: TextStyle(color: Colors.green, fontSize: 14, fontWeight: FontWeight.w500),
             contentPadding: contentPadding,
             constraints: constraints,
             suffixIconConstraints: suffixIconConstraints,
@@ -560,8 +543,7 @@ class CustomDropdownButton extends StatelessWidget {
           dropDownList: finalDropDownList,
           onChanged: (value) {
             // Prevent selection of loading and no data items
-            if (value?.value == '__LOADING__' ||
-                value?.value == '__NO_DATA__') {
+            if (value?.value == '__LOADING__' || value?.value == '__NO_DATA__') {
               // Clear the controller to prevent showing the invalid selection
               Future.delayed(Duration(milliseconds: 50), () {
                 controller?.clearDropDown();
@@ -618,9 +600,7 @@ class _CustomCheckboxDropdownState extends State<CustomCheckboxDropdown> {
 
   void _updateSelectAllState() {
     setState(() {
-      _selectAll = widget.items.isEmpty
-          ? false
-          : widget.items.every((item) => item.isSelected == true);
+      _selectAll = widget.items.isEmpty ? false : widget.items.every((item) => item.isSelected == true);
     });
   }
 
@@ -673,10 +653,7 @@ class _CustomCheckboxDropdownState extends State<CustomCheckboxDropdown> {
   }
 
   void _notifySelectionChanged() {
-    final selectedIds = widget.items
-        .where((item) => item.isSelected)
-        .map((item) => item.id)
-        .toList();
+    final selectedIds = widget.items.where((item) => item.isSelected).map((item) => item.id).toList();
     widget.onSelectionChanged(selectedIds);
   }
 
@@ -708,23 +685,19 @@ class _CustomCheckboxDropdownState extends State<CustomCheckboxDropdown> {
               offset: Offset(0.0, size.height + 5.0),
               child: Material(
                 elevation: widget.decoration.elevation,
-                borderRadius:
-                    BorderRadius.circular(widget.decoration.borderRadius),
+                borderRadius: BorderRadius.circular(widget.decoration.borderRadius),
                 child: GestureDetector(
                   behavior: HitTestBehavior.opaque,
                   onTap: () {},
                   child: Container(
                     constraints: BoxConstraints(
-                      maxHeight: MediaQuery.of(context).size.height *
-                          widget.decoration.maxHeight,
+                      maxHeight: MediaQuery.of(context).size.height * widget.decoration.maxHeight,
                     ),
                     decoration: widget.decoration.dropdownDecoration ??
                         BoxDecoration(
                           color: widget.decoration.backgroundColor,
-                          border:
-                              Border.all(color: widget.decoration.borderColor),
-                          borderRadius: BorderRadius.circular(
-                              widget.decoration.borderRadius),
+                          border: Border.all(color: widget.decoration.borderColor),
+                          borderRadius: BorderRadius.circular(widget.decoration.borderRadius),
                         ),
                     child: StatefulBuilder(
                       builder: (context, setState) {
@@ -742,10 +715,8 @@ class _CustomCheckboxDropdownState extends State<CustomCheckboxDropdown> {
                                   _toggleSelectAll(value);
                                   setState(() {});
                                 },
-                                activeColor:
-                                    widget.decoration.checkboxActiveColor,
-                                controlAffinity:
-                                    ListTileControlAffinity.leading,
+                                activeColor: widget.decoration.checkboxActiveColor,
+                                controlAffinity: ListTileControlAffinity.leading,
                               ),
                               const Divider(height: 1),
                               ...List.generate(
@@ -760,10 +731,8 @@ class _CustomCheckboxDropdownState extends State<CustomCheckboxDropdown> {
                                     _toggleItem(index, value);
                                     setState(() {});
                                   },
-                                  activeColor:
-                                      widget.decoration.checkboxActiveColor,
-                                  controlAffinity:
-                                      ListTileControlAffinity.leading,
+                                  activeColor: widget.decoration.checkboxActiveColor,
+                                  controlAffinity: ListTileControlAffinity.leading,
                                 ),
                               ),
                             ],
@@ -818,10 +787,7 @@ class _CustomCheckboxDropdownState extends State<CustomCheckboxDropdown> {
 
   @override
   Widget build(BuildContext context) {
-    String selectedItemsText = widget.items
-        .where((item) => item.isSelected)
-        .map((item) => item.name)
-        .join(', ');
+    String selectedItemsText = widget.items.where((item) => item.isSelected).map((item) => item.name).join(', ');
 
     return CompositedTransformTarget(
       link: _layerLink,
@@ -838,8 +804,7 @@ class _CustomCheckboxDropdownState extends State<CustomCheckboxDropdown> {
           decoration: widget.decoration.buttonDecoration ??
               BoxDecoration(
                 border: Border.all(color: widget.decoration.borderColor),
-                borderRadius:
-                    BorderRadius.circular(widget.decoration.borderRadius),
+                borderRadius: BorderRadius.circular(widget.decoration.borderRadius),
                 color: widget.decoration.backgroundColor,
               ),
           child: Row(
@@ -854,9 +819,7 @@ class _CustomCheckboxDropdownState extends State<CustomCheckboxDropdown> {
                   builder: (context, constraints) {
                     // If text overflows, show ellipsis
                     return Text(
-                      selectedItemsText.isEmpty
-                          ? widget.placeholder ?? 'Select Items'
-                          : selectedItemsText,
+                      selectedItemsText.isEmpty ? widget.placeholder ?? 'Select Items' : selectedItemsText,
                       style: selectedItemsText.isEmpty
                           ? widget.decoration.headerTextStyle
                           : TextStyle(
@@ -873,9 +836,7 @@ class _CustomCheckboxDropdownState extends State<CustomCheckboxDropdown> {
               if (widget.suffix == null)
                 widget.decoration.dropdownIcon ??
                     Icon(
-                      _isDropdownOpen
-                          ? Icons.arrow_drop_up
-                          : Icons.arrow_drop_down,
+                      _isDropdownOpen ? Icons.arrow_drop_up : Icons.arrow_drop_down,
                       color: widget.decoration.dropdownIconColor,
                     ),
             ],
@@ -907,12 +868,10 @@ class DropdownDecoration {
     this.borderRadius = 6.0,
     this.borderColor = const Color(0xFFE0D8D8),
     this.backgroundColor = Colors.white,
-    this.contentPadding =
-        const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+    this.contentPadding = const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
     this.elevation = 4.0,
     this.maxHeight = 0.3, // 30% of screen height
-    this.headerTextStyle =
-        const TextStyle(color: Color(0XFF828282), fontSize: 14),
+    this.headerTextStyle = const TextStyle(color: Color(0XFF828282), fontSize: 14),
     this.itemTextStyle,
     this.checkboxActiveColor,
     this.dropdownIconColor = Colors.grey,
@@ -948,6 +907,7 @@ class CustomButton extends StatelessWidget {
   final double loaderSize;
   final double loaderStrokeWidth;
   final Color loaderColor;
+  final Color borderColor;
   final bool showLoader;
 
   const CustomButton({
@@ -955,6 +915,7 @@ class CustomButton extends StatelessWidget {
     required this.text,
     required this.onTap,
     this.backgroundColor = primaryColor,
+    this.borderColor = Colors.transparent,
     this.textColor = Colors.white,
     this.loaderColor = Colors.white,
     this.height = 45,
@@ -976,6 +937,7 @@ class CustomButton extends StatelessWidget {
         alignment: Alignment.center,
         decoration: BoxDecoration(
           color: backgroundColor,
+          border: Border.all(color: borderColor),
           borderRadius: BorderRadius.circular(borderRadius),
         ),
         child: showLoader

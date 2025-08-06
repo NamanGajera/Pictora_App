@@ -1,12 +1,17 @@
 import "package:flutter/material.dart";
+import "package:flutter_bloc/flutter_bloc.dart";
 import "package:flutter_svg/flutter_svg.dart";
 import "package:pictora/features/post/screens/comment_screen.dart";
+import "package:pictora/router/router.dart";
 import "package:pictora/utils/constants/app_assets.dart";
+import "package:pictora/utils/constants/enums.dart";
 import "package:pictora/utils/widgets/custom_widget.dart";
 
+import "../../../../utils/constants/bloc_instances.dart";
 import "../../../../utils/constants/colors.dart";
 import "../../../../utils/constants/constants.dart";
 import "../../../../utils/helper/date_formatter.dart";
+import "../../bloc/post_bloc.dart";
 import "../../models/post_data.dart";
 import "post_media_display.dart";
 
@@ -48,6 +53,7 @@ class _PostWidgetState extends State<PostWidget> {
           PostMediaDisplay(
             mediaData: widget.post?.mediaData,
             postId: widget.post?.id ?? '',
+            isLike: widget.post?.isLiked ?? false,
           ),
           _buildActionButtons(),
           _buildLikesSection(),
@@ -86,11 +92,8 @@ class _PostWidgetState extends State<PostWidget> {
               child: CircleAvatar(
                 radius: 18,
                 backgroundColor: primaryColor.withValues(alpha: 0.1),
-                backgroundImage: (widget.post?.userData?.profile?.profilePicture ?? '').isNotEmpty
-                    ? NetworkImage(widget.post?.userData?.profile?.profilePicture ?? '')
-                    : null,
-                child:
-                    (widget.post?.userData?.profile?.profilePicture ?? '').isEmpty ? const Icon(Icons.person, color: primaryColor, size: 20) : null,
+                backgroundImage: (widget.post?.userData?.profile?.profilePicture ?? '').isNotEmpty ? NetworkImage(widget.post?.userData?.profile?.profilePicture ?? '') : null,
+                child: (widget.post?.userData?.profile?.profilePicture ?? '').isEmpty ? const Icon(Icons.person, color: primaryColor, size: 20) : null,
               ),
             ),
           ),
@@ -189,7 +192,12 @@ class _PostWidgetState extends State<PostWidget> {
       child: Row(
         children: [
           GestureDetector(
-            onTap: () {},
+            onTap: () {
+              postBloc.add(TogglePostLikeEvent(
+                postId: widget.post?.id ?? '',
+                isLike: !(widget.post?.isLiked ?? false),
+              ));
+            },
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 200),
               child: SvgPicture.asset(
@@ -258,7 +266,12 @@ class _PostWidgetState extends State<PostWidget> {
           ),
           const Spacer(),
           GestureDetector(
-            onTap: () {},
+            onTap: () {
+              postBloc.add(TogglePostSaveEvent(
+                postId: widget.post?.id ?? '',
+                isSave: !(widget.post?.isSaved ?? false),
+              ));
+            },
             child: SvgPicture.asset(
               (widget.post?.isSaved ?? false) ? AppAssets.saveFill : AppAssets.save,
               color: (widget.post?.isSaved ?? false) ? primaryColor : Colors.black87,
@@ -330,33 +343,135 @@ class _PostWidgetState extends State<PostWidget> {
 
   void _showPostOptions() {
     showModalBottomSheet(
-      context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
+      context: bottomBarContext!,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      barrierColor: Colors.black.withOpacity(0.5),
       builder: (context) {
         return Container(
-          padding: const EdgeInsets.symmetric(vertical: 20),
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(
+              top: Radius.circular(24),
+            ),
+          ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              _buildBottomSheetOption(
-                icon: Icons.link,
-                title: 'Copy Link',
-                onTap: () {
-                  Navigator.pop(context);
-                  // Handle copy link
-                },
+              // Handle bar
+              Container(
+                margin: const EdgeInsets.only(top: 12, bottom: 8),
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey[300],
+                  borderRadius: BorderRadius.circular(2),
+                ),
               ),
-              _buildBottomSheetOption(
-                icon: Icons.report_outlined,
-                title: 'Report',
-                onTap: () {
-                  Navigator.pop(context);
-                  // Handle report
-                },
-                isDestructive: true,
+
+              // Divider
+              Divider(
+                height: 1,
+                color: Colors.grey[200],
               ),
+
+              // Options
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 16),
+                child: Column(
+                  children: [
+                    // _buildModernBottomSheetOption(
+                    //   context: context,
+                    //   icon: Icons.bookmark_outline,
+                    //   title: 'Save Post',
+                    //   subtitle: 'Add this to your saved items',
+                    //   onTap: () {
+                    //     Navigator.pop(context);
+                    //     // Handle save post
+                    //   },
+                    // ),
+                    // const SizedBox(height: 8),
+                    // _buildModernBottomSheetOption(
+                    //   context: context,
+                    //   icon: Icons.link,
+                    //   title: 'Copy Link',
+                    //   subtitle: 'Share this post with others',
+                    //   onTap: () {
+                    //     Navigator.pop(context);
+                    //     // Handle copy link
+                    //   },
+                    // ),
+                    // const SizedBox(height: 8),
+                    _buildModernBottomSheetOption(
+                      context: context,
+                      icon: Icons.visibility_off_outlined,
+                      title: 'Hide Post',
+                      subtitle: 'See fewer posts like this',
+                      onTap: () {
+                        Navigator.pop(context);
+                        // Handle hide post
+                      },
+                    ),
+                    if (widget.post?.userId == userId) const SizedBox(height: 8),
+                    if (widget.post?.userId == userId)
+                      BlocBuilder<PostBloc, PostState>(
+                        buildWhen: (previous, current) => previous.archivePostApiStatus != current.archivePostApiStatus,
+                        builder: (context, state) {
+                          return _buildModernBottomSheetOption(
+                            context: context,
+                            icon: Icons.archive_outlined,
+                            title: 'Archive',
+                            subtitle: 'Move to your archive',
+                            onTap: () {
+                              postBloc.add(ArchivePostEvent(
+                                postId: widget.post?.id ?? '',
+                                isArchive: true,
+                              ));
+                            },
+                            showLoader: state.archivePostApiStatus == ApiStatus.loading,
+                          );
+                        },
+                      ),
+
+                    // Divider for destructive actions
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      child: Divider(
+                        height: 1,
+                        color: Colors.grey[200],
+                      ),
+                    ),
+
+                    _buildModernBottomSheetOption(
+                      context: context,
+                      icon: Icons.report_outlined,
+                      title: 'Report',
+                      subtitle: 'Report this post for review',
+                      onTap: () {
+                        Navigator.pop(context);
+                        // Handle report
+                      },
+                      isDestructive: true,
+                    ),
+                    if (widget.post?.userId == userId) const SizedBox(height: 8),
+                    if (widget.post?.userId == userId)
+                      _buildModernBottomSheetOption(
+                        context: context,
+                        icon: Icons.delete_outline,
+                        title: 'Delete',
+                        subtitle: 'Permanently remove this post',
+                        onTap: () {
+                          Navigator.pop(context);
+                          _showDeleteConfirmation();
+                        },
+                        isDestructive: true,
+                      ),
+                  ],
+                ),
+              ),
+
+              // Bottom padding for safe area
+              SizedBox(height: MediaQuery.of(context).padding.bottom + 16),
             ],
           ),
         );
@@ -364,25 +479,195 @@ class _PostWidgetState extends State<PostWidget> {
     );
   }
 
-  Widget _buildBottomSheetOption({
+  Widget _buildModernBottomSheetOption({
+    required BuildContext context,
     required IconData icon,
     required String title,
+    required String subtitle,
     required VoidCallback onTap,
     bool isDestructive = false,
+    bool showLoader = false,
   }) {
-    return ListTile(
-      leading: Icon(
-        icon,
-        color: isDestructive ? Colors.red : Colors.black87,
-      ),
-      title: Text(
-        title,
-        style: TextStyle(
-          color: isDestructive ? Colors.red : Colors.black87,
-          fontSize: 16,
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(16),
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: Colors.grey[200]!,
+              width: 1,
+            ),
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  color: isDestructive ? Colors.red.withOpacity(0.1) : Colors.grey[100],
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(
+                  icon,
+                  size: 24,
+                  color: isDestructive ? Colors.red[600] : Colors.grey[700],
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                        color: isDestructive ? Colors.red[600] : Colors.grey[800],
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      subtitle,
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: isDestructive ? Colors.red[400] : Colors.grey[600],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              showLoader
+                  ? SizedBox(
+                      height: 18,
+                      width: 18,
+                      child: CircularProgressIndicator(
+                        color: primaryColor,
+                        strokeWidth: 2,
+                      ),
+                    )
+                  : Icon(
+                      Icons.chevron_right,
+                      size: 20,
+                      color: Colors.grey[400],
+                    ),
+            ],
+          ),
         ),
       ),
-      onTap: onTap,
+    );
+  }
+
+  void _showDeleteConfirmation() {
+    showDialog(
+      context: bottomBarContext!,
+      barrierDismissible: false,
+      barrierColor: Colors.black.withOpacity(0.6),
+      builder: (context) => Dialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(24),
+        ),
+        elevation: 0,
+        backgroundColor: Colors.transparent,
+        child: Container(
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(24),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.1),
+                blurRadius: 20,
+                offset: const Offset(0, 8),
+              ),
+            ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Warning Icon
+              Container(
+                width: 64,
+                height: 64,
+                decoration: BoxDecoration(
+                  color: Colors.red.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(32),
+                ),
+                child: const Icon(
+                  Icons.delete_outline,
+                  size: 32,
+                  color: Colors.red,
+                ),
+              ),
+
+              const SizedBox(height: 24),
+
+              // Title
+              const Text(
+                'Delete Post?',
+                style: TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.black87,
+                ),
+                textAlign: TextAlign.center,
+              ),
+
+              const SizedBox(height: 12),
+
+              // Content
+              Text(
+                'This post will be permanently deleted and cannot be recovered. Are you sure you want to continue?',
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Colors.grey[600],
+                  height: 1.4,
+                ),
+                textAlign: TextAlign.center,
+              ),
+
+              const SizedBox(height: 32),
+
+              // Action Buttons
+              Row(
+                children: [
+                  Expanded(
+                    child: CustomButton(
+                      text: "Cancel",
+                      textColor: Colors.black,
+                      borderColor: Colors.grey.shade300,
+                      onTap: () {
+                        appRouter.pop();
+                      },
+                      backgroundColor: Colors.transparent,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  BlocBuilder<PostBloc, PostState>(
+                    buildWhen: (previous, current) => previous.deletePostApiStatus != current.deletePostApiStatus,
+                    builder: (context, state) {
+                      return Expanded(
+                        child: CustomButton(
+                          text: "Delete",
+                          onTap: () {
+                            postBloc.add(DeletePostEvent(postId: widget.post?.id ?? ''));
+                          },
+                          backgroundColor: Colors.red,
+                          showLoader: state.deletePostApiStatus == ApiStatus.loading,
+                        ),
+                      );
+                    },
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 

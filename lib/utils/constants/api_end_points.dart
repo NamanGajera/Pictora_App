@@ -14,6 +14,12 @@ String postRoute = '/post';
 
 String postCreateApiEndPoint = "$postRoute/create";
 
+String togglePostLikeApiEndPoint = "$postRoute/like";
+
+String togglePostSaveApiEndPoint = "$postRoute/save";
+
+String togglePostArchiveApiEndPoint = "$postRoute/archive";
+
 /// Comment Api Route
 String commentRoute = '/comment';
 

@@ -9,6 +9,7 @@ import 'package:video_player/video_player.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 
 import '../../../../utils/constants/app_assets.dart';
+import '../../../../utils/constants/bloc_instances.dart';
 import '../../../../utils/services/custom_logger.dart';
 import '../../models/post_data.dart';
 import 'heart_animation.dart';
@@ -16,11 +17,13 @@ import 'heart_animation.dart';
 class PostMediaDisplay extends StatefulWidget {
   final List<MediaData>? mediaData;
   final String postId;
+  final bool isLike;
 
   const PostMediaDisplay({
     super.key,
     required this.mediaData,
     required this.postId,
+    required this.isLike,
   });
 
   @override
@@ -116,9 +119,10 @@ class _PostMediaDisplayState extends State<PostMediaDisplay> {
 
   void _handleDoubleTap() {
     isLikedNotifierAnimation[widget.postId]?.value = true;
-    // communityBloc.add(TogglePostLikeEvent(
-    //     isLike: !(widget.communityPostData[widget.index].isLiked ?? false),
-    //     postId: postId ?? ''));
+    postBloc.add(TogglePostLikeEvent(
+      postId: widget.postId,
+      isLike: !(widget.isLike),
+    ));
   }
 
   @override

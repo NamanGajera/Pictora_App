@@ -317,66 +317,36 @@ class _CommentItemState extends State<CommentItem> {
                 },
               ),
             ),
-            Positioned(
-              top: position.dy + (!hasEnoughSpaceBelow ? 0 : 75),
-              left: position.dx - 5,
-              child: AnimatedBuilder(
-                animation: animationController,
-                builder: (context, _) {
-                  return Transform.translate(
-                    offset: Offset(0, !hasEnoughSpaceBelow ? slideAnimation.value : 0),
-                    child: Opacity(
-                      opacity: opacityAnimation.value,
-                      child: Column(
-                        children: [
-                          Container(
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(12),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withValues(alpha: 0.1),
-                                  spreadRadius: 1,
-                                  blurRadius: 5,
-                                  offset: Offset(0, 2),
-                                ),
-                              ],
-                            ),
-                            padding: EdgeInsets.symmetric(horizontal: 18, vertical: 10),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                if (widget.comment?.id != null && widget.comment?.userId == userId)
-                                  InkWell(
-                                    onTap: () {
-                                      OverlayManager().hide(OverlayIds.blurBg);
-                                      animationController.dispose();
-                                      postBloc.add(
-                                        PinCommentEvent(
-                                          commentId: widget.comment?.id ?? '',
-                                        ),
-                                      );
-                                    },
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Icon(
-                                          Icons.push_pin,
-                                          color: Colors.black,
-                                          size: 20,
-                                        ),
-                                        SizedBox(width: 8),
-                                        CustomText(
-                                          'Pin',
-                                          color: Colors.black,
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.w400,
-                                        )
-                                      ],
-                                    ),
+            if (widget.comment?.id != null && widget.comment?.userId == userId)
+              Positioned(
+                top: position.dy + (!hasEnoughSpaceBelow ? 0 : 75),
+                left: position.dx - 5,
+                child: AnimatedBuilder(
+                  animation: animationController,
+                  builder: (context, _) {
+                    return Transform.translate(
+                      offset: Offset(0, !hasEnoughSpaceBelow ? slideAnimation.value : 0),
+                      child: Opacity(
+                        opacity: opacityAnimation.value,
+                        child: Column(
+                          children: [
+                            Container(
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(12),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withValues(alpha: 0.1),
+                                    spreadRadius: 1,
+                                    blurRadius: 5,
+                                    offset: Offset(0, 2),
                                   ),
-                                if (widget.comment?.id != null && widget.comment?.userId == userId) const SizedBox(height: 10),
-                                if (widget.comment?.id != null && widget.comment?.userId == userId)
+                                ],
+                              ),
+                              padding: EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
                                   InkWell(
                                     onTap: () {
                                       OverlayManager().hide(OverlayIds.blurBg);
@@ -406,16 +376,16 @@ class _CommentItemState extends State<CommentItem> {
                                       ],
                                     ),
                                   ),
-                              ],
+                                ],
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
-                    ),
-                  );
-                },
+                    );
+                  },
+                ),
               ),
-            ),
           ],
         ),
       ),
@@ -550,8 +520,7 @@ class _CommentItemState extends State<CommentItem> {
                               fontStyle: FontStyle.italic,
                             ),
                           ],
-                          if (!([PostCommentApiStatus.posting, PostCommentApiStatus.failure, PostCommentApiStatus.deleting]
-                              .contains(widget.comment?.apiStatus))) ...[
+                          if (!([PostCommentApiStatus.posting, PostCommentApiStatus.failure, PostCommentApiStatus.deleting].contains(widget.comment?.apiStatus))) ...[
                             Text(
                               DateFormatter.getRelativeTime(widget.comment?.createdAt),
                               style: TextStyle(
@@ -994,8 +963,7 @@ class _ChildCommentItemState extends State<ChildCommentItem> {
                               fontStyle: FontStyle.italic,
                             ),
                           ],
-                          if (!([PostCommentApiStatus.posting, PostCommentApiStatus.failure, PostCommentApiStatus.deleting]
-                              .contains(widget.childComment?.apiStatus))) ...[
+                          if (!([PostCommentApiStatus.posting, PostCommentApiStatus.failure, PostCommentApiStatus.deleting].contains(widget.childComment?.apiStatus))) ...[
                             Text(
                               DateFormatter.getRelativeTime(widget.childComment?.createdAt),
                               style: TextStyle(

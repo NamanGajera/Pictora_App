@@ -63,7 +63,33 @@ class DeleteCommentEvent extends PostEvent {
   DeleteCommentEvent({required this.commentId, required this.postId});
 }
 
-class PinCommentEvent extends PostEvent {
-  final String commentId;
-  PinCommentEvent({required this.commentId});
+class TogglePostLikeEvent extends PostEvent {
+  final String postId;
+  final bool isLike;
+
+  TogglePostLikeEvent({
+    required this.postId,
+    required this.isLike,
+  });
+}
+
+class TogglePostSaveEvent extends PostEvent {
+  final String postId;
+  final bool isSave;
+
+  TogglePostSaveEvent({
+    required this.postId,
+    required this.isSave,
+  });
+}
+
+class DeletePostEvent extends PostEvent {
+  final String postId;
+  DeletePostEvent({required this.postId});
+}
+
+class ArchivePostEvent extends PostEvent {
+  final String postId;
+  final bool isArchive;
+  ArchivePostEvent({required this.postId, required this.isArchive});
 }

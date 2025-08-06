@@ -140,12 +140,54 @@ class Repository {
     }
   }
 
-  Future<CommonMessageModel> pinComment(String commentId, dynamic body) async {
+  Future<CommonMessageModel> togglePostLike(dynamic body) async {
     try {
-      Map<String, dynamic> json = await apiClient.putAPICallsWithBody(
-        endPoint: '$pinCommentApiEndPoint/$commentId',
-        putBody: body,
+      Map<String, dynamic> json = await apiClient.postApiCall(
+        endPoint: togglePostLikeApiEndPoint,
         isAccessToken: accessToken,
+        postBody: body,
+      );
+
+      return CommonMessageModel.fromJson(json);
+    } on CustomException {
+      rethrow;
+    }
+  }
+
+  Future<CommonMessageModel> togglePostSave(dynamic body) async {
+    try {
+      Map<String, dynamic> json = await apiClient.postApiCall(
+        endPoint: togglePostSaveApiEndPoint,
+        isAccessToken: accessToken,
+        postBody: body,
+      );
+
+      return CommonMessageModel.fromJson(json);
+    } on CustomException {
+      rethrow;
+    }
+  }
+
+  Future<CommonMessageModel> deletePost(dynamic body) async {
+    try {
+      Map<String, dynamic> json = await apiClient.postApiCall(
+        endPoint: togglePostSaveApiEndPoint,
+        isAccessToken: accessToken,
+        postBody: body,
+      );
+
+      return CommonMessageModel.fromJson(json);
+    } on CustomException {
+      rethrow;
+    }
+  }
+
+  Future<CommonMessageModel> toggleArchivePost(dynamic body) async {
+    try {
+      Map<String, dynamic> json = await apiClient.postApiCall(
+        endPoint: togglePostArchiveApiEndPoint,
+        isAccessToken: accessToken,
+        postBody: body,
       );
 
       return CommonMessageModel.fromJson(json);

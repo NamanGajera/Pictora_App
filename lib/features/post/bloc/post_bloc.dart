@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'dart:math' as math;
+
 import 'package:bloc_concurrency/bloc_concurrency.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -33,9 +34,12 @@ class PostBloc extends Bloc<PostEvent, PostState> {
     on<CreateCommentEvent>(_createComment, transformer: droppable());
     on<GetCommentRepliesEvent>(_getReplies, transformer: droppable());
     on<ClearRepliesData>(_clearRepliesData, transformer: droppable());
-    on<ToggleCommentLikeEvent>(_toggleCommentLike, transformer: sequential());
     on<DeleteCommentEvent>(_deleteComment, transformer: droppable());
-    on<PinCommentEvent>(_pinComment, transformer: droppable());
+    on<ToggleCommentLikeEvent>(_toggleCommentLike, transformer: sequential());
+    on<TogglePostLikeEvent>(_togglePostLike, transformer: sequential());
+    on<TogglePostSaveEvent>(_togglePostSave, transformer: sequential());
+    on<DeletePostEvent>(_deletePost, transformer: droppable());
+    on<ArchivePostEvent>(_archivePost, transformer: droppable());
   }
 
   Future<void> _createPost(CreatePostEvent event, Emitter<PostState> emit) async {
@@ -316,20 +320,88 @@ class PostBloc extends Bloc<PostEvent, PostState> {
     }
   }
 
-  Future<void> _pinComment(PinCommentEvent event, Emitter<PostState> emit) async {
+  Future<void> _togglePostLike(TogglePostLikeEvent event, Emitter<PostState> emit) async {
     try {
-      final List<CommentData> commentList = state.commentDataList ?? [];
-      final CommentData commentData = commentList.firstWhere((item) => item.id == event.commentId, orElse: () => CommentData());
-      final commentIndex = commentList.indexWhere((item) => item.id == event.commentId);
-      final data = await repository.pinComment(event.commentId, {});
-
-      if (commentIndex != -1) {
-        commentList.removeAt(commentIndex);
-        commentList.insert(0, commentData);
-      }
-
-      emit(state.copyWith(commentDataList: commentList));
+      _updatePostLists(postId: event.postId, emit: emit, isLiked: event.isLike);
+      await repository.togglePostLike({
+        "postId": event.postId,
+        "isLike": event.isLike,
+      });
     } catch (error, stackTrace) {
+      _updatePostLists(postId: event.postId, emit: emit, isLiked: !event.isLike);
+      ThemeHelper.showToastMessage("$error");
+      handleError(
+        error: error,
+        stackTrace: stackTrace,
+        emit: emit,
+        stateCopyWith: (statusCode, errorMessage) => state.copyWith(
+          statusCode: statusCode,
+          errorMessage: errorMessage,
+        ),
+      );
+    }
+  }
+
+  Future<void> _togglePostSave(TogglePostSaveEvent event, Emitter<PostState> emit) async {
+    try {
+      _updatePostLists(postId: event.postId, emit: emit, isSaved: event.isSave);
+      await repository.togglePostSave({
+        "postId": event.postId,
+        "isSave": event.isSave,
+      });
+    } catch (error, stackTrace) {
+      _updatePostLists(postId: event.postId, emit: emit, isSaved: !event.isSave);
+      ThemeHelper.showToastMessage("$error");
+      handleError(
+        error: error,
+        stackTrace: stackTrace,
+        emit: emit,
+        stateCopyWith: (statusCode, errorMessage) => state.copyWith(
+          statusCode: statusCode,
+          errorMessage: errorMessage,
+        ),
+      );
+    }
+  }
+
+  Future<void> _deletePost(DeletePostEvent event, Emitter<PostState> emit) async {
+    try {
+      emit(state.copyWith(deletePostApiStatus: ApiStatus.loading));
+
+      final data = await repository.deletePost(event.postId);
+      ThemeHelper.showToastMessage(data.message ?? 'Post deleted');
+      _updatePostLists(postId: event.postId, emit: emit, isDelete: true);
+      emit(state.copyWith(deletePostApiStatus: ApiStatus.success));
+      appRouter.pop();
+    } catch (error, stackTrace) {
+      emit(state.copyWith(deletePostApiStatus: ApiStatus.failure));
+      ThemeHelper.showToastMessage("$error");
+      handleError(
+        error: error,
+        stackTrace: stackTrace,
+        emit: emit,
+        stateCopyWith: (statusCode, errorMessage) => state.copyWith(
+          statusCode: statusCode,
+          errorMessage: errorMessage,
+        ),
+      );
+    }
+  }
+
+  Future<void> _archivePost(ArchivePostEvent event, Emitter<PostState> emit) async {
+    try {
+      emit(state.copyWith(archivePostApiStatus: ApiStatus.loading));
+
+      final data = await repository.toggleArchivePost({
+        "postId": event.postId,
+        "isArchive": event.isArchive,
+      });
+      ThemeHelper.showToastMessage(data.message ?? 'Post archived');
+      _updatePostLists(postId: event.postId, emit: emit, isDelete: event.isArchive);
+      emit(state.copyWith(archivePostApiStatus: ApiStatus.success));
+      appRouter.pop();
+    } catch (error, stackTrace) {
+      emit(state.copyWith(archivePostApiStatus: ApiStatus.failure));
       ThemeHelper.showToastMessage("$error");
       handleError(
         error: error,
@@ -403,6 +475,9 @@ class PostBloc extends Bloc<PostEvent, PostState> {
     required String postId,
     bool? updateCommentCount,
     int? repliesCount,
+    bool? isLiked,
+    bool? isSaved,
+    bool? isDelete,
   }) {
     emit(state.copyWith(
       allPostData: _updatePostData(
@@ -410,6 +485,9 @@ class PostBloc extends Bloc<PostEvent, PostState> {
         postId: postId,
         updateCommentCount: updateCommentCount,
         repliesCount: repliesCount,
+        isLiked: isLiked,
+        isSaved: isSaved,
+        isDelete: isDelete,
       ),
     ));
   }
@@ -419,14 +497,36 @@ class PostBloc extends Bloc<PostEvent, PostState> {
     required String postId,
     bool? updateCommentCount,
     int? repliesCount,
+    bool? isLiked,
+    bool? isSaved,
+    bool? isDelete,
   }) {
-    final List<PostData> updatedList = postList.map((post) {
+    final List<PostData> updatedList = postList.where((post) {
+      if (post.id == postId && isDelete == true) {
+        return false;
+      }
+      return true;
+    }).map((post) {
       if (post.id == postId) {
         int commentCount = post.commentCount ?? 0;
+        int likeCount = post.likeCount ?? 0;
+        int saveCount = post.saveCount ?? 0;
         return post.copyWith(
           commentCount: updateCommentCount != null
               ? (updateCommentCount ? commentCount + 1 + (repliesCount ?? 0) : math.max(0, (commentCount - (1 + (repliesCount ?? 0)))))
               : post.commentCount,
+          isLiked: isLiked ?? post.isLiked,
+          likeCount: isLiked != null
+              ? isLiked
+                  ? ++likeCount
+                  : --likeCount
+              : post.likeCount,
+          isSaved: isSaved ?? post.isSaved,
+          saveCount: isSaved != null
+              ? isSaved
+                  ? ++saveCount
+                  : --saveCount
+              : post.saveCount,
         );
       }
       return post;
