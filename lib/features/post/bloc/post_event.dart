@@ -21,6 +21,16 @@ class GetAllPostEvent extends PostEvent {
   GetAllPostEvent({required this.body});
 }
 
+class GetMyPostEvent extends PostEvent {
+  final Map<String, dynamic> body;
+  GetMyPostEvent({required this.body});
+}
+
+class GetOtherUserPostsEvent extends PostEvent {
+  final Map<String, dynamic> body;
+  GetOtherUserPostsEvent({required this.body});
+}
+
 class GetPostCommentDataEvent extends PostEvent {
   final String postId;
   GetPostCommentDataEvent({required this.postId});
@@ -92,4 +102,11 @@ class ArchivePostEvent extends PostEvent {
   final String postId;
   final bool isArchive;
   ArchivePostEvent({required this.postId, required this.isArchive});
+}
+
+class GetLikedByUserEvent extends PostEvent {
+  final String postId;
+  GetLikedByUserEvent({
+    required this.postId,
+  });
 }

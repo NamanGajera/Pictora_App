@@ -2,14 +2,15 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:pictora/features/auth/screens/register_screen.dart';
+import 'package:pictora/features/home/screens/home_screen.dart';
 import 'package:pictora/features/post/screens/add_post_screen.dart';
 import 'package:pictora/features/post/screens/comment_screen.dart';
 import 'package:pictora/features/post/screens/liked_by_user_screen.dart';
 import 'package:pictora/features/post/screens/post_asset_picker_screen.dart';
-import 'package:pictora/features/auth/screens/register_screen.dart';
-import 'package:pictora/features/home/screens/home_screen.dart';
 import 'package:pictora/features/search/screens/search_screen.dart';
 import 'package:pictora/utils/helper/page_transition.dart';
+
 import '../features/auth/screens/login_screen.dart';
 import '../features/auth/screens/splash_screen.dart';
 import '../features/post/screens/video_cover_selector_screen.dart';
@@ -148,6 +149,18 @@ final GoRouter appRouter = GoRouter(
         return SlideUpTransitionPage(
           child: LikedByUserScreen(
             postId: screenData.postId,
+          ),
+        );
+      },
+    ),
+    GoRoute(
+      path: RouterName.otherUserProfile.path,
+      name: RouterName.otherUserProfile.name,
+      pageBuilder: (context, state) {
+        ProfileScreenDataModel screenData = state.extra as ProfileScreenDataModel;
+        return SlideTransitionPage(
+          child: ProfileScreen(
+            userId: screenData.userId,
           ),
         );
       },

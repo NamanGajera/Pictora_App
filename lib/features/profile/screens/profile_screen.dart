@@ -1,55 +1,42 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:pictora/features/post/bloc/post_bloc.dart';
+import 'package:pictora/features/post/models/post_data.dart';
+import 'package:pictora/features/profile/bloc/profile_bloc.dart';
+import 'package:pictora/utils/constants/bloc_instances.dart';
+import 'package:pictora/utils/constants/colors.dart';
+import 'package:pictora/utils/constants/constants.dart';
+import 'package:pictora/utils/services/custom_logger.dart';
+
+import '../../../model/user_model.dart';
 
 class ProfileScreen extends StatefulWidget {
-  const ProfileScreen({super.key});
+  final String? userId;
+  const ProfileScreen({super.key, this.userId});
 
   @override
   State<ProfileScreen> createState() => _ProfileScreenState();
 }
 
-class _ProfileScreenState extends State<ProfileScreen>
-    with SingleTickerProviderStateMixin {
-  late TabController _tabController;
-  bool isFollowing = false;
-  bool isOwnProfile = true; // Set to false for other user's profile
-
-  // Sample user data
-  final UserProfile userProfile = UserProfile(
-    username: 'john_doe',
-    displayName: 'John Doe',
-    bio:
-        '📸 Photography enthusiast\n🌍 Travel lover\n☕ Coffee addict\n📍 New York, USA',
-    profileImage: 'https://via.placeholder.com/150',
-    coverImage: 'https://via.placeholder.com/400x200',
-    postsCount: 156,
-    followersCount: 2847,
-    followingCount: 1205,
-    isVerified: true,
-    website: 'john-photography.com',
-  );
-
-  // Sample posts data
-  final List<PostPreview> userPosts = List.generate(
-    24,
-    (index) => PostPreview(
-      id: index.toString(),
-      imageUrl: 'https://via.placeholder.com/300x300',
-      likesCount: (index + 1) * 45,
-      commentsCount: (index + 1) * 12,
-      hasMultipleMedia: index % 3 == 0,
-    ),
-  );
-
+class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
-  }
-
-  @override
-  void dispose() {
-    _tabController.dispose();
-    super.dispose();
+    profileBloc.add(GetUserDataEvent(userId: widget.userId));
+    if (widget.userId == null) {
+      postBloc.add(GetMyPostEvent(body: {
+        "skip": 0,
+        "take": 25,
+        "userId": userId,
+      }));
+    } else {
+      postBloc.add(GetOtherUserPostsEvent(body: {
+        "skip": 0,
+        "take": 25,
+        "userId": widget.userId,
+      }));
+    }
   }
 
   @override
@@ -59,16 +46,9 @@ class _ProfileScreenState extends State<ProfileScreen>
       body: Column(
         children: [
           _buildProfileInfo(),
-          _buildTabBar(),
+          // _buildTabBar(),
           Expanded(
-            child: TabBarView(
-              controller: _tabController,
-              children: [
-                _buildPostsGrid(),
-                _buildReelsGrid(),
-                _buildTaggedGrid(),
-              ],
-            ),
+            child: _buildPostsGrid(),
           ),
         ],
       ),
@@ -76,146 +56,123 @@ class _ProfileScreenState extends State<ProfileScreen>
   }
 
   Widget _buildProfileInfo() {
-    return Container(
-      color: Colors.white,
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Profile picture and stats
-          Row(
-            children: [
-              // Profile picture
-              Stack(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(3),
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      gradient: LinearGradient(
-                        colors: [
-                          const Color(0xff235347),
-                          const Color(0xff235347).withOpacity(0.6),
+    return BlocBuilder<ProfileBloc, ProfileState>(
+      buildWhen: (previous, current) => previous.getUserDataApiStatus != current.getUserDataApiStatus,
+      builder: (context, state) {
+        User? userData = widget.userId == null ? state.userData : state.otherUserData;
+        return GestureDetector(
+          onTap: () {
+            logDebug(message: '${userData?.toJson()}', tag: "User Data Log");
+          },
+          child: Container(
+            color: Colors.white,
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Profile picture and stats
+                Row(
+                  children: [
+                    // Profile picture
+                    Stack(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(3),
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            gradient: LinearGradient(
+                              colors: [
+                                primaryColor,
+                                primaryColor.withValues(alpha: 0.6),
+                              ],
+                            ),
+                          ),
+                          child: Container(
+                            padding: const EdgeInsets.all(3),
+                            decoration: const BoxDecoration(
+                              color: Colors.white,
+                              shape: BoxShape.circle,
+                            ),
+                            child: CircleAvatar(
+                              radius: 45,
+                              backgroundColor: primaryColor.withValues(alpha: 0.1),
+                              child: (userData?.profile?.profilePicture ?? '').isNotEmpty
+                                  ? ClipOval(
+                                      child: CachedNetworkImage(
+                                        imageUrl: userData!.profile!.profilePicture!,
+                                        width: 90,
+                                        height: 90,
+                                        fit: BoxFit.cover,
+                                        placeholder: (context, url) => const CircularProgressIndicator(strokeWidth: 2),
+                                        errorWidget: (context, url, error) => const Icon(
+                                          Icons.person,
+                                          size: 50,
+                                          color: Color(0xff235347),
+                                        ),
+                                      ),
+                                    )
+                                  : const Icon(
+                                      Icons.person,
+                                      size: 50,
+                                      color: Color(0xff235347),
+                                    ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(width: 30),
+                    // Stats
+                    Expanded(
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          _buildStatItem('Posts', userData?.counts?.postCount ?? 0),
+                          _buildStatItem('Followers', userData?.counts?.followerCount ?? 0),
+                          _buildStatItem('Following', userData?.counts?.followingCount ?? 0),
                         ],
                       ),
                     ),
-                    child: Container(
-                      padding: const EdgeInsets.all(3),
-                      decoration: const BoxDecoration(
-                        color: Colors.white,
-                        shape: BoxShape.circle,
-                      ),
-                      child: CircleAvatar(
-                        radius: 45,
-                        backgroundColor:
-                            const Color(0xff235347).withOpacity(0.1),
-                        backgroundImage: userProfile.profileImage.isNotEmpty
-                            ? NetworkImage(userProfile.profileImage)
-                            : null,
-                        child: userProfile.profileImage.isEmpty
-                            ? const Icon(
-                                Icons.person,
-                                size: 50,
-                                color: Color(0xff235347),
-                              )
-                            : null,
-                      ),
-                    ),
-                  ),
-                  if (isOwnProfile)
-                    Positioned(
-                      bottom: 0,
-                      right: 0,
-                      child: Container(
-                        padding: const EdgeInsets.all(4),
-                        decoration: BoxDecoration(
-                          color: const Color(0xff235347),
-                          shape: BoxShape.circle,
-                          border: Border.all(color: Colors.white, width: 2),
-                        ),
-                        child: const Icon(
-                          Icons.add,
-                          color: Colors.white,
-                          size: 16,
-                        ),
-                      ),
-                    ),
-                ],
-              ),
-              const SizedBox(width: 30),
-              // Stats
-              Expanded(
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    _buildStatItem('Posts', userProfile.postsCount),
-                    _buildStatItem('Followers', userProfile.followersCount),
-                    _buildStatItem('Following', userProfile.followingCount),
                   ],
                 ),
-              ),
-            ],
-          ),
 
-          const SizedBox(height: 16),
+                const SizedBox(height: 16),
 
-          // Name and verification
-          Row(
-            children: [
-              Text(
-                userProfile.displayName,
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
-                  color: Colors.black87,
+                // Name and verification
+                Row(
+                  children: [
+                    Text(
+                      userData?.fullName ?? '',
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.black87,
+                      ),
+                    ),
+                  ],
                 ),
-              ),
-              if (userProfile.isVerified) ...[
-                const SizedBox(width: 6),
-                const Icon(
-                  Icons.verified,
-                  color: Color(0xff235347),
-                  size: 18,
+
+                const SizedBox(height: 8),
+
+                // Bio
+                Text(
+                  userData?.profile?.bio ?? '',
+                  style: const TextStyle(
+                    fontSize: 14,
+                    color: Colors.black87,
+                    height: 1.4,
+                  ),
                 ),
+
+                const SizedBox(height: 20),
+
+                // Action buttons
+                _buildActionButtons(userData?.id ?? ''),
               ],
-            ],
-          ),
-
-          const SizedBox(height: 8),
-
-          // Bio
-          Text(
-            userProfile.bio,
-            style: const TextStyle(
-              fontSize: 14,
-              color: Colors.black87,
-              height: 1.4,
             ),
           ),
-
-          if (userProfile.website.isNotEmpty) ...[
-            const SizedBox(height: 8),
-            GestureDetector(
-              onTap: () {
-                // Handle website tap
-              },
-              child: Text(
-                userProfile.website,
-                style: const TextStyle(
-                  fontSize: 14,
-                  color: Color(0xff235347),
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ),
-          ],
-
-          const SizedBox(height: 20),
-
-          // Action buttons
-          _buildActionButtons(),
-        ],
-      ),
+        );
+      },
     );
   }
 
@@ -248,8 +205,8 @@ class _ProfileScreenState extends State<ProfileScreen>
     );
   }
 
-  Widget _buildActionButtons() {
-    if (isOwnProfile) {
+  Widget _buildActionButtons(String profileUserId) {
+    if (profileUserId == userId) {
       return Row(
         children: [
           Expanded(
@@ -281,15 +238,10 @@ class _ProfileScreenState extends State<ProfileScreen>
           Expanded(
             flex: 3,
             child: _buildButton(
-              isFollowing ? 'Following' : 'Follow',
-              backgroundColor:
-                  isFollowing ? Colors.grey[200]! : const Color(0xff235347),
-              textColor: isFollowing ? Colors.black87 : Colors.white,
-              onTap: () {
-                setState(() {
-                  isFollowing = !isFollowing;
-                });
-              },
+              'Following',
+              backgroundColor: Colors.grey[200]!,
+              textColor: Colors.black87,
+              onTap: () {},
             ),
           ),
           const SizedBox(width: 12),
@@ -340,46 +292,27 @@ class _ProfileScreenState extends State<ProfileScreen>
     );
   }
 
-  Widget _buildTabBar() {
-    return Container(
-      color: Colors.white,
-      child: TabBar(
-        controller: _tabController,
-        indicatorColor: const Color(0xff235347),
-        indicatorWeight: 2,
-        labelColor: const Color(0xff235347),
-        unselectedLabelColor: Colors.grey[600],
-        tabs: const [
-          Tab(
-            icon: Icon(Icons.grid_on),
-          ),
-          Tab(
-            icon: Icon(Icons.video_collection_outlined),
-          ),
-          Tab(
-            icon: Icon(Icons.person_pin_outlined),
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildPostsGrid() {
-    return GridView.builder(
-      padding: const EdgeInsets.all(2),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 3,
-        crossAxisSpacing: 2,
-        mainAxisSpacing: 2,
-      ),
-      itemCount: userPosts.length,
-      itemBuilder: (context, index) {
-        return _buildPostPreview(userPosts[index]);
+    return BlocBuilder<PostBloc, PostState>(
+      builder: (context, state) {
+        return GridView.builder(
+          padding: const EdgeInsets.all(2),
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 3,
+            crossAxisSpacing: 2,
+            mainAxisSpacing: 2,
+          ),
+          itemCount: widget.userId == null ? state.myPostData?.length : state.otherUserPostData?.length,
+          itemBuilder: (context, index) {
+            final postData = widget.userId == null ? state.myPostData : state.otherUserPostData;
+            return _buildPostPreview(postData?[index]);
+          },
+        );
       },
     );
   }
 
-  Widget _buildPostPreview(PostPreview post) {
+  Widget _buildPostPreview(PostData? post) {
     return GestureDetector(
       onTap: () {
         // Handle post tap
@@ -387,24 +320,34 @@ class _ProfileScreenState extends State<ProfileScreen>
       child: Stack(
         fit: StackFit.expand,
         children: [
-          Container(
-            color: Colors.grey[200],
-            child: Image.network(
-              post.imageUrl,
-              fit: BoxFit.cover,
-              errorBuilder: (context, error, stackTrace) {
-                return Container(
-                  color: const Color(0xff235347).withOpacity(0.1),
-                  child: Icon(
-                    Icons.image,
-                    color: const Color(0xff235347).withOpacity(0.5),
-                    size: 30,
-                  ),
-                );
-              },
+          CachedNetworkImage(
+            imageUrl: post?.mediaData?[0].mediaUrl ?? '',
+            fit: BoxFit.cover,
+            placeholder: (context, url) => Container(
+              color: Colors.grey[200],
+              child: const Center(
+                child: CircularProgressIndicator(),
+              ),
+            ),
+            errorWidget: (context, url, error) => Container(
+              color: primaryColor.withValues(alpha: 0.1),
+              child: Icon(
+                Icons.image,
+                color: primaryColor.withValues(alpha: 0.5),
+                size: 30,
+              ),
+            ),
+            imageBuilder: (context, imageProvider) => Container(
+              decoration: BoxDecoration(
+                color: Colors.grey[200],
+                image: DecorationImage(
+                  image: imageProvider,
+                  fit: BoxFit.cover,
+                ),
+              ),
             ),
           ),
-          if (post.hasMultipleMedia)
+          if ((post?.mediaData?.length ?? 0) > 1)
             const Positioned(
               top: 8,
               right: 8,
@@ -414,75 +357,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                 size: 18,
               ),
             ),
-          // Hover overlay for likes/comments (optional)
-          Positioned.fill(
-            child: Container(
-              color: Colors.black.withOpacity(0),
-              child: Center(
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Icon(
-                      Icons.favorite,
-                      color: Colors.transparent,
-                      size: 18,
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      _formatNumber(post.likesCount),
-                      style: const TextStyle(
-                        color: Colors.transparent,
-                        fontWeight: FontWeight.w600,
-                        fontSize: 14,
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    const Icon(
-                      Icons.chat_bubble,
-                      color: Colors.transparent,
-                      size: 18,
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      _formatNumber(post.commentsCount),
-                      style: const TextStyle(
-                        color: Colors.transparent,
-                        fontWeight: FontWeight.w600,
-                        fontSize: 14,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildReelsGrid() {
-    return const Center(
-      child: Text(
-        'Reels\nComing Soon',
-        textAlign: TextAlign.center,
-        style: TextStyle(
-          fontSize: 16,
-          color: Colors.grey,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTaggedGrid() {
-    return const Center(
-      child: Text(
-        'Tagged Posts\nComing Soon',
-        textAlign: TextAlign.center,
-        style: TextStyle(
-          fontSize: 16,
-          color: Colors.grey,
-        ),
       ),
     );
   }
@@ -497,45 +372,7 @@ class _ProfileScreenState extends State<ProfileScreen>
   }
 }
 
-// Models
-class UserProfile {
-  final String username;
-  final String displayName;
-  final String bio;
-  final String profileImage;
-  final String coverImage;
-  final int postsCount;
-  final int followersCount;
-  final int followingCount;
-  final bool isVerified;
-  final String website;
-
-  UserProfile({
-    required this.username,
-    required this.displayName,
-    required this.bio,
-    required this.profileImage,
-    required this.coverImage,
-    required this.postsCount,
-    required this.followersCount,
-    required this.followingCount,
-    required this.isVerified,
-    required this.website,
-  });
-}
-
-class PostPreview {
-  final String id;
-  final String imageUrl;
-  final int likesCount;
-  final int commentsCount;
-  final bool hasMultipleMedia;
-
-  PostPreview({
-    required this.id,
-    required this.imageUrl,
-    required this.likesCount,
-    required this.commentsCount,
-    required this.hasMultipleMedia,
-  });
+class ProfileScreenDataModel {
+  final String? userId;
+  ProfileScreenDataModel({this.userId});
 }

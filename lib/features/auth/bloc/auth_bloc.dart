@@ -11,6 +11,7 @@ import 'package:pictora/utils/constants/shared_pref_keys.dart';
 import 'package:pictora/utils/helper/shared_prefs_helper.dart';
 import 'package:pictora/utils/helper/theme_helper.dart';
 
+import '../../../model/user_model.dart';
 import '../../../utils/helper/helper_function.dart';
 
 part 'auth_event.dart';
@@ -22,8 +23,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<RegisterUserEvent>(_register);
     on<LoginUserEvent>(_login);
   }
-  Future<void> _register(
-      RegisterUserEvent event, Emitter<AuthState> emit) async {
+  Future<void> _register(RegisterUserEvent event, Emitter<AuthState> emit) async {
     try {
       emit(state.copyWith(registerUserApiStatus: ApiStatus.loading));
 
@@ -77,15 +77,12 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     userName = userData?.userName;
     userProfilePic = userData?.profile?.profilePicture ?? '';
 
-    SharedPrefsHelper()
-        .setString(SharedPrefKeys.accessToken, accessToken ?? '');
+    SharedPrefsHelper().setString(SharedPrefKeys.accessToken, accessToken ?? '');
     SharedPrefsHelper().setString(SharedPrefKeys.userId, userId ?? '');
     SharedPrefsHelper().setString(SharedPrefKeys.userEmail, userEmail ?? '');
-    SharedPrefsHelper()
-        .setString(SharedPrefKeys.userFullName, userFullName ?? '');
+    SharedPrefsHelper().setString(SharedPrefKeys.userFullName, userFullName ?? '');
     SharedPrefsHelper().setString(SharedPrefKeys.userName, userName ?? '');
-    SharedPrefsHelper()
-        .setString(SharedPrefKeys.userProfilePic, userProfilePic ?? '');
+    SharedPrefsHelper().setString(SharedPrefKeys.userProfilePic, userProfilePic ?? '');
 
     appRouter.go(RouterName.home.path);
   }

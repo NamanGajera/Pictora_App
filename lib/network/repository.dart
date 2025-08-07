@@ -3,9 +3,11 @@ import 'package:pictora/features/post/models/post_comment_data_model.dart';
 import 'package:pictora/features/post/models/post_create_model.dart';
 import 'package:pictora/features/post/models/post_data_model.dart';
 import 'package:pictora/model/common_message_model.dart';
+import 'package:pictora/model/user_list_data_model.dart';
 import 'package:pictora/utils/constants/api_end_points.dart';
 import 'package:pictora/utils/constants/constants.dart';
 
+import '../model/user_model.dart';
 import 'api_client.dart';
 import 'custom_exception.dart';
 
@@ -191,6 +193,33 @@ class Repository {
       );
 
       return CommonMessageModel.fromJson(json);
+    } on CustomException {
+      rethrow;
+    }
+  }
+
+  Future<UserListDataModel> getLikedByUser({required String postId, required dynamic body}) async {
+    try {
+      Map<String, dynamic> json = await apiClient.postApiCall(
+        endPoint: "$getLikedByUserApiEndPoint/$postId",
+        isAccessToken: accessToken,
+        postBody: body,
+      );
+
+      return UserListDataModel.fromJson(json);
+    } on CustomException {
+      rethrow;
+    }
+  }
+
+  Future<User> getUserData([String? userId]) async {
+    try {
+      Map<String, dynamic> json = await apiClient.getApiCall(
+        endPoint: userId != null ? "$userRoute/$userId" : userRoute,
+        isAccessToken: accessToken,
+      );
+
+      return User.fromJson(json["data"]);
     } on CustomException {
       rethrow;
     }

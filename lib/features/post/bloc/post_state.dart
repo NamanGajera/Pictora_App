@@ -7,8 +7,14 @@ class PostState extends Equatable {
   final ApiStatus getRepliesApiStatus;
   final ApiStatus deletePostApiStatus;
   final ApiStatus archivePostApiStatus;
+  final ApiStatus likeByUserApiStatus;
+  final ApiStatus getOtherUserPostApiStatus;
+  final ApiStatus getMyPostApiStatus;
   final Map<String, bool>? showReplies;
   final List<PostData>? allPostData;
+  final List<PostData>? otherUserPostData;
+  final List<PostData>? myPostData;
+  final List<User>? likedByUserData;
   final List<CommentData>? commentDataList;
   final int? statusCode;
   final String? errorMessage;
@@ -20,6 +26,12 @@ class PostState extends Equatable {
     this.getRepliesApiStatus = ApiStatus.initial,
     this.deletePostApiStatus = ApiStatus.initial,
     this.archivePostApiStatus = ApiStatus.initial,
+    this.likeByUserApiStatus = ApiStatus.initial,
+    this.getOtherUserPostApiStatus = ApiStatus.initial,
+    this.getMyPostApiStatus = ApiStatus.initial,
+    this.likedByUserData,
+    this.myPostData,
+    this.otherUserPostData,
     this.showReplies,
     this.commentDataList,
     this.allPostData,
@@ -34,7 +46,13 @@ class PostState extends Equatable {
     ApiStatus? getRepliesApiStatus,
     ApiStatus? deletePostApiStatus,
     ApiStatus? archivePostApiStatus,
+    ApiStatus? likeByUserApiStatus,
+    ApiStatus? getMyPostApiStatus,
+    ApiStatus? getOtherUserPostApiStatus,
     List<PostData>? allPostData,
+    List<PostData>? otherUserPostData,
+    List<PostData>? myPostData,
+    List<User>? likedByUserData,
     Map<String, bool>? showReplies,
     List<CommentData>? commentDataList,
     int? statusCode,
@@ -47,6 +65,12 @@ class PostState extends Equatable {
       getRepliesApiStatus: getRepliesApiStatus ?? this.getRepliesApiStatus,
       deletePostApiStatus: deletePostApiStatus ?? this.deletePostApiStatus,
       archivePostApiStatus: archivePostApiStatus ?? this.archivePostApiStatus,
+      likeByUserApiStatus: likeByUserApiStatus ?? this.likeByUserApiStatus,
+      getMyPostApiStatus: getMyPostApiStatus ?? this.getMyPostApiStatus,
+      getOtherUserPostApiStatus: getOtherUserPostApiStatus ?? this.getOtherUserPostApiStatus,
+      likedByUserData: likedByUserData ?? this.likedByUserData,
+      myPostData: myPostData ?? this.myPostData,
+      otherUserPostData: otherUserPostData ?? this.otherUserPostData,
       showReplies: showReplies ?? this.showReplies,
       allPostData: allPostData ?? this.allPostData,
       commentDataList: commentDataList ?? this.commentDataList,
@@ -63,6 +87,12 @@ class PostState extends Equatable {
         getRepliesApiStatus,
         deletePostApiStatus,
         archivePostApiStatus,
+        likeByUserApiStatus,
+        likedByUserData,
+        myPostData,
+        otherUserPostData,
+        getOtherUserPostApiStatus,
+        getMyPostApiStatus,
         allPostData,
         showReplies,
         commentDataList,

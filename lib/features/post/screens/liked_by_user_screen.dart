@@ -1,4 +1,17 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:pictora/features/post/bloc/post_bloc.dart';
+import 'package:pictora/features/profile/screens/profile_screen.dart';
+import 'package:pictora/router/router.dart';
+import 'package:pictora/router/router_name.dart';
+import 'package:pictora/utils/constants/bloc_instances.dart';
+import 'package:pictora/utils/constants/constants.dart';
+import 'package:pictora/utils/constants/enums.dart';
+
+import '../../../model/user_model.dart';
+import '../../../utils/constants/app_assets.dart';
+import '../../../utils/constants/colors.dart';
 
 class LikedByUserScreen extends StatefulWidget {
   final String postId;
@@ -12,73 +25,10 @@ class LikedByUserScreen extends StatefulWidget {
 }
 
 class _LikedByUserScreenState extends State<LikedByUserScreen> {
-  static const primaryColor = Color(0xff235347);
-  List<UserLike> likedUsers = [];
-  bool isLoading = true;
-
   @override
   void initState() {
     super.initState();
-    _loadLikedUsers();
-  }
-
-  Future<void> _loadLikedUsers() async {
-    // Simulate API call
-    await Future.delayed(Duration(milliseconds: 1000));
-
-    // Mock data - replace with your actual API call
-    setState(() {
-      likedUsers = [
-        UserLike(
-          userId: "1",
-          userName: "john_doe",
-          userFullName: "John Doe",
-          userProfileImage: "https://via.placeholder.com/150",
-          isFollowing: false,
-        ),
-        UserLike(
-          userId: "2",
-          userName: "jane_smith",
-          userFullName: "Jane Smith",
-          userProfileImage: "https://via.placeholder.com/150",
-          isFollowing: true,
-        ),
-        UserLike(
-          userId: "3",
-          userName: "mike_wilson",
-          userFullName: "Mike Wilson",
-          userProfileImage: "https://via.placeholder.com/150",
-          isFollowing: false,
-        ),
-        UserLike(
-          userId: "4",
-          userName: "sarah_taylor",
-          userFullName: "Sarah Taylor",
-          userProfileImage: "https://via.placeholder.com/150",
-          isFollowing: true,
-        ),
-        UserLike(
-          userId: "5",
-          userName: "alex_brown",
-          userFullName: "Alex Brown",
-          userProfileImage: "https://via.placeholder.com/150",
-          isFollowing: false,
-        ),
-      ];
-      isLoading = false;
-    });
-  }
-
-  void _toggleFollow(String userId) {
-    setState(() {
-      final userIndex = likedUsers.indexWhere((user) => user.userId == userId);
-      if (userIndex != -1) {
-        likedUsers[userIndex].isFollowing = !likedUsers[userIndex].isFollowing;
-      }
-    });
-
-    // TODO: Implement actual follow/unfollow API call
-    print('Toggle follow for user: $userId');
+    postBloc.add(GetLikedByUserEvent(postId: widget.postId));
   }
 
   @override
@@ -89,10 +39,6 @@ class _LikedByUserScreenState extends State<LikedByUserScreen> {
         backgroundColor: Colors.white,
         elevation: 0,
         titleSpacing: 0,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.black87),
-          onPressed: () => Navigator.pop(context),
-        ),
         title: Text(
           "Likes",
           style: TextStyle(
@@ -102,20 +48,7 @@ class _LikedByUserScreenState extends State<LikedByUserScreen> {
           ),
         ),
       ),
-      body: isLoading
-          ? _buildLoadingState()
-          : likedUsers.isEmpty
-              ? _buildEmptyState()
-              : _buildUsersList(),
-    );
-  }
-
-  Widget _buildLoadingState() {
-    return Center(
-      child: CircularProgressIndicator(
-        color: primaryColor,
-        strokeWidth: 2,
-      ),
+      body: _buildUsersList(),
     );
   }
 
@@ -153,17 +86,35 @@ class _LikedByUserScreenState extends State<LikedByUserScreen> {
   }
 
   Widget _buildUsersList() {
-    return ListView.builder(
-      padding: EdgeInsets.symmetric(vertical: 8),
-      itemCount: likedUsers.length,
-      itemBuilder: (context, index) {
-        final user = likedUsers[index];
-        return _buildUserTile(user);
+    return BlocBuilder<PostBloc, PostState>(
+      buildWhen: (previous, current) => previous.likeByUserApiStatus != current.likeByUserApiStatus,
+      builder: (context, state) {
+        if (state.likeByUserApiStatus == ApiStatus.loading) {
+          return Center(
+            child: CircularProgressIndicator(),
+          );
+        }
+        if ((state.likedByUserData ?? []).isEmpty) {
+          return _buildEmptyState();
+        }
+
+        return ListView.builder(
+          padding: EdgeInsets.symmetric(vertical: 8),
+          itemCount: state.likedByUserData?.length,
+          itemBuilder: (context, index) {
+            final User? user = state.likedByUserData?[index];
+            return InkWell(
+                onTap: () {
+                  appRouter.push(RouterName.otherUserProfile.path, extra: ProfileScreenDataModel(userId: user?.id ?? ''));
+                },
+                child: _buildUserTile(user));
+          },
+        );
       },
     );
   }
 
-  Widget _buildUserTile(UserLike user) {
+  Widget _buildUserTile(User? user) {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 20, vertical: 16),
       child: Row(
@@ -177,15 +128,28 @@ class _LikedByUserScreenState extends State<LikedByUserScreen> {
               color: Colors.grey[100],
             ),
             child: ClipOval(
-              child: user.userProfileImage.isNotEmpty
-                  ? Image.network(
-                      user.userProfileImage,
+              child: (user?.profile?.profilePicture ?? '').isNotEmpty
+                  ? CachedNetworkImage(
+                      imageUrl: user?.profile?.profilePicture ?? '',
                       fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) {
-                        return _buildDefaultAvatar(user.userFullName);
+                      errorWidget: (context, url, error) {
+                        return Image.asset(
+                          AppAssets.profilePng,
+                          height: 26,
+                          width: 26,
+                          fit: BoxFit.cover,
+                        );
+                      },
+                      placeholder: (context, url) {
+                        return Image.asset(
+                          AppAssets.profilePng,
+                          height: 50,
+                          width: 50,
+                          fit: BoxFit.cover,
+                        );
                       },
                     )
-                  : _buildDefaultAvatar(user.userFullName),
+                  : _buildDefaultAvatar(user?.fullName ?? ''),
             ),
           ),
 
@@ -197,7 +161,7 @@ class _LikedByUserScreenState extends State<LikedByUserScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  user.userName,
+                  user?.userName ?? 'guest11',
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
@@ -206,7 +170,7 @@ class _LikedByUserScreenState extends State<LikedByUserScreen> {
                 ),
                 SizedBox(height: 4),
                 Text(
-                  user.userFullName,
+                  user?.fullName ?? 'guest',
                   style: TextStyle(
                     fontSize: 14,
                     color: Colors.grey[600],
@@ -216,8 +180,7 @@ class _LikedByUserScreenState extends State<LikedByUserScreen> {
             ),
           ),
 
-          // Follow/Unfollow Button
-          _buildFollowButton(user),
+          if (user?.id != userId) _buildFollowButton(user),
         ],
       ),
     );
@@ -231,8 +194,9 @@ class _LikedByUserScreenState extends State<LikedByUserScreen> {
       height: 50,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: primaryColor,
+        color: primaryColor.withValues(alpha: 0.7),
       ),
+      alignment: Alignment.center,
       child: Center(
         child: Text(
           initials,
@@ -246,20 +210,20 @@ class _LikedByUserScreenState extends State<LikedByUserScreen> {
     );
   }
 
-  Widget _buildFollowButton(UserLike user) {
+  Widget _buildFollowButton(User? user) {
     return GestureDetector(
-      onTap: () => _toggleFollow(user.userId),
+      onTap: () {},
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: 24, vertical: 10),
         decoration: BoxDecoration(
-          color: user.isFollowing ? Colors.grey[100] : primaryColor,
+          color: (user?.isFollowed ?? false) ? Colors.grey[100] : primaryColor,
           borderRadius: BorderRadius.circular(8),
-          border: user.isFollowing ? Border.all(color: Colors.grey[300]!, width: 1) : null,
+          border: (user?.isFollowed ?? false) ? Border.all(color: Colors.grey[300]!, width: 1) : null,
         ),
         child: Text(
-          user.isFollowing ? "Following" : "Follow",
+          (user?.isFollowed ?? false) ? "Following" : "Follow",
           style: TextStyle(
-            color: user.isFollowing ? Colors.black87 : Colors.white,
+            color: (user?.isFollowed ?? false) ? Colors.black87 : Colors.white,
             fontSize: 14,
             fontWeight: FontWeight.w600,
           ),

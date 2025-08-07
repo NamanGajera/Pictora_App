@@ -40,6 +40,9 @@ class PostBloc extends Bloc<PostEvent, PostState> {
     on<TogglePostSaveEvent>(_togglePostSave, transformer: sequential());
     on<DeletePostEvent>(_deletePost, transformer: droppable());
     on<ArchivePostEvent>(_archivePost, transformer: droppable());
+    on<GetLikedByUserEvent>(_getLikedByUser, transformer: droppable());
+    on<GetMyPostEvent>(_getMyPost);
+    on<GetOtherUserPostsEvent>(_getOtherUserPost);
   }
 
   Future<void> _createPost(CreatePostEvent event, Emitter<PostState> emit) async {
@@ -94,6 +97,54 @@ class PostBloc extends Bloc<PostEvent, PostState> {
       ));
     } catch (error, stackTrace) {
       emit(state.copyWith(getAllPostApiStatus: ApiStatus.failure));
+      ThemeHelper.showToastMessage("$error");
+      handleError(
+        error: error,
+        stackTrace: stackTrace,
+        emit: emit,
+        stateCopyWith: (statusCode, errorMessage) => state.copyWith(
+          statusCode: statusCode,
+          errorMessage: errorMessage,
+        ),
+      );
+    }
+  }
+
+  Future<void> _getMyPost(GetMyPostEvent event, Emitter<PostState> emit) async {
+    try {
+      emit(state.copyWith(getMyPostApiStatus: ApiStatus.loading));
+      final data = await repository.getAllPost(event.body);
+
+      emit(state.copyWith(
+        getMyPostApiStatus: ApiStatus.success,
+        myPostData: data.data,
+      ));
+    } catch (error, stackTrace) {
+      emit(state.copyWith(getMyPostApiStatus: ApiStatus.failure));
+      ThemeHelper.showToastMessage("$error");
+      handleError(
+        error: error,
+        stackTrace: stackTrace,
+        emit: emit,
+        stateCopyWith: (statusCode, errorMessage) => state.copyWith(
+          statusCode: statusCode,
+          errorMessage: errorMessage,
+        ),
+      );
+    }
+  }
+
+  Future<void> _getOtherUserPost(GetOtherUserPostsEvent event, Emitter<PostState> emit) async {
+    try {
+      emit(state.copyWith(getOtherUserPostApiStatus: ApiStatus.loading));
+      final data = await repository.getAllPost(event.body);
+
+      emit(state.copyWith(
+        getOtherUserPostApiStatus: ApiStatus.success,
+        otherUserPostData: data.data,
+      ));
+    } catch (error, stackTrace) {
+      emit(state.copyWith(getOtherUserPostApiStatus: ApiStatus.failure));
       ThemeHelper.showToastMessage("$error");
       handleError(
         error: error,
@@ -419,6 +470,35 @@ class PostBloc extends Bloc<PostEvent, PostState> {
     }
   }
 
+  Future<void> _getLikedByUser(GetLikedByUserEvent event, Emitter<PostState> emit) async {
+    try {
+      emit(state.copyWith(likeByUserApiStatus: ApiStatus.loading));
+      final data = await repository.getLikedByUser(
+        postId: event.postId,
+        body: {
+          "skip": 0,
+          "take": 25,
+        },
+      );
+      emit(state.copyWith(
+        likeByUserApiStatus: ApiStatus.success,
+        likedByUserData: data.data,
+      ));
+    } catch (error, stackTrace) {
+      emit(state.copyWith(likeByUserApiStatus: ApiStatus.failure));
+      ThemeHelper.showToastMessage("$error");
+      handleError(
+        error: error,
+        stackTrace: stackTrace,
+        emit: emit,
+        stateCopyWith: (statusCode, errorMessage) => state.copyWith(
+          statusCode: statusCode,
+          errorMessage: errorMessage,
+        ),
+      );
+    }
+  }
+
   void _updateComment({
     required String commentId,
     PostCommentApiStatus apiStatus = PostCommentApiStatus.success,
@@ -486,6 +566,24 @@ class PostBloc extends Bloc<PostEvent, PostState> {
     emit(state.copyWith(
       allPostData: _updatePostData(
         postList: state.allPostData ?? [],
+        postId: postId,
+        updateCommentCount: updateCommentCount,
+        repliesCount: repliesCount,
+        isLiked: isLiked,
+        isSaved: isSaved,
+        isDelete: isDelete,
+      ),
+      myPostData: _updatePostData(
+        postList: state.myPostData ?? [],
+        postId: postId,
+        updateCommentCount: updateCommentCount,
+        repliesCount: repliesCount,
+        isLiked: isLiked,
+        isSaved: isSaved,
+        isDelete: isDelete,
+      ),
+      otherUserPostData: _updatePostData(
+        postList: state.otherUserPostData ?? [],
         postId: postId,
         updateCommentCount: updateCommentCount,
         repliesCount: repliesCount,

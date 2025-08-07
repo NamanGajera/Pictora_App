@@ -1,3 +1,5 @@
+import '../../../model/user_model.dart';
+
 class AuthModel {
   int? statusCode;
   String? message;
@@ -39,77 +41,6 @@ class Data {
     if (user != null) {
       data['user'] = user!.toJson();
     }
-    return data;
-  }
-}
-
-class User {
-  String? id;
-  String? fullName;
-  String? userName;
-  String? email;
-  String? password;
-  String? createdAt;
-  String? updatedAt;
-  Profile? profile;
-
-  User({
-    this.id,
-    this.fullName,
-    this.userName,
-    this.email,
-    this.password,
-    this.createdAt,
-    this.updatedAt,
-    this.profile,
-  });
-
-  User.fromJson(Map<String, dynamic> json) {
-    id = json['id'];
-    fullName = json['fullName'];
-    userName = json['userName'];
-    email = json['email'];
-    password = json['password'];
-    createdAt = json['createdAt'];
-    updatedAt = json['updatedAt'];
-    profile =
-        json['profile'] != null ? Profile.fromJson(json['profile']) : null;
-  }
-
-  Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = <String, dynamic>{};
-    data['id'] = id;
-    data['fullName'] = fullName;
-    data['userName'] = userName;
-    data['email'] = email;
-    data['password'] = password;
-    data['createdAt'] = createdAt;
-    data['updatedAt'] = updatedAt;
-    if (profile != null) {
-      data['profile'] = profile!.toJson();
-    }
-    return data;
-  }
-}
-
-class Profile {
-  String? profilePicture;
-  String? gender;
-  bool? isPrivate;
-
-  Profile({this.profilePicture, this.gender, this.isPrivate});
-
-  Profile.fromJson(Map<String, dynamic> json) {
-    profilePicture = json['profilePicture'];
-    gender = json['gender'];
-    isPrivate = json['isPrivate'];
-  }
-
-  Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = <String, dynamic>{};
-    data['profilePicture'] = profilePicture;
-    data['gender'] = gender;
-    data['isPrivate'] = isPrivate;
     return data;
   }
 }
