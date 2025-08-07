@@ -12,17 +12,17 @@ class User {
     fullName = json['fullName'];
     userName = json['userName'];
     email = json['email'];
-    profile = json['profile'] != null ? new Profile.fromJson(json['profile']) : null;
+    profile = json['profile'] != null ? Profile.fromJson(json['profile']) : null;
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['id'] = this.id;
-    data['fullName'] = this.fullName;
-    data['userName'] = this.userName;
-    data['email'] = this.email;
-    if (this.profile != null) {
-      data['profile'] = this.profile!.toJson();
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['id'] = id;
+    data['fullName'] = fullName;
+    data['userName'] = userName;
+    data['email'] = email;
+    if (profile != null) {
+      data['profile'] = profile!.toJson();
     }
     return data;
   }
@@ -38,8 +38,8 @@ class Profile {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['profilePicture'] = this.profilePicture;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['profilePicture'] = profilePicture;
     return data;
   }
 }

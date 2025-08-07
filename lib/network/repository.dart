@@ -168,12 +168,12 @@ class Repository {
     }
   }
 
-  Future<CommonMessageModel> deletePost(dynamic body) async {
+  Future<CommonMessageModel> deletePost(String postId) async {
     try {
-      Map<String, dynamic> json = await apiClient.postApiCall(
-        endPoint: togglePostSaveApiEndPoint,
+      Map<String, dynamic> json = await apiClient.deleteAPICalls(
+        baseUrl: baseUrl,
+        endPoint: '$postRoute/$postId',
         isAccessToken: accessToken,
-        postBody: body,
       );
 
       return CommonMessageModel.fromJson(json);

@@ -23,7 +23,7 @@ class ApiClient {
     if (isAccessToken != null) {
       headers = {
         "Content-Type": "application/json",
-        "Authorization": '$isAccessToken',
+        "Authorization": isAccessToken,
       };
     } else {
       headers = {"Content-Type": "application/json"};
@@ -58,7 +58,7 @@ class ApiClient {
     if (isAccessToken != null) {
       headers = {
         "Content-Type": "application/json",
-        "Authorization": '$isAccessToken',
+        "Authorization": isAccessToken,
       };
     } else {
       headers = {"Content-Type": "application/json"};
@@ -97,7 +97,7 @@ class ApiClient {
     if (isAccessToken != null) {
       headers = {
         "Content-Type": "application/json",
-        "Authorization": '$isAccessToken',
+        "Authorization": isAccessToken,
       };
     } else {
       headers = {"Content-Type": "application/json"};
@@ -128,7 +128,7 @@ class ApiClient {
     if (isAccessToken != null) {
       headers = {
         "Content-Type": "application/json",
-        "Authorization": '$isAccessToken',
+        "Authorization": isAccessToken,
       };
     } else {
       headers = {"Content-Type": "application/json"};
@@ -208,7 +208,7 @@ class ApiClient {
 
     // Set headers
     final headers = <String, String>{
-      if (authorizationToken != null) 'Authorization': '$authorizationToken',
+      if (authorizationToken != null) 'Authorization': authorizationToken,
       ...?additionalHeaders,
     };
     request.headers.addAll(headers);

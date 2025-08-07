@@ -2,7 +2,9 @@ import "package:flutter/material.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
 import "package:flutter_svg/flutter_svg.dart";
 import "package:pictora/features/post/screens/comment_screen.dart";
+import "package:pictora/features/post/screens/liked_by_user_screen.dart";
 import "package:pictora/router/router.dart";
+import "package:pictora/router/router_name.dart";
 import "package:pictora/utils/constants/app_assets.dart";
 import "package:pictora/utils/constants/enums.dart";
 import "package:pictora/utils/widgets/custom_widget.dart";
@@ -58,8 +60,7 @@ class _PostWidgetState extends State<PostWidget> {
           _buildActionButtons(),
           _buildLikesSection(),
           _buildCaptionSection(),
-          _buildCommentsSection(),
-          const SizedBox(height: 12),
+          const SizedBox(height: 8),
         ],
       ),
     );
@@ -92,8 +93,11 @@ class _PostWidgetState extends State<PostWidget> {
               child: CircleAvatar(
                 radius: 18,
                 backgroundColor: primaryColor.withValues(alpha: 0.1),
-                backgroundImage: (widget.post?.userData?.profile?.profilePicture ?? '').isNotEmpty ? NetworkImage(widget.post?.userData?.profile?.profilePicture ?? '') : null,
-                child: (widget.post?.userData?.profile?.profilePicture ?? '').isEmpty ? const Icon(Icons.person, color: primaryColor, size: 20) : null,
+                backgroundImage: (widget.post?.userData?.profile?.profilePicture ?? '').isNotEmpty
+                    ? NetworkImage(widget.post?.userData?.profile?.profilePicture ?? '')
+                    : null,
+                child:
+                    (widget.post?.userData?.profile?.profilePicture ?? '').isEmpty ? const Icon(Icons.person, color: primaryColor, size: 20) : null,
               ),
             ),
           ),
@@ -208,7 +212,7 @@ class _PostWidgetState extends State<PostWidget> {
               ),
             ),
           ),
-          const SizedBox(width: 16),
+          const SizedBox(width: 8),
           GestureDetector(
             onTap: () {
               showModalBottomSheet(
@@ -243,7 +247,7 @@ class _PostWidgetState extends State<PostWidget> {
                   height: 26,
                   width: 26,
                 ),
-                SizedBox(width: widget.post?.commentCount != 0 ? 8 : 5),
+                SizedBox(width: widget.post?.commentCount != 0 ? 3 : 5),
                 if (widget.post?.commentCount != 0)
                   CustomText(
                     _formatNumber(widget.post?.commentCount ?? 0),
@@ -254,7 +258,7 @@ class _PostWidgetState extends State<PostWidget> {
               ],
             ),
           ),
-          const SizedBox(width: 6),
+          const SizedBox(width: 8),
           GestureDetector(
             onTap: () {},
             child: SvgPicture.asset(
@@ -285,13 +289,18 @@ class _PostWidgetState extends State<PostWidget> {
   }
 
   Widget _buildLikesSection() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: CustomText(
-        '${_formatNumber(widget.post?.likeCount ?? 0)} likes',
-        fontWeight: FontWeight.w600,
-        fontSize: 14,
-        color: Colors.black87,
+    return InkWell(
+      onTap: () {
+        appRouter.push(RouterName.likedByUsers.path, extra: LikedByUserScreenDataModel(postId: widget.post?.id ?? ''));
+      },
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: CustomText(
+          '${_formatNumber(widget.post?.likeCount ?? 0)} likes',
+          fontWeight: FontWeight.w600,
+          fontSize: 14,
+          color: Colors.black87,
+        ),
       ),
     );
   }
@@ -321,22 +330,6 @@ class _PostWidgetState extends State<PostWidget> {
         ),
         maxLines: 3,
         overflow: TextOverflow.ellipsis,
-      ),
-    );
-  }
-
-  Widget _buildCommentsSection() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: GestureDetector(
-        onTap: () {},
-        child: Text(
-          'View all ${widget.post?.commentCount} comments',
-          style: TextStyle(
-            color: Colors.grey[600],
-            fontSize: 14,
-          ),
-        ),
       ),
     );
   }

@@ -520,7 +520,8 @@ class _CommentItemState extends State<CommentItem> {
                               fontStyle: FontStyle.italic,
                             ),
                           ],
-                          if (!([PostCommentApiStatus.posting, PostCommentApiStatus.failure, PostCommentApiStatus.deleting].contains(widget.comment?.apiStatus))) ...[
+                          if (!([PostCommentApiStatus.posting, PostCommentApiStatus.failure, PostCommentApiStatus.deleting]
+                              .contains(widget.comment?.apiStatus))) ...[
                             Text(
                               DateFormatter.getRelativeTime(widget.comment?.createdAt),
                               style: TextStyle(
@@ -963,7 +964,8 @@ class _ChildCommentItemState extends State<ChildCommentItem> {
                               fontStyle: FontStyle.italic,
                             ),
                           ],
-                          if (!([PostCommentApiStatus.posting, PostCommentApiStatus.failure, PostCommentApiStatus.deleting].contains(widget.childComment?.apiStatus))) ...[
+                          if (!([PostCommentApiStatus.posting, PostCommentApiStatus.failure, PostCommentApiStatus.deleting]
+                              .contains(widget.childComment?.apiStatus))) ...[
                             Text(
                               DateFormatter.getRelativeTime(widget.childComment?.createdAt),
                               style: TextStyle(
@@ -1144,7 +1146,11 @@ class HighlightedComment extends StatelessWidget {
   }
 }
 
-class CommunityPostCommentScreenDataModel {
+class CommentScreenDataModel {
   final String postId;
-  CommunityPostCommentScreenDataModel({required this.postId});
+  final String postUserId;
+  CommentScreenDataModel({
+    required this.postId,
+    required this.postUserId,
+  });
 }

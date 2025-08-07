@@ -3,6 +3,8 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:pictora/features/post/screens/add_post_screen.dart';
+import 'package:pictora/features/post/screens/comment_screen.dart';
+import 'package:pictora/features/post/screens/liked_by_user_screen.dart';
 import 'package:pictora/features/post/screens/post_asset_picker_screen.dart';
 import 'package:pictora/features/auth/screens/register_screen.dart';
 import 'package:pictora/features/home/screens/home_screen.dart';
@@ -21,8 +23,7 @@ final GoRouter appRouter = GoRouter(
     GoRoute(
       path: RouterName.splash.path,
       name: RouterName.splash.name,
-      pageBuilder: (BuildContext context, GoRouterState state) =>
-          MaterialPage<void>(
+      pageBuilder: (BuildContext context, GoRouterState state) => MaterialPage<void>(
         key: state.pageKey,
         child: const SplashScreen(),
       ),
@@ -52,8 +53,7 @@ final GoRouter appRouter = GoRouter(
               path: RouterName.home.path,
               name: RouterName.home.name,
               pageBuilder: (BuildContext context, GoRouterState state) {
-                HomeScreenDataModel? screenData =
-                    state.extra as HomeScreenDataModel?;
+                HomeScreenDataModel? screenData = state.extra as HomeScreenDataModel?;
                 return NoTransitionPage<void>(
                   key: state.pageKey,
                   child: HomeScreen(
@@ -69,8 +69,7 @@ final GoRouter appRouter = GoRouter(
             GoRoute(
               path: RouterName.search.path,
               name: RouterName.search.name,
-              pageBuilder: (BuildContext context, GoRouterState state) =>
-                  NoTransitionPage<void>(
+              pageBuilder: (BuildContext context, GoRouterState state) => NoTransitionPage<void>(
                 key: state.pageKey,
                 child: const SearchScreen(),
               ),
@@ -82,8 +81,7 @@ final GoRouter appRouter = GoRouter(
             GoRoute(
               path: RouterName.postAssetPicker.path,
               name: RouterName.postAssetPicker.name,
-              pageBuilder: (BuildContext context, GoRouterState state) =>
-                  NoTransitionPage<void>(
+              pageBuilder: (BuildContext context, GoRouterState state) => NoTransitionPage<void>(
                 key: state.pageKey,
                 child: const PostAssetPickerScreen(),
               ),
@@ -95,8 +93,7 @@ final GoRouter appRouter = GoRouter(
             GoRoute(
               path: RouterName.profile.path,
               name: RouterName.profile.name,
-              pageBuilder: (BuildContext context, GoRouterState state) =>
-                  NoTransitionPage<void>(
+              pageBuilder: (BuildContext context, GoRouterState state) => NoTransitionPage<void>(
                 key: state.pageKey,
                 child: const ProfileScreen(),
               ),
@@ -109,8 +106,7 @@ final GoRouter appRouter = GoRouter(
       path: RouterName.addPost.path,
       name: RouterName.addPost.name,
       pageBuilder: (context, state) {
-        AddPostScreenDataModel screenData =
-            state.extra as AddPostScreenDataModel;
+        AddPostScreenDataModel screenData = state.extra as AddPostScreenDataModel;
         return SlideTransitionPage(
           child: AddPostScreen(
             selectedAssets: screenData.selectedAssets,
@@ -122,12 +118,36 @@ final GoRouter appRouter = GoRouter(
       path: RouterName.videoCoverSelector.path,
       name: RouterName.videoCoverSelector.name,
       pageBuilder: (context, state) {
-        VideoCoverSelectorDataModel screenData =
-            state.extra as VideoCoverSelectorDataModel;
+        VideoCoverSelectorDataModel screenData = state.extra as VideoCoverSelectorDataModel;
         return SlideTransitionPage(
           child: VideoCoverSelector(
             covers: screenData.covers,
             videoFile: screenData.videoFile,
+          ),
+        );
+      },
+    ),
+    GoRoute(
+      path: RouterName.postComment.path,
+      name: RouterName.postComment.name,
+      pageBuilder: (context, state) {
+        CommentScreenDataModel screenData = state.extra as CommentScreenDataModel;
+        return SlideUpTransitionPage(
+          child: CommentScreen(
+            postId: screenData.postId,
+            postUserId: screenData.postUserId,
+          ),
+        );
+      },
+    ),
+    GoRoute(
+      path: RouterName.likedByUsers.path,
+      name: RouterName.likedByUsers.name,
+      pageBuilder: (context, state) {
+        LikedByUserScreenDataModel screenData = state.extra as LikedByUserScreenDataModel;
+        return SlideUpTransitionPage(
+          child: LikedByUserScreen(
+            postId: screenData.postId,
           ),
         );
       },

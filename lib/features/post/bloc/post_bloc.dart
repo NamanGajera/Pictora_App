@@ -62,8 +62,12 @@ class PostBloc extends Bloc<PostEvent, PostState> {
 
       final data = await repository.createPost(fields: fields, fileFields: fileFields);
 
+      emit(state.copyWith(
+        createPostApiStatus: ApiStatus.success,
+        allPostData: [(data.data ?? PostData()), ...(state.allPostData ?? [])],
+      ));
+      ThemeHelper.showToastMessage(data.message ?? 'Post created');
       logDebug(message: data.toString());
-      emit(state.copyWith(createPostApiStatus: ApiStatus.success));
     } catch (error, stackTrace) {
       emit(state.copyWith(createPostApiStatus: ApiStatus.failure));
       ThemeHelper.showToastMessage("$error");
@@ -284,10 +288,10 @@ class PostBloc extends Bloc<PostEvent, PostState> {
 
       final data = await repository.deleteComment(event.commentId);
 
-      final CommentData? comment = (state.commentDataList ?? []).firstWhere((comment) => comment.id == event.commentId, orElse: () => CommentData());
+      final CommentData comment = (state.commentDataList ?? []).firstWhere((comment) => comment.id == event.commentId, orElse: () => CommentData());
       int repliesCount = 0;
-      if (comment?.parentCommentId == null) {
-        repliesCount = comment?.repliesCount ?? 0;
+      if (comment.parentCommentId == null) {
+        repliesCount = comment.repliesCount ?? 0;
       }
       _updateComment(
         commentId: event.commentId,

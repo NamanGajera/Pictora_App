@@ -48,31 +48,31 @@ class PostData {
     if (json['mediaData'] != null) {
       mediaData = <MediaData>[];
       json['mediaData'].forEach((v) {
-        mediaData!.add(new MediaData.fromJson(v));
+        mediaData!.add(MediaData.fromJson(v));
       });
     }
-    userData = json['userData'] != null ? new User.fromJson(json['userData']) : null;
+    userData = json['userData'] != null ? User.fromJson(json['userData']) : null;
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['id'] = this.id;
-    data['userId'] = this.userId;
-    data['caption'] = this.caption;
-    data['likeCount'] = this.likeCount;
-    data['commentCount'] = this.commentCount;
-    data['shareCount'] = this.shareCount;
-    data['saveCount'] = this.saveCount;
-    data['viewCount'] = this.viewCount;
-    data['createdAt'] = this.createdAt;
-    data['updatedAt'] = this.updatedAt;
-    data['isLiked'] = this.isLiked;
-    data['isSaved'] = this.isSaved;
-    if (this.mediaData != null) {
-      data['mediaData'] = this.mediaData!.map((v) => v.toJson()).toList();
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['id'] = id;
+    data['userId'] = userId;
+    data['caption'] = caption;
+    data['likeCount'] = likeCount;
+    data['commentCount'] = commentCount;
+    data['shareCount'] = shareCount;
+    data['saveCount'] = saveCount;
+    data['viewCount'] = viewCount;
+    data['createdAt'] = createdAt;
+    data['updatedAt'] = updatedAt;
+    data['isLiked'] = isLiked;
+    data['isSaved'] = isSaved;
+    if (mediaData != null) {
+      data['mediaData'] = mediaData!.map((v) => v.toJson()).toList();
     }
-    if (this.userData != null) {
-      data['userData'] = this.userData!.toJson();
+    if (userData != null) {
+      data['userData'] = userData!.toJson();
     }
     return data;
   }
@@ -134,14 +134,14 @@ class MediaData {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['id'] = this.id;
-    data['postId'] = this.postId;
-    data['mediaUrl'] = this.mediaUrl;
-    data['thumbnail'] = this.thumbnail;
-    data['mediaType'] = this.mediaType;
-    data['createdAt'] = this.createdAt;
-    data['updatedAt'] = this.updatedAt;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['id'] = id;
+    data['postId'] = postId;
+    data['mediaUrl'] = mediaUrl;
+    data['thumbnail'] = thumbnail;
+    data['mediaType'] = mediaType;
+    data['createdAt'] = createdAt;
+    data['updatedAt'] = updatedAt;
     return data;
   }
 }

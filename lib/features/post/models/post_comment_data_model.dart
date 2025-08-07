@@ -15,20 +15,20 @@ class PostCommentDataModel {
     if (json['data'] != null) {
       data = <CommentData>[];
       json['data'].forEach((v) {
-        data!.add(new CommentData.fromJson(v));
+        data!.add(CommentData.fromJson(v));
       });
     }
     total = json['total'];
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['statusCode'] = this.statusCode;
-    data['message'] = this.message;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['statusCode'] = statusCode;
+    data['message'] = message;
     if (this.data != null) {
       data['data'] = this.data!.map((v) => v.toJson()).toList();
     }
-    data['total'] = this.total;
+    data['total'] = total;
     return data;
   }
 }
@@ -77,26 +77,26 @@ class CommentData {
     createdAt = json['createdAt'];
     updatedAt = json['updatedAt'];
     repliesCount = json['repliesCount'];
-    user = json['user'] != null ? new User.fromJson(json['user']) : null;
+    user = json['user'] != null ? User.fromJson(json['user']) : null;
     isLiked = json['isLiked'];
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['id'] = this.id;
-    data['postId'] = this.postId;
-    data['userId'] = this.userId;
-    data['comment'] = this.comment;
-    data['parentCommentId'] = this.parentCommentId;
-    data['likeCount'] = this.likeCount;
-    data['isPinned'] = this.isPinned;
-    data['createdAt'] = this.createdAt;
-    data['updatedAt'] = this.updatedAt;
-    data['repliesCount'] = this.repliesCount;
-    if (this.user != null) {
-      data['user'] = this.user!.toJson();
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['id'] = id;
+    data['postId'] = postId;
+    data['userId'] = userId;
+    data['comment'] = comment;
+    data['parentCommentId'] = parentCommentId;
+    data['likeCount'] = likeCount;
+    data['isPinned'] = isPinned;
+    data['createdAt'] = createdAt;
+    data['updatedAt'] = updatedAt;
+    data['repliesCount'] = repliesCount;
+    if (user != null) {
+      data['user'] = user!.toJson();
     }
-    data['isLiked'] = this.isLiked;
+    data['isLiked'] = isLiked;
     return data;
   }
 
@@ -105,7 +105,7 @@ class CommentData {
     String? postId,
     String? userId,
     String? comment,
-    dynamic? parentCommentId,
+    dynamic parentCommentId,
     int? likeCount,
     bool? isPinned,
     String? createdAt,

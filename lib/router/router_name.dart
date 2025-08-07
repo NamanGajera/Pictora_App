@@ -7,7 +7,9 @@ enum RouterName {
   profile('/profile', "profile"),
   postAssetPicker('/postAssetPicker', "postAssetPicker"),
   addPost('/addPost', "addPost"),
-  videoCoverSelector('/videoCoverSelector', "videoCoverSelector");
+  videoCoverSelector('/videoCoverSelector', "videoCoverSelector"),
+  postComment('/postComment', "postComment"),
+  likedByUsers('/likedByUsers', "likedByUsers");
 
   final String path;
   final String name;

@@ -7,11 +7,9 @@ import 'package:pictora/utils/constants/bloc_instances.dart';
 import 'package:pictora/utils/constants/constants.dart';
 import 'package:pictora/utils/constants/enums.dart';
 import 'package:pictora/utils/extensions/build_context_extension.dart';
-import 'package:pictora/utils/services/custom_logger.dart';
 import 'package:pictora/utils/widgets/custom_widget.dart';
 
 import '../../../utils/constants/colors.dart';
-import '../../post/models/post_data.dart';
 import '../../post/screens/widgets/post_widget.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -38,17 +36,16 @@ class _HomeScreenState extends State<HomeScreen> {
       appBar: _buildAppBar(),
       body: RefreshIndicator(
         onRefresh: () async {
-          // Handle refresh
           await Future.delayed(const Duration(seconds: 1));
         },
         child: Column(
           children: [
+            const SizedBox(height: 15),
             BlocBuilder<PostBloc, PostState>(
               builder: (context, state) {
                 if (state.createPostApiStatus == ApiStatus.loading) {
                   return Container(
-                    margin:
-                        const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+                    margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
                     padding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
                     decoration: BoxDecoration(
                       color: Colors.white,

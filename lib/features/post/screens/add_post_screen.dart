@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:insta_assets_picker/insta_assets_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:photo_manager/photo_manager.dart';
-import 'package:pictora/features/home/screens/home_screen.dart';
 import 'package:pictora/features/post/bloc/post_bloc.dart';
 import 'package:pictora/utils/constants/bloc_instances.dart';
 import 'package:pictora/utils/constants/colors.dart';
@@ -126,12 +125,11 @@ class _AddPostScreenState extends State<AddPostScreen> {
       _generateCoverAtTime(videoFile.path, 100),
     ]);
 
-    final selectedCover =
-        await appRouter.push<File>(RouterName.videoCoverSelector.path,
-            extra: VideoCoverSelectorDataModel(
-              covers: covers.whereType<File>().toList(),
-              videoFile: videoFile,
-            ));
+    final selectedCover = await appRouter.push<File>(RouterName.videoCoverSelector.path,
+        extra: VideoCoverSelectorDataModel(
+          covers: covers.whereType<File>().toList(),
+          videoFile: videoFile,
+        ));
 
     if (selectedCover != null && mounted) {
       setState(() {
@@ -184,72 +182,62 @@ class _AddPostScreenState extends State<AddPostScreen> {
         ),
         backgroundColor: scaffoldBgColor,
       ),
-      body: Column(
-        children: [
-          if (_isGeneratingThumbnails)
-            const LinearProgressIndicator(minHeight: 2)
-          else
-            const SizedBox(height: 2),
-          Expanded(
-            child: Column(
-              children: [
-                _buildMediaCarousel(),
-                const SizedBox(height: 16),
-                _buildCaptionField(),
-              ],
-            ),
-          ),
-          CustomButton(
-            text: "Post",
-            onTap: () async {
-              final List<File> mediaFiles = await _getAllAssetFiles();
-              final List<File> thumbnailFiles = [];
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            if (_isGeneratingThumbnails) const LinearProgressIndicator(minHeight: 2) else const SizedBox(height: 2),
+            _buildMediaCarousel(),
+            const SizedBox(height: 16),
+            _buildCaptionField(),
+          ],
+        ),
+      ),
+      bottomNavigationBar: CustomButton(
+        text: "Post",
+        onTap: () async {
+          final List<File> mediaFiles = await _getAllAssetFiles();
+          final List<File> thumbnailFiles = [];
 
-              // Generate thumbnails for videos
-              for (int i = 0; i < assets.length; i++) {
-                if (assets[i].type == AssetType.video) {
-                  if (selectedVideoCovers.containsKey(i)) {
-                    thumbnailFiles.add(selectedVideoCovers[i]!);
-                  } else if (videoThumbnails[i] != null) {
-                    thumbnailFiles.add(videoThumbnails[i]!);
-                  } else {
-                    // Fallback: generate thumbnail if none exists
-                    final thumbnail = await _generateVideoThumbnail(assets[i]);
-                    if (thumbnail != null) {
-                      thumbnailFiles.add(thumbnail);
-                    }
-                  }
+          // Generate thumbnails for videos
+          for (int i = 0; i < assets.length; i++) {
+            if (assets[i].type == AssetType.video) {
+              if (selectedVideoCovers.containsKey(i)) {
+                thumbnailFiles.add(selectedVideoCovers[i]!);
+              } else if (videoThumbnails[i] != null) {
+                thumbnailFiles.add(videoThumbnails[i]!);
+              } else {
+                // Fallback: generate thumbnail if none exists
+                final thumbnail = await _generateVideoThumbnail(assets[i]);
+                if (thumbnail != null) {
+                  thumbnailFiles.add(thumbnail);
                 }
               }
+            }
+          }
 
-              File previewFileImage;
-              if (assets[0].type == AssetType.video) {
-                previewFileImage = thumbnailFiles.isNotEmpty
-                    ? thumbnailFiles[0]
-                    : mediaFiles[0];
-              } else {
-                previewFileImage = mediaFiles[0];
-              }
+          File previewFileImage;
+          if (assets[0].type == AssetType.video) {
+            previewFileImage = thumbnailFiles.isNotEmpty ? thumbnailFiles[0] : mediaFiles[0];
+          } else {
+            previewFileImage = mediaFiles[0];
+          }
 
-              final postData = {
-                "caption": captionController.text.trim(),
-                "media": mediaFiles,
-                "thumbnails": thumbnailFiles,
-              };
+          final postData = {
+            "caption": captionController.text.trim(),
+            "media": mediaFiles,
+            "thumbnails": thumbnailFiles,
+          };
 
-              logInfo(message: "Post Data: $postData");
+          logInfo(message: "Post Data: $postData");
 
-              postBloc.add(CreatePostEvent(
-                caption: captionController.text.trim(),
-                mediaData: mediaFiles,
-                thumbnailData: thumbnailFiles,
-                previewFile: previewFileImage,
-              ));
-            },
-          ).withPadding(
-              const EdgeInsets.symmetric(horizontal: 14, vertical: 14)),
-        ],
-      ),
+          postBloc.add(CreatePostEvent(
+            caption: captionController.text.trim(),
+            mediaData: mediaFiles,
+            thumbnailData: thumbnailFiles,
+            previewFile: previewFileImage,
+          ));
+        },
+      ).withPadding(const EdgeInsets.symmetric(horizontal: 14, vertical: 14)),
     );
   }
 
@@ -290,8 +278,7 @@ class _AddPostScreenState extends State<AddPostScreen> {
               margin: const EdgeInsets.symmetric(horizontal: 4.0),
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color:
-                    _currentIndex == entry.key ? Colors.blue : Colors.grey[300],
+                color: _currentIndex == entry.key ? Colors.blue : Colors.grey[300],
               ),
             );
           }).toList(),
@@ -342,10 +329,7 @@ class _AddPostScreenState extends State<AddPostScreen> {
       return Stack(
         fit: StackFit.expand,
         children: [
-          if (thumbnail != null)
-            Image.file(thumbnail, fit: BoxFit.contain)
-          else
-            const Center(child: CircularProgressIndicator()),
+          if (thumbnail != null) Image.file(thumbnail, fit: BoxFit.contain) else const Center(child: CircularProgressIndicator()),
           Positioned(
             bottom: 16,
             right: 16,

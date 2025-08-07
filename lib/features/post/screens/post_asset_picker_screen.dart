@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:insta_assets_picker/insta_assets_picker.dart';
-import 'package:photo_manager/photo_manager.dart';
 import 'package:pictora/router/router.dart';
 import 'package:pictora/router/router_name.dart';
 import 'package:video_player/video_player.dart';
