@@ -8,6 +8,8 @@ import 'package:pictora/features/post/screens/add_post_screen.dart';
 import 'package:pictora/features/post/screens/comment_screen.dart';
 import 'package:pictora/features/post/screens/liked_by_user_screen.dart';
 import 'package:pictora/features/post/screens/post_asset_picker_screen.dart';
+import 'package:pictora/features/post/screens/post_list_screen.dart';
+import 'package:pictora/features/profile/screens/follow_section_screen.dart';
 import 'package:pictora/features/search/screens/search_screen.dart';
 import 'package:pictora/utils/helper/page_transition.dart';
 
@@ -161,6 +163,33 @@ final GoRouter appRouter = GoRouter(
         return SlideTransitionPage(
           child: ProfileScreen(
             userId: screenData.userId,
+          ),
+        );
+      },
+    ),
+    GoRoute(
+      path: RouterName.postLists.path,
+      name: RouterName.postLists.name,
+      pageBuilder: (context, state) {
+        PostListScreenDataModel screenData = state.extra as PostListScreenDataModel;
+        return SlideTransitionPage(
+          child: PostListScreen(
+            postsData: screenData.postData,
+            index: screenData.index,
+          ),
+        );
+      },
+    ),
+    GoRoute(
+      path: RouterName.followSection.path,
+      name: RouterName.followSection.name,
+      pageBuilder: (context, state) {
+        FollowSectionScreenDataModel screenData = state.extra as FollowSectionScreenDataModel;
+        return SlideTransitionPage(
+          child: FollowSectionScreen(
+            userId: screenData.userId,
+            tabIndex: screenData.tabIndex,
+            userName: screenData.userName,
           ),
         );
       },

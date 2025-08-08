@@ -47,6 +47,7 @@ dependencies:
   pinch_zoom_release_unzoom: ^2.0.0
   cached_network_image: ^3.4.1
   uuid: ^4.5.1
+  scrollable_positioned_list: ^0.3.8
 
 dev_dependencies:
   flutter_test:

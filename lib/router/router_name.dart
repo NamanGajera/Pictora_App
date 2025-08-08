@@ -10,7 +10,9 @@ enum RouterName {
   videoCoverSelector('/videoCoverSelector', "videoCoverSelector"),
   postComment('/postComment', "postComment"),
   likedByUsers('/likedByUsers', "likedByUsers"),
-  otherUserProfile('/otherUserProfile', "otherUserProfile");
+  otherUserProfile('/otherUserProfile', "otherUserProfile"),
+  postLists('/postLists', "postLists"),
+  followSection('/followSection', "followSection");
 
   final String path;
   final String name;

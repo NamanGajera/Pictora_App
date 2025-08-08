@@ -3,13 +3,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pictora/features/post/bloc/post_bloc.dart';
 import 'package:pictora/features/post/models/post_data.dart';
-import 'package:pictora/features/profile/bloc/profile_bloc.dart';
+import 'package:pictora/features/post/screens/post_list_screen.dart';
+import 'package:pictora/features/profile/bloc/profile_bloc/profile_bloc.dart';
+import 'package:pictora/router/router_name.dart';
 import 'package:pictora/utils/constants/bloc_instances.dart';
 import 'package:pictora/utils/constants/colors.dart';
 import 'package:pictora/utils/constants/constants.dart';
-import 'package:pictora/utils/services/custom_logger.dart';
-
 import '../../../model/user_model.dart';
+import '../../../router/router.dart';
+import 'follow_section_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   final String? userId;
@@ -46,7 +48,6 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
       body: Column(
         children: [
           _buildProfileInfo(),
-          // _buildTabBar(),
           Expanded(
             child: _buildPostsGrid(),
           ),
@@ -60,115 +61,162 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
       buildWhen: (previous, current) => previous.getUserDataApiStatus != current.getUserDataApiStatus,
       builder: (context, state) {
         User? userData = widget.userId == null ? state.userData : state.otherUserData;
-        return GestureDetector(
-          onTap: () {
-            logDebug(message: '${userData?.toJson()}', tag: "User Data Log");
-          },
-          child: Container(
-            color: Colors.white,
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Profile picture and stats
-                Row(
-                  children: [
-                    // Profile picture
-                    Stack(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(3),
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            gradient: LinearGradient(
-                              colors: [
-                                primaryColor,
-                                primaryColor.withValues(alpha: 0.6),
-                              ],
+        return Container(
+          color: Colors.white,
+          child: SafeArea(
+            bottom: false,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.08),
+                              blurRadius: 12,
+                              offset: const Offset(0, 4),
                             ),
-                          ),
-                          child: Container(
-                            padding: const EdgeInsets.all(3),
-                            decoration: const BoxDecoration(
-                              color: Colors.white,
-                              shape: BoxShape.circle,
-                            ),
-                            child: CircleAvatar(
-                              radius: 45,
-                              backgroundColor: primaryColor.withValues(alpha: 0.1),
-                              child: (userData?.profile?.profilePicture ?? '').isNotEmpty
-                                  ? ClipOval(
-                                      child: CachedNetworkImage(
-                                        imageUrl: userData!.profile!.profilePicture!,
-                                        width: 90,
-                                        height: 90,
-                                        fit: BoxFit.cover,
-                                        placeholder: (context, url) => const CircularProgressIndicator(strokeWidth: 2),
-                                        errorWidget: (context, url, error) => const Icon(
-                                          Icons.person,
-                                          size: 50,
-                                          color: Color(0xff235347),
+                          ],
+                        ),
+                        child: CircleAvatar(
+                          radius: 42,
+                          backgroundColor: const Color(0xffF5F5F5),
+                          child: (userData?.profile?.profilePicture ?? '').isNotEmpty
+                              ? ClipOval(
+                                  child: CachedNetworkImage(
+                                    imageUrl: userData!.profile!.profilePicture!,
+                                    width: 84,
+                                    height: 84,
+                                    fit: BoxFit.cover,
+                                    placeholder: (context, url) => Container(
+                                      width: 84,
+                                      height: 84,
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        color: Colors.grey[100],
+                                      ),
+                                      child: const Center(
+                                        child: SizedBox(
+                                          width: 20,
+                                          height: 20,
+                                          child: CircularProgressIndicator(
+                                            strokeWidth: 2,
+                                            valueColor: AlwaysStoppedAnimation<Color>(Color(0xff6B7280)),
+                                          ),
                                         ),
                                       ),
-                                    )
-                                  : const Icon(
-                                      Icons.person,
-                                      size: 50,
-                                      color: Color(0xff235347),
                                     ),
-                            ),
-                          ),
+                                    errorWidget: (context, url, error) => Container(
+                                      width: 84,
+                                      height: 84,
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        color: const Color(0xffF3F4F6),
+                                      ),
+                                      child: const Icon(
+                                        Icons.person_rounded,
+                                        size: 40,
+                                        color: Color(0xff9CA3AF),
+                                      ),
+                                    ),
+                                  ),
+                                )
+                              : const Icon(
+                                  Icons.person_rounded,
+                                  size: 40,
+                                  color: Color(0xff9CA3AF),
+                                ),
                         ),
-                      ],
-                    ),
-                    const SizedBox(width: 30),
-                    // Stats
-                    Expanded(
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: [
-                          _buildStatItem('Posts', userData?.counts?.postCount ?? 0),
-                          _buildStatItem('Followers', userData?.counts?.followerCount ?? 0),
-                          _buildStatItem('Following', userData?.counts?.followingCount ?? 0),
-                        ],
                       ),
-                    ),
-                  ],
-                ),
-
-                const SizedBox(height: 16),
-
-                // Name and verification
-                Row(
-                  children: [
-                    Text(
-                      userData?.fullName ?? '',
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
-                        color: Colors.black87,
+                      const SizedBox(width: 24),
+                      // Enhanced stats section
+                      Expanded(
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            _buildStatItem('Posts', userData?.counts?.postCount ?? 0),
+                            Container(
+                              width: 1,
+                              height: 40,
+                              color: Colors.grey[200],
+                            ),
+                            InkWell(
+                              onTap: () {
+                                appRouter.push(
+                                  RouterName.followSection.path,
+                                  extra: FollowSectionScreenDataModel(
+                                    userId: userData?.id ?? '',
+                                    userName: userData?.userName ?? '',
+                                    tabIndex: 0,
+                                  ),
+                                );
+                              },
+                              child: _buildStatItem('Followers', userData?.counts?.followerCount ?? 0),
+                            ),
+                            Container(
+                              width: 1,
+                              height: 40,
+                              color: Colors.grey[200],
+                            ),
+                            InkWell(
+                              onTap: () {
+                                appRouter.push(
+                                  RouterName.followSection.path,
+                                  extra: FollowSectionScreenDataModel(
+                                    userId: userData?.id ?? '',
+                                    userName: userData?.userName ?? '',
+                                    tabIndex: 1,
+                                  ),
+                                );
+                              },
+                              child: _buildStatItem('Following', userData?.counts?.followingCount ?? 0),
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-
-                const SizedBox(height: 8),
-
-                // Bio
-                Text(
-                  userData?.profile?.bio ?? '',
-                  style: const TextStyle(
-                    fontSize: 14,
-                    color: Colors.black87,
-                    height: 1.4,
+                    ],
                   ),
-                ),
 
-                const SizedBox(height: 20),
+                  const SizedBox(height: 20),
 
-                // Action buttons
-                _buildActionButtons(userData?.id ?? ''),
-              ],
+                  // User name with better typography
+                  Text(
+                    userData?.fullName ?? 'Unknown User',
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xff1F2937),
+                      letterSpacing: -0.5,
+                    ),
+                  ),
+
+                  if ((userData?.profile?.bio ?? '').isNotEmpty) ...[
+                    const SizedBox(height: 8),
+                    // Bio with improved styling
+                    Text(
+                      userData!.profile!.bio!,
+                      style: const TextStyle(
+                        fontSize: 15,
+                        color: Color(0xff6B7280),
+                        height: 1.5,
+                        letterSpacing: -0.2,
+                      ),
+                      maxLines: 3,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+
+                  const SizedBox(height: 20),
+
+                  // Enhanced action buttons
+                  _buildActionButtons(userData?.id ?? ''),
+                ],
+              ),
             ),
           ),
         );
@@ -182,22 +230,25 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
         // Handle stat tap (navigate to followers/following list)
       },
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
           Text(
             _formatNumber(count),
             style: const TextStyle(
-              fontSize: 18,
+              fontSize: 20,
               fontWeight: FontWeight.w700,
-              color: Colors.black87,
+              color: Color(0xff1F2937),
+              letterSpacing: -0.5,
             ),
           ),
           const SizedBox(height: 4),
           Text(
             label,
-            style: TextStyle(
+            style: const TextStyle(
               fontSize: 13,
-              color: Colors.grey[600],
+              color: Color(0xff6B7280),
               fontWeight: FontWeight.w500,
+              letterSpacing: 0.2,
             ),
           ),
         ],
@@ -212,8 +263,8 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
           Expanded(
             child: _buildButton(
               'Edit Profile',
-              backgroundColor: Colors.grey[100]!,
-              textColor: Colors.black87,
+              backgroundColor: const Color(0xffF3F4F6),
+              textColor: const Color(0xff374151),
               onTap: () {
                 // Handle edit profile
               },
@@ -223,8 +274,8 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
           Expanded(
             child: _buildButton(
               'Share Profile',
-              backgroundColor: Colors.grey[100]!,
-              textColor: Colors.black87,
+              backgroundColor: const Color(0xffF3F4F6),
+              textColor: const Color(0xff374151),
               onTap: () {
                 // Handle share profile
               },
@@ -236,11 +287,11 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
       return Row(
         children: [
           Expanded(
-            flex: 3,
+            flex: 2,
             child: _buildButton(
               'Following',
-              backgroundColor: Colors.grey[200]!,
-              textColor: Colors.black87,
+              backgroundColor: primaryColor,
+              textColor: Colors.white,
               onTap: () {},
             ),
           ),
@@ -248,8 +299,8 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
           Expanded(
             child: _buildButton(
               'Message',
-              backgroundColor: Colors.grey[100]!,
-              textColor: Colors.black87,
+              backgroundColor: const Color(0xffF3F4F6),
+              textColor: const Color(0xff374151),
               onTap: () {
                 // Handle message
               },
@@ -272,11 +323,16 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
         padding: const EdgeInsets.symmetric(vertical: 12),
         decoration: BoxDecoration(
           color: backgroundColor,
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(
-            color: Colors.grey[300]!,
-            width: 0.5,
-          ),
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: backgroundColor == primaryColor
+              ? [
+                  BoxShadow(
+                    color: primaryColor.withValues(alpha: 0.3),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ]
+              : null,
         ),
         child: Center(
           child: Text(
@@ -285,6 +341,7 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
               fontSize: 14,
               fontWeight: FontWeight.w600,
               color: textColor,
+              letterSpacing: 0.2,
             ),
           ),
         ),
@@ -295,17 +352,50 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
   Widget _buildPostsGrid() {
     return BlocBuilder<PostBloc, PostState>(
       builder: (context, state) {
+        final postData = widget.userId == null ? state.myPostData : state.otherUserPostData;
+
+        if (postData?.isEmpty == true || postData == null) {
+          return const Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.photo_library_outlined,
+                  size: 64,
+                  color: Color(0xff9CA3AF),
+                ),
+                SizedBox(height: 16),
+                Text(
+                  'No posts yet',
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Color(0xff6B7280),
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+          );
+        }
+
         return GridView.builder(
-          padding: const EdgeInsets.all(2),
+          padding: const EdgeInsets.all(1),
           gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: 3,
-            crossAxisSpacing: 2,
-            mainAxisSpacing: 2,
+            crossAxisSpacing: 1,
+            mainAxisSpacing: 1,
           ),
-          itemCount: widget.userId == null ? state.myPostData?.length : state.otherUserPostData?.length,
+          itemCount: postData.length,
           itemBuilder: (context, index) {
-            final postData = widget.userId == null ? state.myPostData : state.otherUserPostData;
-            return _buildPostPreview(postData?[index]);
+            return GestureDetector(
+              onTap: () {
+                appRouter.push(
+                  RouterName.postLists.path,
+                  extra: PostListScreenDataModel(postData: postData, index: index),
+                );
+              },
+              child: _buildPostPreview(postData[index]),
+            );
           },
         );
       },
@@ -313,10 +403,10 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
   }
 
   Widget _buildPostPreview(PostData? post) {
-    return GestureDetector(
-      onTap: () {
-        // Handle post tap
-      },
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.grey[100],
+      ),
       child: Stack(
         fit: StackFit.expand,
         children: [
@@ -324,22 +414,28 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
             imageUrl: post?.mediaData?[0].mediaUrl ?? '',
             fit: BoxFit.cover,
             placeholder: (context, url) => Container(
-              color: Colors.grey[200],
+              color: Colors.grey[100],
               child: const Center(
-                child: CircularProgressIndicator(),
+                child: SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    valueColor: AlwaysStoppedAnimation<Color>(Color(0xff9CA3AF)),
+                  ),
+                ),
               ),
             ),
             errorWidget: (context, url, error) => Container(
-              color: primaryColor.withValues(alpha: 0.1),
-              child: Icon(
-                Icons.image,
-                color: primaryColor.withValues(alpha: 0.5),
-                size: 30,
+              color: const Color(0xffF3F4F6),
+              child: const Icon(
+                Icons.image_outlined,
+                color: Color(0xff9CA3AF),
+                size: 32,
               ),
             ),
             imageBuilder: (context, imageProvider) => Container(
               decoration: BoxDecoration(
-                color: Colors.grey[200],
                 image: DecorationImage(
                   image: imageProvider,
                   fit: BoxFit.cover,
@@ -348,13 +444,20 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
             ),
           ),
           if ((post?.mediaData?.length ?? 0) > 1)
-            const Positioned(
+            Positioned(
               top: 8,
               right: 8,
-              child: Icon(
-                Icons.copy_outlined,
-                color: Colors.white,
-                size: 18,
+              child: Container(
+                padding: const EdgeInsets.all(4),
+                decoration: BoxDecoration(
+                  color: Colors.black.withValues(alpha: 0.6),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: const Icon(
+                  Icons.layers_rounded,
+                  color: Colors.white,
+                  size: 16,
+                ),
               ),
             ),
         ],

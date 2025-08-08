@@ -7,6 +7,7 @@ import "package:pictora/router/router.dart";
 import "package:pictora/router/router_name.dart";
 import "package:pictora/utils/constants/app_assets.dart";
 import "package:pictora/utils/constants/enums.dart";
+import "package:pictora/utils/extensions/widget_extension.dart";
 import "package:pictora/utils/widgets/custom_widget.dart";
 
 import "../../../../utils/constants/bloc_instances.dart";
@@ -56,7 +57,7 @@ class _PostWidgetState extends State<PostWidget> {
             mediaData: widget.post?.mediaData,
             postId: widget.post?.id ?? '',
             isLike: widget.post?.isLiked ?? false,
-          ),
+          ).withAutomaticKeepAlive(),
           _buildActionButtons(),
           _buildLikesSection(),
           _buildCaptionSection(),

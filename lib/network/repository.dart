@@ -58,6 +58,7 @@ class Repository {
     }
   }
 
+  /// POST: GET ALL POST
   Future<PostDataModel> getAllPost(dynamic body) async {
     try {
       Map<String, dynamic> json = await apiClient.postApiCall(
@@ -72,6 +73,7 @@ class Repository {
     }
   }
 
+  /// POST: GET ALL POST COMMENTS
   Future<PostCommentDataModel> getPostComment(dynamic body) async {
     try {
       Map<String, dynamic> json = await apiClient.postApiCall(
@@ -86,6 +88,7 @@ class Repository {
     }
   }
 
+  /// POST: CREATE COMMENT
   Future<CommentData> createComment(dynamic body) async {
     try {
       Map<String, dynamic> json = await apiClient.postApiCall(
@@ -100,6 +103,7 @@ class Repository {
     }
   }
 
+  /// POST: GET COMMENT REPLIES
   Future<PostCommentDataModel> getCommentReplies(dynamic body) async {
     try {
       Map<String, dynamic> json = await apiClient.postApiCall(
@@ -114,6 +118,7 @@ class Repository {
     }
   }
 
+  /// POST: TOGGLE COMMENT LIKE
   Future<CommonMessageModel> toggleCommentLike(dynamic body) async {
     try {
       Map<String, dynamic> json = await apiClient.postApiCall(
@@ -128,6 +133,7 @@ class Repository {
     }
   }
 
+  /// DELETE: DELETE COMMENT
   Future<CommonMessageModel> deleteComment(String commentId) async {
     try {
       Map<String, dynamic> json = await apiClient.deleteAPICalls(
@@ -142,6 +148,7 @@ class Repository {
     }
   }
 
+  /// POST: TOGGLE POST LIKE
   Future<CommonMessageModel> togglePostLike(dynamic body) async {
     try {
       Map<String, dynamic> json = await apiClient.postApiCall(
@@ -156,6 +163,7 @@ class Repository {
     }
   }
 
+  /// POST: TOGGLE POST SAVE
   Future<CommonMessageModel> togglePostSave(dynamic body) async {
     try {
       Map<String, dynamic> json = await apiClient.postApiCall(
@@ -170,6 +178,7 @@ class Repository {
     }
   }
 
+  /// DELETE: DELETE POST
   Future<CommonMessageModel> deletePost(String postId) async {
     try {
       Map<String, dynamic> json = await apiClient.deleteAPICalls(
@@ -184,6 +193,7 @@ class Repository {
     }
   }
 
+  /// POST: TOGGLE POST ARCHIVE
   Future<CommonMessageModel> toggleArchivePost(dynamic body) async {
     try {
       Map<String, dynamic> json = await apiClient.postApiCall(
@@ -198,6 +208,7 @@ class Repository {
     }
   }
 
+  /// POST: GET LIKED BY USER
   Future<UserListDataModel> getLikedByUser({required String postId, required dynamic body}) async {
     try {
       Map<String, dynamic> json = await apiClient.postApiCall(
@@ -212,6 +223,7 @@ class Repository {
     }
   }
 
+  /// GET: USER DATA
   Future<User> getUserData([String? userId]) async {
     try {
       Map<String, dynamic> json = await apiClient.getApiCall(
@@ -220,6 +232,36 @@ class Repository {
       );
 
       return User.fromJson(json["data"]);
+    } on CustomException {
+      rethrow;
+    }
+  }
+
+  /// POST: GET FOLLOWERS
+  Future<UserListDataModel> getFollowers({required dynamic body}) async {
+    try {
+      Map<String, dynamic> json = await apiClient.postApiCall(
+        endPoint: getFollowersApiEndPoint,
+        isAccessToken: accessToken,
+        postBody: body,
+      );
+
+      return UserListDataModel.fromJson(json);
+    } on CustomException {
+      rethrow;
+    }
+  }
+
+  /// POST: GET FOLLOWING
+  Future<UserListDataModel> getFollowing({required dynamic body}) async {
+    try {
+      Map<String, dynamic> json = await apiClient.postApiCall(
+        endPoint: getFollowingApiEndPoint,
+        isAccessToken: accessToken,
+        postBody: body,
+      );
+
+      return UserListDataModel.fromJson(json);
     } on CustomException {
       rethrow;
     }

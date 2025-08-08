@@ -35,3 +35,7 @@ String pinCommentApiEndPoint = '$commentRoute/pin';
 
 /// User Api Route
 String userRoute = "/users";
+
+String getFollowersApiEndPoint = "$userRoute/followers";
+
+String getFollowingApiEndPoint = "$userRoute/following";

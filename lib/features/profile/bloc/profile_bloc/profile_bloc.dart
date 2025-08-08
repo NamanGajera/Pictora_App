@@ -3,9 +3,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pictora/network/repository.dart';
 import 'package:pictora/utils/Constants/enums.dart';
 
-import '../../../model/user_model.dart';
-import '../../../utils/helper/helper_function.dart';
-import '../../../utils/helper/theme_helper.dart';
+import '../../../../model/user_model.dart';
+import '../../../../utils/helper/helper_function.dart';
+import '../../../../utils/helper/theme_helper.dart';
 
 part 'profile_event.dart';
 part 'profile_state.dart';

@@ -12,7 +12,7 @@ class AppEnvManager {
   static String get baseUrl {
     switch (currentEnv) {
       case AppEnv.local:
-        return _customLocalUrl ?? "http://192.168.1.33:5000";
+        return _customLocalUrl ?? "http://192.168.1.110:5000";
     }
   }
 
