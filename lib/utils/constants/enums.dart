@@ -25,3 +25,20 @@ enum LogLevel {
   error,
   wtf,
 }
+
+enum FollowSectionTab {
+  follower,
+  following,
+  request,
+  discover,
+}
+
+enum FollowRequest {
+  pending("Pending"),
+  accepted("Accepted"),
+  rejected("Rejected");
+
+  final String name;
+
+  const FollowRequest(this.name);
+}

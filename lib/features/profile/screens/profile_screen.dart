@@ -9,6 +9,7 @@ import 'package:pictora/router/router_name.dart';
 import 'package:pictora/utils/constants/bloc_instances.dart';
 import 'package:pictora/utils/constants/colors.dart';
 import 'package:pictora/utils/constants/constants.dart';
+
 import '../../../model/user_model.dart';
 import '../../../router/router.dart';
 import 'follow_section_screen.dart';
@@ -225,34 +226,29 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
   }
 
   Widget _buildStatItem(String label, int count) {
-    return GestureDetector(
-      onTap: () {
-        // Handle stat tap (navigate to followers/following list)
-      },
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            _formatNumber(count),
-            style: const TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.w700,
-              color: Color(0xff1F2937),
-              letterSpacing: -0.5,
-            ),
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          _formatNumber(count),
+          style: const TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.w700,
+            color: Color(0xff1F2937),
+            letterSpacing: -0.5,
           ),
-          const SizedBox(height: 4),
-          Text(
-            label,
-            style: const TextStyle(
-              fontSize: 13,
-              color: Color(0xff6B7280),
-              fontWeight: FontWeight.w500,
-              letterSpacing: 0.2,
-            ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          label,
+          style: const TextStyle(
+            fontSize: 13,
+            color: Color(0xff6B7280),
+            fontWeight: FontWeight.w500,
+            letterSpacing: 0.2,
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 

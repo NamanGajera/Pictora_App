@@ -2,6 +2,7 @@ import 'package:pictora/features/auth/model/auth_model.dart';
 import 'package:pictora/features/post/models/post_comment_data_model.dart';
 import 'package:pictora/features/post/models/post_create_model.dart';
 import 'package:pictora/features/post/models/post_data_model.dart';
+import 'package:pictora/features/profile/model/follow_request_model.dart';
 import 'package:pictora/model/common_message_model.dart';
 import 'package:pictora/model/user_list_data_model.dart';
 import 'package:pictora/utils/constants/api_end_points.dart';
@@ -257,6 +258,35 @@ class Repository {
     try {
       Map<String, dynamic> json = await apiClient.postApiCall(
         endPoint: getFollowingApiEndPoint,
+        isAccessToken: accessToken,
+        postBody: body,
+      );
+
+      return UserListDataModel.fromJson(json);
+    } on CustomException {
+      rethrow;
+    }
+  }
+
+  /// GET: GET FOLLOW REQUESTS
+  Future<FollowRequestsModel> getFollowRequests() async {
+    try {
+      Map<String, dynamic> json = await apiClient.getApiCall(
+        endPoint: getFollowRequestUserApiEndPoint,
+        isAccessToken: accessToken,
+      );
+
+      return FollowRequestsModel.fromJson(json);
+    } on CustomException {
+      rethrow;
+    }
+  }
+
+  /// POST: GET DISCOVER USERS
+  Future<UserListDataModel> getDiscoverUsers({required dynamic body}) async {
+    try {
+      Map<String, dynamic> json = await apiClient.postApiCall(
+        endPoint: getDiscoverUserApiEndPoint,
         isAccessToken: accessToken,
         postBody: body,
       );

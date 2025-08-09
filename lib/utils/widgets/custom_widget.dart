@@ -901,6 +901,7 @@ class CustomButton extends StatelessWidget {
   final Color backgroundColor;
   final Color textColor;
   final double height;
+  final double? width;
   final double fontSize;
   final FontWeight fontWeight;
   final double borderRadius;
@@ -919,6 +920,7 @@ class CustomButton extends StatelessWidget {
     this.textColor = Colors.white,
     this.loaderColor = Colors.white,
     this.height = 45,
+    this.width,
     this.fontSize = 16,
     this.fontWeight = FontWeight.w500,
     this.borderRadius = 10.0,
@@ -933,7 +935,7 @@ class CustomButton extends StatelessWidget {
       onTap: onTap,
       child: Container(
         height: height,
-        width: double.infinity,
+        width: width ?? double.infinity,
         alignment: Alignment.center,
         decoration: BoxDecoration(
           color: backgroundColor,

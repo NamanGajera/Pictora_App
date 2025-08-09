@@ -2,16 +2,17 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pictora/features/profile/bloc/follow_section_bloc/follow_section_bloc.dart';
-import 'package:pictora/utils/extensions/widget_extension.dart';
+import 'package:pictora/utils/constants/constants.dart';
+import 'package:pictora/utils/constants/enums.dart';
+import 'package:pictora/utils/extensions/build_context_extension.dart';
+import 'package:pictora/utils/widgets/custom_widget.dart';
 
 import '../../../model/user_model.dart';
 import '../../../router/router.dart';
 import '../../../router/router_name.dart';
-import '../../../utils/Constants/enums.dart';
 import '../../../utils/constants/app_assets.dart';
 import '../../../utils/constants/bloc_instances.dart';
 import '../../../utils/constants/colors.dart';
-import '../../../utils/constants/constants.dart';
 import 'profile_screen.dart';
 
 class FollowSectionScreen extends StatefulWidget {
@@ -25,8 +26,6 @@ class FollowSectionScreen extends StatefulWidget {
 }
 
 class _FollowSectionScreenState extends State<FollowSectionScreen> with SingleTickerProviderStateMixin {
-  late TabController _tabController;
-
   @override
   void initState() {
     super.initState();
@@ -36,9 +35,19 @@ class _FollowSectionScreenState extends State<FollowSectionScreen> with SingleTi
     followSectionBloc.add(GetFollowingEvent(
       userId: widget.userId,
     ));
+    followSectionBloc.add(GetFollowRequestEvent());
+    followSectionBloc.add(GetDiscoverUsersEvent());
 
-    _tabController = TabController(length: 2, vsync: this, initialIndex: widget.tabIndex);
+    _selectedIndex = widget.tabIndex;
   }
+
+  int _selectedIndex = 0;
+  final List<String> _tabs = [
+    "Followers",
+    "Following",
+    "Requests",
+    "Discover",
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -56,48 +65,57 @@ class _FollowSectionScreenState extends State<FollowSectionScreen> with SingleTi
           ),
         ),
       ),
-      body: DefaultTabController(
-        length: 2,
-        initialIndex: widget.tabIndex,
-        child: Column(
-          children: [
-            const SizedBox(height: 8),
-            TabBar(
-              controller: _tabController,
-              automaticIndicatorColorAdjustment: true,
-              indicator: BoxDecoration(
-                color: primaryColor.withValues(alpha: 0.5),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              labelStyle: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w500,
-                color: Colors.white,
-              ),
-              unselectedLabelStyle: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w400,
-                color: Colors.grey.shade600,
-              ),
-              dividerColor: Colors.transparent,
-              indicatorSize: TabBarIndicatorSize.tab,
-              tabs: const [
-                Tab(text: "Followers"),
-                Tab(text: "Following"),
+      body: Column(
+        children: [
+          const SizedBox(height: 8),
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: List.generate(_tabs.length, (index) {
+                return _buildTabButton(_tabs[index], index);
+              }),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Expanded(
+            child: IndexedStack(
+              index: _selectedIndex,
+              children: [
+                _buildFollowerUsersList(),
+                _buildFollowingUsersList(),
+                _buildFollowRequestList(),
+                _buildDiscoverUsersList(),
               ],
             ),
-            Expanded(
-              child: TabBarView(
-                controller: _tabController,
-                children: [
-                  _buildFollowerUsersList(),
-                  _buildFollowingUsersList(),
-                ],
-              ),
-            ),
-          ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTabButton(String text, int index) {
+    final isSelected = _selectedIndex == index;
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          _selectedIndex = index;
+        });
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        decoration: BoxDecoration(
+          color: isSelected ? primaryColor.withValues(alpha: 0.9) : Colors.transparent,
+          borderRadius: BorderRadius.circular(8),
         ),
-      ).withPadding(const EdgeInsets.symmetric(horizontal: 6)),
+        child: Text(
+          text,
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: isSelected ? FontWeight.w500 : FontWeight.w400,
+            color: isSelected ? Colors.white : Colors.grey.shade600,
+          ),
+        ),
+      ),
     );
   }
 
@@ -120,10 +138,14 @@ class _FollowSectionScreenState extends State<FollowSectionScreen> with SingleTi
           itemBuilder: (context, index) {
             final User? user = state.followers?[index];
             return InkWell(
-                onTap: () {
-                  appRouter.push(RouterName.otherUserProfile.path, extra: ProfileScreenDataModel(userId: user?.id ?? ''));
-                },
-                child: _buildUserTile(user));
+              onTap: () {
+                appRouter.push(RouterName.otherUserProfile.path, extra: ProfileScreenDataModel(userId: user?.id ?? ''));
+              },
+              child: _buildUserTile(
+                user,
+                FollowSectionTab.follower,
+              ),
+            );
           },
         );
       },
@@ -149,10 +171,77 @@ class _FollowSectionScreenState extends State<FollowSectionScreen> with SingleTi
           itemBuilder: (context, index) {
             final User? user = state.following?[index];
             return InkWell(
-                onTap: () {
-                  appRouter.push(RouterName.otherUserProfile.path, extra: ProfileScreenDataModel(userId: user?.id ?? ''));
-                },
-                child: _buildUserTile(user));
+              onTap: () {
+                appRouter.push(RouterName.otherUserProfile.path, extra: ProfileScreenDataModel(userId: user?.id ?? ''));
+              },
+              child: _buildUserTile(
+                user,
+                FollowSectionTab.following,
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildFollowRequestList() {
+    return BlocBuilder<FollowSectionBloc, FollowSectionState>(
+      buildWhen: (previous, current) => previous.getFollowRequestApiStatus != current.getFollowRequestApiStatus,
+      builder: (context, state) {
+        if (state.getFollowRequestApiStatus == ApiStatus.loading) {
+          return Center(
+            child: CircularProgressIndicator(),
+          );
+        }
+        if ((state.followRequests ?? []).isEmpty) {
+          return _buildEmptyState();
+        }
+
+        return ListView.builder(
+          padding: EdgeInsets.symmetric(vertical: 8),
+          itemCount: state.followRequests?.length,
+          itemBuilder: (context, index) {
+            final User? user = state.followRequests?[index].requester;
+            return InkWell(
+              onTap: () {
+                appRouter.push(RouterName.otherUserProfile.path, extra: ProfileScreenDataModel(userId: user?.id ?? ''));
+              },
+              child: _buildUserTile(
+                user,
+                FollowSectionTab.request,
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildDiscoverUsersList() {
+    return BlocBuilder<FollowSectionBloc, FollowSectionState>(
+      buildWhen: (previous, current) => previous.getDiscoverUsersApiStatus != current.getDiscoverUsersApiStatus,
+      builder: (context, state) {
+        if (state.getDiscoverUsersApiStatus == ApiStatus.loading) {
+          return Center(
+            child: CircularProgressIndicator(),
+          );
+        }
+        if ((state.discoverUsers ?? []).isEmpty) {
+          return _buildEmptyState();
+        }
+
+        return ListView.builder(
+          padding: EdgeInsets.symmetric(vertical: 8),
+          itemCount: state.discoverUsers?.length,
+          itemBuilder: (context, index) {
+            final User? user = state.discoverUsers?[index];
+            return InkWell(
+              onTap: () {
+                appRouter.push(RouterName.otherUserProfile.path, extra: ProfileScreenDataModel(userId: user?.id ?? ''));
+              },
+              child: _buildUserTile(user, FollowSectionTab.discover),
+            );
           },
         );
       },
@@ -172,12 +261,11 @@ class _FollowSectionScreenState extends State<FollowSectionScreen> with SingleTi
     );
   }
 
-  Widget _buildUserTile(User? user) {
+  Widget _buildUserTile(User? user, FollowSectionTab tab) {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 20, vertical: 16),
       child: Row(
         children: [
-          // Profile Image
           Container(
             width: 50,
             height: 50,
@@ -238,7 +326,70 @@ class _FollowSectionScreenState extends State<FollowSectionScreen> with SingleTi
             ),
           ),
 
-          if (user?.id != userId) _buildFollowButton(user),
+          if (user?.id != userId) ...[
+            if (tab == FollowSectionTab.request) ...[
+              Row(
+                children: [
+                  CustomButton(
+                    width: context.screenWidth * 0.19,
+                    height: 38,
+                    text: "Accept",
+                    fontSize: 14,
+                    onTap: () {},
+                  ),
+                  const SizedBox(width: 8),
+                  CustomButton(
+                    width: context.screenWidth * 0.19,
+                    height: 38,
+                    text: "Reject",
+                    fontSize: 14,
+                    onTap: () {},
+                  ),
+                ],
+              )
+            ] else if (user?.followRequestStatus == FollowRequest.pending.name) ...[
+              CustomButton(
+                width: context.screenWidth * 0.24,
+                height: 38,
+                text: "Requested",
+                fontSize: 14,
+                onTap: () {}, // Optional: cancel request
+              ),
+            ] else if (user?.isFollowed == true) ...[
+              CustomButton(
+                width: context.screenWidth * 0.24,
+                height: 38,
+                text: "Following",
+                textColor: Colors.grey.shade600,
+                backgroundColor: Colors.transparent,
+                borderColor: Colors.grey,
+                fontSize: 14,
+                onTap: () {}, // Optional: unfollow
+              ),
+            ] else if (user?.showFollowBack == true) ...[
+              CustomButton(
+                width: context.screenWidth * 0.24,
+                height: 38,
+                text: "Follow Back",
+                textColor: Colors.white,
+                backgroundColor: primaryColor,
+                borderColor: primaryColor,
+                fontSize: 14,
+                onTap: () {}, // follow back action
+              ),
+            ] else ...[
+              CustomButton(
+                width: context.screenWidth * 0.24,
+                height: 38,
+                text: "Follow",
+                textColor: Colors.white,
+                backgroundColor: primaryColor,
+                borderColor: primaryColor,
+                fontSize: 14,
+                onTap: () {}, // follow action
+              ),
+            ]
+          ]
         ],
       ),
     );
@@ -267,33 +418,15 @@ class _FollowSectionScreenState extends State<FollowSectionScreen> with SingleTi
       ),
     );
   }
-
-  Widget _buildFollowButton(User? user) {
-    return GestureDetector(
-      onTap: () {},
-      child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 24, vertical: 10),
-        decoration: BoxDecoration(
-          color: (user?.isFollowed ?? false) ? Colors.grey[100] : primaryColor,
-          borderRadius: BorderRadius.circular(8),
-          border: (user?.isFollowed ?? false) ? Border.all(color: Colors.grey[300]!, width: 1) : null,
-        ),
-        child: Text(
-          (user?.isFollowed ?? false) ? "Following" : "Follow",
-          style: TextStyle(
-            color: (user?.isFollowed ?? false) ? Colors.black87 : Colors.white,
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-      ),
-    );
-  }
 }
 
 class FollowSectionScreenDataModel {
   final String userId;
   final String userName;
   final int tabIndex;
-  const FollowSectionScreenDataModel({required this.userName, required this.userId, this.tabIndex = 0});
+  const FollowSectionScreenDataModel({
+    required this.userName,
+    required this.userId,
+    this.tabIndex = 0,
+  });
 }

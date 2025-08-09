@@ -6,7 +6,7 @@ class User {
   Profile? profile;
   Counts? counts;
   bool? isFollowed;
-  bool? followRequestStatus;
+  String? followRequestStatus;
   bool? showFollowBack;
 
   User({

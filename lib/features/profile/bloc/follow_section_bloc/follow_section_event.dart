@@ -13,3 +13,7 @@ class GetFollowingEvent extends FollowSectionEvent {
 
   GetFollowingEvent({required this.userId});
 }
+
+class GetFollowRequestEvent extends FollowSectionEvent {}
+
+class GetDiscoverUsersEvent extends FollowSectionEvent {}
