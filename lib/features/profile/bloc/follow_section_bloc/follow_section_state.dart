@@ -5,7 +5,7 @@ class FollowSectionState extends Equatable {
   final ApiStatus getFollowingApiStatus;
   final ApiStatus getFollowRequestApiStatus;
   final ApiStatus getDiscoverUsersApiStatus;
-  final ApiStatus toggleFollowApiStatus;
+  final ApiStatus manageFollowRequestApiStatus;
   final List<User>? followers;
   final List<User>? following;
   final List<Request>? followRequests;
@@ -18,7 +18,7 @@ class FollowSectionState extends Equatable {
     this.getFollowingApiStatus = ApiStatus.initial,
     this.getFollowRequestApiStatus = ApiStatus.initial,
     this.getDiscoverUsersApiStatus = ApiStatus.initial,
-    this.toggleFollowApiStatus = ApiStatus.initial,
+    this.manageFollowRequestApiStatus = ApiStatus.initial,
     this.followers,
     this.following,
     this.discoverUsers,
@@ -32,7 +32,7 @@ class FollowSectionState extends Equatable {
     ApiStatus? getFollowingApiStatus,
     ApiStatus? getFollowRequestApiStatus,
     ApiStatus? getDiscoverUsersApiStatus,
-    ApiStatus? toggleFollowApiStatus,
+    ApiStatus? manageFollowRequestApiStatus,
     List<User>? followers,
     List<User>? following,
     List<Request>? followRequests,
@@ -45,7 +45,7 @@ class FollowSectionState extends Equatable {
       getFollowingApiStatus: getFollowingApiStatus ?? this.getFollowingApiStatus,
       getDiscoverUsersApiStatus: getDiscoverUsersApiStatus ?? this.getDiscoverUsersApiStatus,
       getFollowRequestApiStatus: getFollowRequestApiStatus ?? this.getFollowRequestApiStatus,
-      toggleFollowApiStatus: toggleFollowApiStatus ?? this.toggleFollowApiStatus,
+      manageFollowRequestApiStatus: manageFollowRequestApiStatus ?? this.manageFollowRequestApiStatus,
       followers: followers ?? this.followers,
       following: following ?? this.following,
       followRequests: followRequests ?? this.followRequests,
@@ -61,7 +61,7 @@ class FollowSectionState extends Equatable {
         getFollowingApiStatus,
         getDiscoverUsersApiStatus,
         getFollowRequestApiStatus,
-        toggleFollowApiStatus,
+        manageFollowRequestApiStatus,
         followers,
         following,
         discoverUsers,

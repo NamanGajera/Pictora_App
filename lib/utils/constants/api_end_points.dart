@@ -40,7 +40,7 @@ String getFollowersApiEndPoint = "$userRoute/followers";
 
 String getFollowingApiEndPoint = "$userRoute/following";
 
-String getFollowRequestUserApiEndPoint = "$userRoute/follow/requests";
+String followRequestUserApiEndPoint = "$userRoute/follow/requests";
 
 String getDiscoverUserApiEndPoint = "$userRoute/discover";
 

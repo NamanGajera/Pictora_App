@@ -1,11 +1,13 @@
 import 'package:bloc_concurrency/bloc_concurrency.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:pictora/features/profile/bloc/profile_bloc/profile_bloc.dart';
 import 'package:pictora/network/repository.dart';
-import 'package:pictora/utils/Constants/enums.dart';
+import 'package:pictora/utils/constants/bloc_instances.dart';
 import 'package:pictora/utils/services/custom_logger.dart';
 
 import '../../../../model/user_model.dart';
+import '../../../../utils/constants/enums.dart';
 import '../../../../utils/helper/helper_function.dart';
 import '../../../../utils/helper/theme_helper.dart';
 import '../../model/follow_request_model.dart';
@@ -89,14 +91,32 @@ class FollowSectionBloc extends Bloc<FollowSectionEvent, FollowSectionState> {
 
   Future<void> _toggleFollowUser(ToggleFollowUserEvent event, Emitter<FollowSectionState> emit) async {
     try {
-      emit(state.copyWith(toggleFollowApiStatus: ApiStatus.loading));
+      final bool isInFollower = state.followers?.any((user) => user.id == event.userId) ?? false;
+
       _updateUserLists(
         emit: emit,
         userId: event.userId,
         isFollowed: event.isFollowing,
+        isInFollowing: !isInFollower,
       );
+
+      if (!(event.isPrivate ?? false)) {
+        profileBloc.add(
+          ModifyUserCountEvent(
+            followingCount: event.isFollowing == true ? 1 : -1,
+          ),
+        );
+      }
+      await repository.toggleUserFollow(body: {
+        "userId": event.userId,
+        "shouldFollow": event.isFollowing,
+      });
     } catch (error, stackTrace) {
-      emit(state.copyWith(toggleFollowApiStatus: ApiStatus.failure));
+      _updateUserLists(
+        emit: emit,
+        userId: event.userId,
+        isFollowed: !event.isFollowing,
+      );
       ThemeHelper.showToastMessage("$error");
       handleApiError(error, stackTrace, emit);
     }
@@ -104,34 +124,40 @@ class FollowSectionBloc extends Bloc<FollowSectionEvent, FollowSectionState> {
 
   Future<void> _manageFollowRequest(ManageFollowRequestEvent event, Emitter<FollowSectionState> emit) async {
     try {
-      emit(state.copyWith(toggleFollowApiStatus: ApiStatus.loading));
-
+      emit(state.copyWith(manageFollowRequestApiStatus: ApiStatus.loading));
+      await repository.manageFollowRequest(body: {
+        "id": event.requestId,
+        "isAccept": event.isAccept,
+      });
       final List<Request> requests = (state.followRequests ?? []).where((request) => request.id != event.requestId).toList();
+
       emit(state.copyWith(
         followRequests: requests,
-        toggleFollowApiStatus: ApiStatus.success,
+        manageFollowRequestApiStatus: ApiStatus.success,
       ));
       final bool isInFollowing = state.following?.any((user) => user.id == event.userId) ?? false;
       _updateUserLists(emit: emit, userId: event.userId, isInFollowing: isInFollowing);
+      profileBloc.add(ModifyUserCountEvent(followersCount: 1));
     } catch (error, stackTrace) {
-      emit(state.copyWith(toggleFollowApiStatus: ApiStatus.failure));
+      emit(state.copyWith(manageFollowRequestApiStatus: ApiStatus.failure));
       ThemeHelper.showToastMessage("$error");
       handleApiError(error, stackTrace, emit);
     }
   }
 
   void _updateUserLists({required Emitter<FollowSectionState> emit, required String userId, bool? isFollowed, bool? isInFollowing}) {
-    logInfo(message: "Updating user lists for userId: $userId, isFollowed: $isFollowed, isInFollowing: $isInFollowing", tag: "ToggleFollowUserEvent");
     emit(state.copyWith(
       followers: _updateUserData(
         userList: state.followers,
         userId: userId,
         isFollowed: isFollowed,
+        isInFollowing: isInFollowing,
       ),
       following: _updateUserData(
         userList: state.following,
         userId: userId,
         isFollowed: isFollowed,
+        isInFollowing: isInFollowing,
       ),
       discoverUsers: _updateUserData(
         userList: state.discoverUsers,
@@ -148,11 +174,13 @@ class FollowSectionBloc extends Bloc<FollowSectionEvent, FollowSectionState> {
     bool? isFollowed,
     bool? isInFollowing,
   }) {
+    logDebug(message: "Data-->>>> userId--> $userId,, isFollowed--> $isFollowed,, isInFollowing--> $isInFollowing");
     return (userList ?? []).map((user) {
       if (user.id == userId) {
         return user.copyWith(
           isFollowed: isFollowed ?? user.isFollowed,
           showFollowBack: isInFollowing == null ? user.showFollowBack : !isInFollowing,
+          followRequestStatus: (user.profile?.isPrivate ?? false) && isFollowed == true ? FollowRequest.pending.name : null,
         );
       }
       return user;

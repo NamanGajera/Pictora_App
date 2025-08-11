@@ -3,7 +3,7 @@ import 'dart:developer';
 import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
-import '../utils/Constants/api_end_points.dart';
+import '../utils/constants/api_end_points.dart';
 import '../utils/helper/helper_function.dart';
 import '../utils/services/custom_logger.dart';
 import 'custom_exception.dart';
@@ -11,8 +11,7 @@ import 'custom_exception.dart';
 class ApiClient {
   http.Client httpClient = http.Client();
 
-  Future<dynamic> getApiCall(
-      {required String endPoint, String? isAccessToken}) async {
+  Future<dynamic> getApiCall({required String endPoint, String? isAccessToken}) async {
     dynamic getResponseJson;
     String getUrl;
 
@@ -64,12 +63,45 @@ class ApiClient {
       headers = {"Content-Type": "application/json"};
     }
 
-    logDebug(
-        message: 'URL: $postUrl, headers: $headers, body: $encodedBody',
-        tag: "POST API CALL");
+    logDebug(message: 'URL: $postUrl, headers: $headers, body: $encodedBody', tag: "POST API CALL");
     try {
-      var response = await httpClient.post(Uri.parse(postUrl),
-          headers: headers, body: encodedBody);
+      var response = await httpClient.post(Uri.parse(postUrl), headers: headers, body: encodedBody);
+      postResponseJson = await parseApiResponse(response);
+    } on SocketException {
+      throw FetchDataException("No internet connection");
+    } on FormatException {
+      throw FetchDataException("Invalid format");
+    }
+
+    return postResponseJson;
+  }
+
+  Future<dynamic> patchApiCall({
+    required String endPoint,
+    dynamic patchBody,
+    String? isAccessToken,
+  }) async {
+    Map<String, dynamic>? postResponseJson;
+    String patchUrl;
+
+    Map<String, String>? headers;
+
+    patchUrl = '$baseUrl$endPoint';
+
+    var encodedBody = json.encode(patchBody);
+
+    if (isAccessToken != null) {
+      headers = {
+        "Content-Type": "application/json",
+        "Authorization": isAccessToken,
+      };
+    } else {
+      headers = {"Content-Type": "application/json"};
+    }
+
+    logDebug(message: 'URL: $patchUrl, headers: $headers, body: $encodedBody', tag: "PATCH API CALL");
+    try {
+      var response = await httpClient.patch(Uri.parse(patchUrl), headers: headers, body: encodedBody);
       postResponseJson = await parseApiResponse(response);
     } on SocketException {
       throw FetchDataException("No internet connection");
@@ -104,8 +136,7 @@ class ApiClient {
     }
     logDebug(message: 'URL: $putUrl, headers: $headers', tag: "PUT API CALL");
     try {
-      var response = await httpClient.put(Uri.parse(putUrl),
-          headers: headers, body: encodedBody);
+      var response = await httpClient.put(Uri.parse(putUrl), headers: headers, body: encodedBody);
       putResponseJson = await parseApiResponse(response);
     } on SocketException {
       throw FetchDataException("No internet connections.");
@@ -114,10 +145,7 @@ class ApiClient {
     return putResponseJson;
   }
 
-  Future<dynamic> deleteAPICalls(
-      {required String baseUrl,
-      required String endPoint,
-      String? isAccessToken}) async {
+  Future<dynamic> deleteAPICalls({required String baseUrl, required String endPoint, String? isAccessToken}) async {
     dynamic postResponseJson;
     String deleteUrl;
 
@@ -133,12 +161,10 @@ class ApiClient {
     } else {
       headers = {"Content-Type": "application/json"};
     }
-    logDebug(
-        message: 'URL: $deleteUrl, headers: $headers', tag: "DELETE API CALL");
+    logDebug(message: 'URL: $deleteUrl, headers: $headers', tag: "DELETE API CALL");
 
     try {
-      var response =
-          await httpClient.delete(Uri.parse(deleteUrl), headers: headers);
+      var response = await httpClient.delete(Uri.parse(deleteUrl), headers: headers);
       postResponseJson = await parseApiResponse(response);
     } on SocketException {
       throw FetchDataException("No internet connections.");
@@ -256,8 +282,7 @@ class ApiClient {
       } else if (fieldValue is File) {
         await _addFileToRequest(request, fieldName, fieldValue);
       } else {
-        throw ArgumentError(
-            'File field "$fieldName" must be either File or List<File>');
+        throw ArgumentError('File field "$fieldName" must be either File or List<File>');
       }
     }
   }
@@ -313,19 +338,14 @@ class ApiClient {
     dynamic responseJson;
     String? message;
     try {
-      responseJson =
-          response.body.isNotEmpty ? json.decode(response.body) : null;
+      responseJson = response.body.isNotEmpty ? json.decode(response.body) : null;
       if (responseJson is Map<String, dynamic>) {
-        message = (responseJson["message"] ??
-                responseJson["data"] ??
-                'Something went Wrong')
-            .toString();
+        message = (responseJson["message"] ?? responseJson["data"] ?? 'Something went Wrong').toString();
       } else {
         message = 'Something went Wrong';
       }
     } on FormatException {
-      throw FetchDataException(
-          "Unable to process the server response. (Invalid format or unexpected content)");
+      throw FetchDataException("Unable to process the server response. (Invalid format or unexpected content)");
     } catch (e) {
       throw FetchDataException(e.toString());
     }
@@ -362,9 +382,7 @@ class ApiClient {
         throw UnderMaintenanceError(message);
 
       default:
-        logError(
-            message: responseJson.toString(),
-            tag: "API ERROR [${response.statusCode.toString()}]");
+        logError(message: responseJson.toString(), tag: "API ERROR [${response.statusCode.toString()}]");
         throw FetchDataException(
           message,
         );

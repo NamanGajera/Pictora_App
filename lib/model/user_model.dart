@@ -70,7 +70,7 @@ class User {
       profile: profile ?? this.profile,
       counts: counts ?? this.counts,
       isFollowed: isFollowed ?? this.isFollowed,
-      followRequestStatus: followRequestStatus ?? this.followRequestStatus,
+      followRequestStatus: followRequestStatus,
       showFollowBack: showFollowBack ?? this.showFollowBack,
     );
   }

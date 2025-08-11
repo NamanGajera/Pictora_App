@@ -3,13 +3,13 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pictora/features/auth/bloc/auth_bloc.dart';
 import 'package:pictora/features/post/bloc/post_bloc.dart';
 import 'package:pictora/features/profile/bloc/profile_bloc/profile_bloc.dart';
-import 'package:pictora/utils/Constants/enums.dart';
 import 'package:pictora/utils/services/app_env_manager.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
 import 'features/profile/bloc/follow_section_bloc/follow_section_bloc.dart';
 import 'router/router.dart';
 import 'utils/constants/colors.dart';
+import 'utils/constants/enums.dart';
 import 'utils/di/dependency_injection.dart';
 import 'utils/helper/date_formatter.dart';
 import 'utils/helper/shared_prefs_helper.dart';
@@ -17,7 +17,7 @@ import 'utils/services/device_info_service.dart';
 
 void main() async {
   AppEnvManager.currentEnv = AppEnv.local;
-  AppEnvManager.setLocalBaseUrl("http://192.168.1.110:5000");
+  AppEnvManager.setLocalBaseUrl("http://192.168.1.34:5000");
 
   WidgetsFlutterBinding.ensureInitialized();
   await SharedPrefsHelper.init();

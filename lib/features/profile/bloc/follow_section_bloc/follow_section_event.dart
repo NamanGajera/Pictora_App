@@ -21,10 +21,12 @@ class GetDiscoverUsersEvent extends FollowSectionEvent {}
 class ToggleFollowUserEvent extends FollowSectionEvent {
   final String userId;
   final bool isFollowing;
+  final bool? isPrivate;
 
   ToggleFollowUserEvent({
     required this.userId,
     required this.isFollowing,
+    this.isPrivate,
   });
 }
 

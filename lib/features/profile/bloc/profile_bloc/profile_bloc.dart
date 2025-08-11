@@ -2,10 +2,8 @@ import 'package:bloc_concurrency/bloc_concurrency.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pictora/network/repository.dart';
-import 'package:pictora/utils/Constants/enums.dart';
-import 'package:pictora/utils/services/custom_logger.dart';
-
 import '../../../../model/user_model.dart';
+import '../../../../utils/constants/enums.dart';
 import '../../../../utils/helper/helper_function.dart';
 import '../../../../utils/helper/theme_helper.dart';
 
@@ -46,10 +44,23 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
   Future<void> _modifyUserCounts(ModifyUserCountEvent event, Emitter<ProfileState> emit) async {
     try {
       if (event.postsCount != null) {
-        logDebug(message: "Modifying posts count by ${event.postsCount}");
         emit(state.copyWith(
           userData: state.userData
               ?.copyWith(counts: state.userData?.counts?.copyWith(postCount: (state.userData?.counts?.postCount ?? 0) + (event.postsCount ?? 0))),
+        ));
+      }
+
+      if (event.followingCount != null) {
+        emit(state.copyWith(
+          userData: state.userData?.copyWith(
+              counts: state.userData?.counts?.copyWith(followingCount: (state.userData?.counts?.followingCount ?? 0) + (event.followingCount ?? 0))),
+        ));
+      }
+
+      if (event.followersCount != null) {
+        emit(state.copyWith(
+          userData: state.userData?.copyWith(
+              counts: state.userData?.counts?.copyWith(followerCount: (state.userData?.counts?.followerCount ?? 0) + (event.followersCount ?? 0))),
         ));
       }
     } catch (error, stackTrace) {

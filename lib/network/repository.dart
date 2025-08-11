@@ -272,7 +272,7 @@ class Repository {
   Future<FollowRequestsModel> getFollowRequests() async {
     try {
       Map<String, dynamic> json = await apiClient.getApiCall(
-        endPoint: getFollowRequestUserApiEndPoint,
+        endPoint: followRequestUserApiEndPoint,
         isAccessToken: accessToken,
       );
 
@@ -292,6 +292,36 @@ class Repository {
       );
 
       return UserListDataModel.fromJson(json);
+    } on CustomException {
+      rethrow;
+    }
+  }
+
+  /// POST: TOGGLE USER FOLLOW
+  Future<UserListDataModel> toggleUserFollow({required dynamic body}) async {
+    try {
+      Map<String, dynamic> json = await apiClient.postApiCall(
+        endPoint: toggleFollowUserApiEndPoint,
+        isAccessToken: accessToken,
+        postBody: body,
+      );
+
+      return UserListDataModel.fromJson(json);
+    } on CustomException {
+      rethrow;
+    }
+  }
+
+  /// PATCH: MANAGE FOLLOW REQUEST
+  Future<CommonMessageModel> manageFollowRequest({required dynamic body}) async {
+    try {
+      Map<String, dynamic> json = await apiClient.patchApiCall(
+        endPoint: followRequestUserApiEndPoint,
+        isAccessToken: accessToken,
+        patchBody: body,
+      );
+
+      return CommonMessageModel.fromJson(json);
     } on CustomException {
       rethrow;
     }

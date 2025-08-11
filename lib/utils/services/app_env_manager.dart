@@ -1,4 +1,4 @@
-import '../Constants/enums.dart';
+import '../constants/enums.dart';
 
 class AppEnvManager {
   static AppEnv currentEnv = AppEnv.local;

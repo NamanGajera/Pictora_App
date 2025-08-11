@@ -370,7 +370,13 @@ class _FollowSectionScreenState extends State<FollowSectionScreen> with SingleTi
                 height: 38,
                 text: "Requested",
                 fontSize: 14,
-                onTap: () {},
+                onTap: () {
+                  followSectionBloc.add(ToggleFollowUserEvent(
+                    userId: user?.id ?? '',
+                    isFollowing: false,
+                    isPrivate: user?.profile?.isPrivate ?? false,
+                  ));
+                },
               ),
             ] else if (user?.isFollowed == true) ...[
               CustomButton(
@@ -400,7 +406,8 @@ class _FollowSectionScreenState extends State<FollowSectionScreen> with SingleTi
                 onTap: () {
                   followSectionBloc.add(ToggleFollowUserEvent(
                     userId: user?.id ?? '',
-                    isFollowing: !(user?.isFollowed ?? false),
+                    isFollowing: true,
+                    isPrivate: user?.profile?.isPrivate ?? false,
                   ));
                 },
               ),
@@ -417,6 +424,7 @@ class _FollowSectionScreenState extends State<FollowSectionScreen> with SingleTi
                   followSectionBloc.add(ToggleFollowUserEvent(
                     userId: user?.id ?? '',
                     isFollowing: true,
+                    isPrivate: user?.profile?.isPrivate ?? false,
                   ));
                 },
               ),
