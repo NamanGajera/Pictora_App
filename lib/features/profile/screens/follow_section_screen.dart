@@ -121,7 +121,7 @@ class _FollowSectionScreenState extends State<FollowSectionScreen> with SingleTi
 
   Widget _buildFollowerUsersList() {
     return BlocBuilder<FollowSectionBloc, FollowSectionState>(
-      buildWhen: (previous, current) => previous.getFollowersApiStatus != current.getFollowersApiStatus,
+      buildWhen: (previous, current) => previous.getFollowersApiStatus != current.getFollowersApiStatus || previous.followers != current.followers,
       builder: (context, state) {
         if (state.getFollowersApiStatus == ApiStatus.loading) {
           return Center(
@@ -154,7 +154,7 @@ class _FollowSectionScreenState extends State<FollowSectionScreen> with SingleTi
 
   Widget _buildFollowingUsersList() {
     return BlocBuilder<FollowSectionBloc, FollowSectionState>(
-      buildWhen: (previous, current) => previous.getFollowingApiStatus != current.getFollowingApiStatus,
+      buildWhen: (previous, current) => previous.getFollowingApiStatus != current.getFollowingApiStatus || previous.following != current.following,
       builder: (context, state) {
         if (state.getFollowingApiStatus == ApiStatus.loading) {
           return Center(
@@ -187,7 +187,8 @@ class _FollowSectionScreenState extends State<FollowSectionScreen> with SingleTi
 
   Widget _buildFollowRequestList() {
     return BlocBuilder<FollowSectionBloc, FollowSectionState>(
-      buildWhen: (previous, current) => previous.getFollowRequestApiStatus != current.getFollowRequestApiStatus,
+      buildWhen: (previous, current) =>
+          previous.getFollowRequestApiStatus != current.getFollowRequestApiStatus || previous.followRequests != current.followRequests,
       builder: (context, state) {
         if (state.getFollowRequestApiStatus == ApiStatus.loading) {
           return Center(
@@ -210,6 +211,7 @@ class _FollowSectionScreenState extends State<FollowSectionScreen> with SingleTi
               child: _buildUserTile(
                 user,
                 FollowSectionTab.request,
+                state.followRequests?[index].id,
               ),
             );
           },
@@ -220,7 +222,8 @@ class _FollowSectionScreenState extends State<FollowSectionScreen> with SingleTi
 
   Widget _buildDiscoverUsersList() {
     return BlocBuilder<FollowSectionBloc, FollowSectionState>(
-      buildWhen: (previous, current) => previous.getDiscoverUsersApiStatus != current.getDiscoverUsersApiStatus,
+      buildWhen: (previous, current) =>
+          previous.getDiscoverUsersApiStatus != current.getDiscoverUsersApiStatus || previous.discoverUsers != current.discoverUsers,
       builder: (context, state) {
         if (state.getDiscoverUsersApiStatus == ApiStatus.loading) {
           return Center(
@@ -261,7 +264,7 @@ class _FollowSectionScreenState extends State<FollowSectionScreen> with SingleTi
     );
   }
 
-  Widget _buildUserTile(User? user, FollowSectionTab tab) {
+  Widget _buildUserTile(User? user, FollowSectionTab tab, [String? requestId]) {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 20, vertical: 16),
       child: Row(
@@ -294,6 +297,14 @@ class _FollowSectionScreenState extends State<FollowSectionScreen> with SingleTi
                           fit: BoxFit.cover,
                         );
                       },
+                      imageBuilder: (context, imageProvider) => Container(
+                        decoration: BoxDecoration(
+                          image: DecorationImage(
+                            image: imageProvider,
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                      ),
                     )
                   : _buildDefaultAvatar(user?.fullName ?? ''),
             ),
@@ -335,7 +346,13 @@ class _FollowSectionScreenState extends State<FollowSectionScreen> with SingleTi
                     height: 38,
                     text: "Accept",
                     fontSize: 14,
-                    onTap: () {},
+                    onTap: () {
+                      followSectionBloc.add(ManageFollowRequestEvent(
+                        userId: user?.id ?? '',
+                        requestId: requestId ?? '',
+                        isAccept: true,
+                      ));
+                    },
                   ),
                   const SizedBox(width: 8),
                   CustomButton(
@@ -353,7 +370,7 @@ class _FollowSectionScreenState extends State<FollowSectionScreen> with SingleTi
                 height: 38,
                 text: "Requested",
                 fontSize: 14,
-                onTap: () {}, // Optional: cancel request
+                onTap: () {},
               ),
             ] else if (user?.isFollowed == true) ...[
               CustomButton(
@@ -364,7 +381,12 @@ class _FollowSectionScreenState extends State<FollowSectionScreen> with SingleTi
                 backgroundColor: Colors.transparent,
                 borderColor: Colors.grey,
                 fontSize: 14,
-                onTap: () {}, // Optional: unfollow
+                onTap: () {
+                  followSectionBloc.add(ToggleFollowUserEvent(
+                    userId: user?.id ?? '',
+                    isFollowing: false,
+                  ));
+                },
               ),
             ] else if (user?.showFollowBack == true) ...[
               CustomButton(
@@ -375,7 +397,12 @@ class _FollowSectionScreenState extends State<FollowSectionScreen> with SingleTi
                 backgroundColor: primaryColor,
                 borderColor: primaryColor,
                 fontSize: 14,
-                onTap: () {}, // follow back action
+                onTap: () {
+                  followSectionBloc.add(ToggleFollowUserEvent(
+                    userId: user?.id ?? '',
+                    isFollowing: !(user?.isFollowed ?? false),
+                  ));
+                },
               ),
             ] else ...[
               CustomButton(
@@ -386,7 +413,12 @@ class _FollowSectionScreenState extends State<FollowSectionScreen> with SingleTi
                 backgroundColor: primaryColor,
                 borderColor: primaryColor,
                 fontSize: 14,
-                onTap: () {}, // follow action
+                onTap: () {
+                  followSectionBloc.add(ToggleFollowUserEvent(
+                    userId: user?.id ?? '',
+                    isFollowing: true,
+                  ));
+                },
               ),
             ]
           ]

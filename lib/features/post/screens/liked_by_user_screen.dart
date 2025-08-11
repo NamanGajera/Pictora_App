@@ -148,6 +148,14 @@ class _LikedByUserScreenState extends State<LikedByUserScreen> {
                           fit: BoxFit.cover,
                         );
                       },
+                      imageBuilder: (context, imageProvider) => Container(
+                        decoration: BoxDecoration(
+                          image: DecorationImage(
+                            image: imageProvider,
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                      ),
                     )
                   : _buildDefaultAvatar(user?.fullName ?? ''),
             ),

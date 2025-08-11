@@ -33,15 +33,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     } catch (error, stackTrace) {
       emit(state.copyWith(registerUserApiStatus: ApiStatus.failure));
       ThemeHelper.showToastMessage("$error");
-      handleError(
-        error: error,
-        stackTrace: stackTrace,
-        emit: emit,
-        stateCopyWith: (statusCode, errorMessage) => state.copyWith(
-          statusCode: statusCode,
-          errorMessage: errorMessage,
-        ),
-      );
+      handleApiError(error, stackTrace, emit);
     }
   }
 
@@ -55,15 +47,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     } catch (error, stackTrace) {
       emit(state.copyWith(loginUserApiStatus: ApiStatus.failure));
       ThemeHelper.showToastMessage("$error");
-      handleError(
-        error: error,
-        stackTrace: stackTrace,
-        emit: emit,
-        stateCopyWith: (statusCode, errorMessage) => state.copyWith(
-          statusCode: statusCode,
-          errorMessage: errorMessage,
-        ),
-      );
+      handleApiError(error, stackTrace, emit);
     }
   }
 
@@ -85,5 +69,17 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     SharedPrefsHelper().setString(SharedPrefKeys.userProfilePic, userProfilePic ?? '');
 
     appRouter.go(RouterName.home.path);
+  }
+
+  void handleApiError(dynamic error, dynamic stackTrace, Emitter<AuthState> emit) {
+    handleError(
+      error: error,
+      stackTrace: stackTrace,
+      emit: emit,
+      stateCopyWith: (statusCode, errorMessage) => state.copyWith(
+        statusCode: statusCode,
+        errorMessage: errorMessage,
+      ),
+    );
   }
 }

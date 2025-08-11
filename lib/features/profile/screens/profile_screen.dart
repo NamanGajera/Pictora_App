@@ -9,6 +9,7 @@ import 'package:pictora/router/router_name.dart';
 import 'package:pictora/utils/constants/bloc_instances.dart';
 import 'package:pictora/utils/constants/colors.dart';
 import 'package:pictora/utils/constants/constants.dart';
+import 'package:pictora/utils/extensions/widget_extension.dart';
 
 import '../../../model/user_model.dart';
 import '../../../router/router.dart';
@@ -22,7 +23,7 @@ class ProfileScreen extends StatefulWidget {
   State<ProfileScreen> createState() => _ProfileScreenState();
 }
 
-class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProviderStateMixin {
+class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProviderStateMixin, AutomaticKeepAliveClientMixin {
   @override
   void initState() {
     super.initState();
@@ -44,6 +45,7 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
 
   @override
   Widget build(BuildContext context) {
+    super.build(context); // Required for AutomaticKeepAliveClientMixin
     return Scaffold(
       backgroundColor: const Color(0xffF8FAF9),
       body: Column(
@@ -59,7 +61,14 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
 
   Widget _buildProfileInfo() {
     return BlocBuilder<ProfileBloc, ProfileState>(
-      buildWhen: (previous, current) => previous.getUserDataApiStatus != current.getUserDataApiStatus,
+      buildWhen: (previous, current) {
+        // Only rebuild when user data actually changes
+        if (widget.userId == null) {
+          return previous.userData != current.userData;
+        } else {
+          return previous.otherUserData != current.otherUserData;
+        }
+      },
       builder: (context, state) {
         User? userData = widget.userId == null ? state.userData : state.otherUserData;
         return Container(
@@ -73,69 +82,8 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
                 children: [
                   Row(
                     children: [
-                      Container(
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.08),
-                              blurRadius: 12,
-                              offset: const Offset(0, 4),
-                            ),
-                          ],
-                        ),
-                        child: CircleAvatar(
-                          radius: 42,
-                          backgroundColor: const Color(0xffF5F5F5),
-                          child: (userData?.profile?.profilePicture ?? '').isNotEmpty
-                              ? ClipOval(
-                                  child: CachedNetworkImage(
-                                    imageUrl: userData!.profile!.profilePicture!,
-                                    width: 84,
-                                    height: 84,
-                                    fit: BoxFit.cover,
-                                    placeholder: (context, url) => Container(
-                                      width: 84,
-                                      height: 84,
-                                      decoration: BoxDecoration(
-                                        shape: BoxShape.circle,
-                                        color: Colors.grey[100],
-                                      ),
-                                      child: const Center(
-                                        child: SizedBox(
-                                          width: 20,
-                                          height: 20,
-                                          child: CircularProgressIndicator(
-                                            strokeWidth: 2,
-                                            valueColor: AlwaysStoppedAnimation<Color>(Color(0xff6B7280)),
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                    errorWidget: (context, url, error) => Container(
-                                      width: 84,
-                                      height: 84,
-                                      decoration: BoxDecoration(
-                                        shape: BoxShape.circle,
-                                        color: const Color(0xffF3F4F6),
-                                      ),
-                                      child: const Icon(
-                                        Icons.person_rounded,
-                                        size: 40,
-                                        color: Color(0xff9CA3AF),
-                                      ),
-                                    ),
-                                  ),
-                                )
-                              : const Icon(
-                                  Icons.person_rounded,
-                                  size: 40,
-                                  color: Color(0xff9CA3AF),
-                                ),
-                        ),
-                      ),
+                      _buildProfilePicture(userData),
                       const SizedBox(width: 24),
-                      // Enhanced stats section
                       Expanded(
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -182,39 +130,29 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
                       ),
                     ],
                   ),
-
                   const SizedBox(height: 20),
-
-                  // User name with better typography
                   Text(
                     userData?.fullName ?? 'Unknown User',
                     style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
                       color: Color(0xff1F2937),
-                      letterSpacing: -0.5,
                     ),
                   ),
-
                   if ((userData?.profile?.bio ?? '').isNotEmpty) ...[
                     const SizedBox(height: 8),
-                    // Bio with improved styling
                     Text(
                       userData!.profile!.bio!,
                       style: const TextStyle(
                         fontSize: 15,
                         color: Color(0xff6B7280),
                         height: 1.5,
-                        letterSpacing: -0.2,
                       ),
                       maxLines: 3,
                       overflow: TextOverflow.ellipsis,
                     ),
                   ],
-
                   const SizedBox(height: 20),
-
-                  // Enhanced action buttons
                   _buildActionButtons(userData?.id ?? ''),
                 ],
               ),
@@ -223,6 +161,72 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
         );
       },
     );
+  }
+
+  Widget _buildProfilePicture(User? userData) {
+    return Container(
+      key: ValueKey('profile_picture_${userData?.id}'),
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: CircleAvatar(
+        radius: 42,
+        backgroundColor: const Color(0xffF5F5F5),
+        child: (userData?.profile?.profilePicture ?? '').isNotEmpty
+            ? ClipOval(
+                child: CachedNetworkImage(
+                  cacheKey: 'profile_pic_${userData?.id}',
+                  imageUrl: userData!.profile!.profilePicture!,
+                  width: 84,
+                  height: 84,
+                  fit: BoxFit.cover,
+                  placeholder: (context, url) => Container(
+                    color: Colors.grey[100],
+                    child: const Center(
+                      child: SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor: AlwaysStoppedAnimation<Color>(Color(0xff9CA3AF)),
+                        ),
+                      ),
+                    ),
+                  ),
+                  errorWidget: (context, url, error) => Container(
+                    color: const Color(0xffF3F4F6),
+                    child: const Icon(
+                      Icons.image_outlined,
+                      color: Color(0xff9CA3AF),
+                      size: 32,
+                    ),
+                  ),
+                  imageBuilder: (context, imageProvider) => Container(
+                    decoration: BoxDecoration(
+                      image: DecorationImage(
+                        image: imageProvider,
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                  ),
+                  fadeInDuration: Duration.zero,
+                  fadeOutDuration: Duration.zero,
+                ),
+              )
+            : const Icon(
+                Icons.person_rounded,
+                size: 40,
+                color: Color(0xff9CA3AF),
+              ),
+      ),
+    ).withAutomaticKeepAlive();
   }
 
   Widget _buildStatItem(String label, int count) {
@@ -272,9 +276,7 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
               'Share Profile',
               backgroundColor: const Color(0xffF3F4F6),
               textColor: const Color(0xff374151),
-              onTap: () {
-                // Handle share profile
-              },
+              onTap: () {},
             ),
           ),
         ],
@@ -469,6 +471,9 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
     }
     return number.toString();
   }
+
+  @override
+  bool get wantKeepAlive => true;
 }
 
 class ProfileScreenDataModel {

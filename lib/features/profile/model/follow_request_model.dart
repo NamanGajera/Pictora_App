@@ -13,15 +13,15 @@ class FollowRequestsModel {
     if (json['data'] != null) {
       data = <Request>[];
       json['data'].forEach((v) {
-        data!.add(new Request.fromJson(v));
+        data!.add(Request.fromJson(v));
       });
     }
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['statusCode'] = this.statusCode;
-    data['message'] = this.message;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['statusCode'] = statusCode;
+    data['message'] = message;
     if (this.data != null) {
       data['data'] = this.data!.map((v) => v.toJson()).toList();
     }
@@ -47,20 +47,40 @@ class Request {
     status = json['status'];
     createdAt = json['createdAt'];
     updatedAt = json['updatedAt'];
-    requester = json['requester'] != null ? new User.fromJson(json['requester']) : null;
+    requester = json['requester'] != null ? User.fromJson(json['requester']) : null;
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['id'] = this.id;
-    data['requesterId'] = this.requesterId;
-    data['targetId'] = this.targetId;
-    data['status'] = this.status;
-    data['createdAt'] = this.createdAt;
-    data['updatedAt'] = this.updatedAt;
-    if (this.requester != null) {
-      data['requester'] = this.requester!.toJson();
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['id'] = id;
+    data['requesterId'] = requesterId;
+    data['targetId'] = targetId;
+    data['status'] = status;
+    data['createdAt'] = createdAt;
+    data['updatedAt'] = updatedAt;
+    if (requester != null) {
+      data['requester'] = requester!.toJson();
     }
     return data;
+  }
+
+  Request copyWith({
+    String? id,
+    String? requesterId,
+    String? targetId,
+    String? status,
+    String? createdAt,
+    String? updatedAt,
+    User? requester,
+  }) {
+    return Request(
+      id: id ?? this.id,
+      requesterId: requesterId ?? this.requesterId,
+      targetId: targetId ?? this.targetId,
+      status: status ?? this.status,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      requester: requester ?? this.requester,
+    );
   }
 }

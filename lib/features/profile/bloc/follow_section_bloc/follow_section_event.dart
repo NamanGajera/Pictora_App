@@ -17,3 +17,25 @@ class GetFollowingEvent extends FollowSectionEvent {
 class GetFollowRequestEvent extends FollowSectionEvent {}
 
 class GetDiscoverUsersEvent extends FollowSectionEvent {}
+
+class ToggleFollowUserEvent extends FollowSectionEvent {
+  final String userId;
+  final bool isFollowing;
+
+  ToggleFollowUserEvent({
+    required this.userId,
+    required this.isFollowing,
+  });
+}
+
+class ManageFollowRequestEvent extends FollowSectionEvent {
+  final String requestId;
+  final String userId;
+  final bool isAccept;
+
+  ManageFollowRequestEvent({
+    required this.requestId,
+    required this.userId,
+    required this.isAccept,
+  });
+}

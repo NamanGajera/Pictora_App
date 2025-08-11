@@ -13,9 +13,11 @@ import 'package:pictora/utils/constants/enums.dart';
 import 'package:pictora/utils/services/custom_logger.dart';
 import 'package:uuid/uuid.dart';
 
+import '../../../utils/constants/bloc_instances.dart';
 import '../../../utils/helper/helper_function.dart';
 import '../../../utils/helper/theme_helper.dart';
 import '../../home/screens/home_screen.dart';
+import '../../profile/bloc/profile_bloc/profile_bloc.dart';
 import '../models/post_comment_data_model.dart';
 import '../models/post_data.dart';
 
@@ -74,15 +76,7 @@ class PostBloc extends Bloc<PostEvent, PostState> {
     } catch (error, stackTrace) {
       emit(state.copyWith(createPostApiStatus: ApiStatus.failure));
       ThemeHelper.showToastMessage("$error");
-      handleError(
-        error: error,
-        stackTrace: stackTrace,
-        emit: emit,
-        stateCopyWith: (statusCode, errorMessage) => state.copyWith(
-          statusCode: statusCode,
-          errorMessage: errorMessage,
-        ),
-      );
+      handleApiError(error, stackTrace, emit);
     }
   }
 
@@ -98,15 +92,7 @@ class PostBloc extends Bloc<PostEvent, PostState> {
     } catch (error, stackTrace) {
       emit(state.copyWith(getAllPostApiStatus: ApiStatus.failure));
       ThemeHelper.showToastMessage("$error");
-      handleError(
-        error: error,
-        stackTrace: stackTrace,
-        emit: emit,
-        stateCopyWith: (statusCode, errorMessage) => state.copyWith(
-          statusCode: statusCode,
-          errorMessage: errorMessage,
-        ),
-      );
+      handleApiError(error, stackTrace, emit);
     }
   }
 
@@ -122,15 +108,7 @@ class PostBloc extends Bloc<PostEvent, PostState> {
     } catch (error, stackTrace) {
       emit(state.copyWith(getMyPostApiStatus: ApiStatus.failure));
       ThemeHelper.showToastMessage("$error");
-      handleError(
-        error: error,
-        stackTrace: stackTrace,
-        emit: emit,
-        stateCopyWith: (statusCode, errorMessage) => state.copyWith(
-          statusCode: statusCode,
-          errorMessage: errorMessage,
-        ),
-      );
+      handleApiError(error, stackTrace, emit);
     }
   }
 
@@ -146,15 +124,7 @@ class PostBloc extends Bloc<PostEvent, PostState> {
     } catch (error, stackTrace) {
       emit(state.copyWith(getOtherUserPostApiStatus: ApiStatus.failure));
       ThemeHelper.showToastMessage("$error");
-      handleError(
-        error: error,
-        stackTrace: stackTrace,
-        emit: emit,
-        stateCopyWith: (statusCode, errorMessage) => state.copyWith(
-          statusCode: statusCode,
-          errorMessage: errorMessage,
-        ),
-      );
+      handleApiError(error, stackTrace, emit);
     }
   }
 
@@ -170,15 +140,7 @@ class PostBloc extends Bloc<PostEvent, PostState> {
     } catch (error, stackTrace) {
       emit(state.copyWith(getPostCommentListApiStatus: ApiStatus.failure));
       ThemeHelper.showToastMessage("$error");
-      handleError(
-        error: error,
-        stackTrace: stackTrace,
-        emit: emit,
-        stateCopyWith: (statusCode, errorMessage) => state.copyWith(
-          statusCode: statusCode,
-          errorMessage: errorMessage,
-        ),
-      );
+      handleApiError(error, stackTrace, emit);
     }
   }
 
@@ -243,15 +205,7 @@ class PostBloc extends Bloc<PostEvent, PostState> {
       _updatePostLists(emit: emit, postId: event.postId, updateCommentCount: false);
 
       ThemeHelper.showToastMessage("$error");
-      handleError(
-        error: error,
-        stackTrace: stackTrace,
-        emit: emit,
-        stateCopyWith: (statusCode, errorMessage) => state.copyWith(
-          statusCode: statusCode,
-          errorMessage: errorMessage,
-        ),
-      );
+      handleApiError(error, stackTrace, emit);
     }
   }
 
@@ -290,15 +244,7 @@ class PostBloc extends Bloc<PostEvent, PostState> {
     } catch (error, stackTrace) {
       emit(state.copyWith(getRepliesApiStatus: ApiStatus.failure));
       ThemeHelper.showToastMessage("$error");
-      handleError(
-        error: error,
-        stackTrace: stackTrace,
-        emit: emit,
-        stateCopyWith: (statusCode, errorMessage) => state.copyWith(
-          statusCode: statusCode,
-          errorMessage: errorMessage,
-        ),
-      );
+      handleApiError(error, stackTrace, emit);
     }
   }
 
@@ -317,15 +263,7 @@ class PostBloc extends Bloc<PostEvent, PostState> {
     } catch (error, stackTrace) {
       _updateComment(commentId: event.commentId, emit: emit, isLiked: !event.isLike);
       ThemeHelper.showToastMessage("$error");
-      handleError(
-        error: error,
-        stackTrace: stackTrace,
-        emit: emit,
-        stateCopyWith: (statusCode, errorMessage) => state.copyWith(
-          statusCode: statusCode,
-          errorMessage: errorMessage,
-        ),
-      );
+      handleApiError(error, stackTrace, emit);
     }
   }
 
@@ -363,15 +301,7 @@ class PostBloc extends Bloc<PostEvent, PostState> {
         apiStatus: PostCommentApiStatus.failedToDelete,
       );
       ThemeHelper.showToastMessage("$error");
-      handleError(
-        error: error,
-        stackTrace: stackTrace,
-        emit: emit,
-        stateCopyWith: (statusCode, errorMessage) => state.copyWith(
-          statusCode: statusCode,
-          errorMessage: errorMessage,
-        ),
-      );
+      handleApiError(error, stackTrace, emit);
     }
   }
 
@@ -385,15 +315,7 @@ class PostBloc extends Bloc<PostEvent, PostState> {
     } catch (error, stackTrace) {
       _updatePostLists(postId: event.postId, emit: emit, isLiked: !event.isLike);
       ThemeHelper.showToastMessage("$error");
-      handleError(
-        error: error,
-        stackTrace: stackTrace,
-        emit: emit,
-        stateCopyWith: (statusCode, errorMessage) => state.copyWith(
-          statusCode: statusCode,
-          errorMessage: errorMessage,
-        ),
-      );
+      handleApiError(error, stackTrace, emit);
     }
   }
 
@@ -407,15 +329,7 @@ class PostBloc extends Bloc<PostEvent, PostState> {
     } catch (error, stackTrace) {
       _updatePostLists(postId: event.postId, emit: emit, isSaved: !event.isSave);
       ThemeHelper.showToastMessage("$error");
-      handleError(
-        error: error,
-        stackTrace: stackTrace,
-        emit: emit,
-        stateCopyWith: (statusCode, errorMessage) => state.copyWith(
-          statusCode: statusCode,
-          errorMessage: errorMessage,
-        ),
-      );
+      handleApiError(error, stackTrace, emit);
     }
   }
 
@@ -427,19 +341,12 @@ class PostBloc extends Bloc<PostEvent, PostState> {
       ThemeHelper.showToastMessage(data.message ?? 'Post deleted');
       _updatePostLists(postId: event.postId, emit: emit, isDelete: true);
       emit(state.copyWith(deletePostApiStatus: ApiStatus.success));
+      profileBloc.add(ModifyUserCountEvent(postsCount: -1));
       appRouter.pop();
     } catch (error, stackTrace) {
       emit(state.copyWith(deletePostApiStatus: ApiStatus.failure));
       ThemeHelper.showToastMessage("$error");
-      handleError(
-        error: error,
-        stackTrace: stackTrace,
-        emit: emit,
-        stateCopyWith: (statusCode, errorMessage) => state.copyWith(
-          statusCode: statusCode,
-          errorMessage: errorMessage,
-        ),
-      );
+      handleApiError(error, stackTrace, emit);
     }
   }
 
@@ -458,15 +365,7 @@ class PostBloc extends Bloc<PostEvent, PostState> {
     } catch (error, stackTrace) {
       emit(state.copyWith(archivePostApiStatus: ApiStatus.failure));
       ThemeHelper.showToastMessage("$error");
-      handleError(
-        error: error,
-        stackTrace: stackTrace,
-        emit: emit,
-        stateCopyWith: (statusCode, errorMessage) => state.copyWith(
-          statusCode: statusCode,
-          errorMessage: errorMessage,
-        ),
-      );
+      handleApiError(error, stackTrace, emit);
     }
   }
 
@@ -487,15 +386,7 @@ class PostBloc extends Bloc<PostEvent, PostState> {
     } catch (error, stackTrace) {
       emit(state.copyWith(likeByUserApiStatus: ApiStatus.failure));
       ThemeHelper.showToastMessage("$error");
-      handleError(
-        error: error,
-        stackTrace: stackTrace,
-        emit: emit,
-        stateCopyWith: (statusCode, errorMessage) => state.copyWith(
-          statusCode: statusCode,
-          errorMessage: errorMessage,
-        ),
-      );
+      handleApiError(error, stackTrace, emit);
     }
   }
 
@@ -634,5 +525,17 @@ class PostBloc extends Bloc<PostEvent, PostState> {
       return post;
     }).toList();
     return updatedList;
+  }
+
+  void handleApiError(dynamic error, dynamic stackTrace, Emitter<PostState> emit) {
+    handleError(
+      error: error,
+      stackTrace: stackTrace,
+      emit: emit,
+      stateCopyWith: (statusCode, errorMessage) => state.copyWith(
+        statusCode: statusCode,
+        errorMessage: errorMessage,
+      ),
+    );
   }
 }

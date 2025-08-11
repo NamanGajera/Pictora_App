@@ -50,6 +50,30 @@ class User {
     data['showFollowBack'] = showFollowBack;
     return data;
   }
+
+  User copyWith({
+    String? id,
+    String? userName,
+    String? fullName,
+    String? email,
+    Profile? profile,
+    Counts? counts,
+    bool? isFollowed,
+    String? followRequestStatus,
+    bool? showFollowBack,
+  }) {
+    return User(
+      id: id ?? this.id,
+      userName: userName ?? this.userName,
+      fullName: fullName ?? this.fullName,
+      email: email ?? this.email,
+      profile: profile ?? this.profile,
+      counts: counts ?? this.counts,
+      isFollowed: isFollowed ?? this.isFollowed,
+      followRequestStatus: followRequestStatus ?? this.followRequestStatus,
+      showFollowBack: showFollowBack ?? this.showFollowBack,
+    );
+  }
 }
 
 class Profile {
@@ -88,6 +112,24 @@ class Profile {
     data['location'] = location;
     return data;
   }
+
+  Profile copyWith({
+    String? profilePicture,
+    String? bio,
+    String? dob,
+    String? gender,
+    bool? isPrivate,
+    String? location,
+  }) {
+    return Profile(
+      profilePicture: profilePicture ?? this.profilePicture,
+      bio: bio ?? this.bio,
+      dob: dob ?? this.dob,
+      gender: gender ?? this.gender,
+      isPrivate: isPrivate ?? this.isPrivate,
+      location: location ?? this.location,
+    );
+  }
 }
 
 class Counts {
@@ -101,6 +143,18 @@ class Counts {
     followerCount = json['followerCount'];
     followingCount = json['followingCount'];
     postCount = json['postCount'];
+  }
+
+  Counts copyWith({
+    int? followerCount,
+    int? followingCount,
+    int? postCount,
+  }) {
+    return Counts(
+      followerCount: followerCount ?? this.followerCount,
+      followingCount: followingCount ?? this.followingCount,
+      postCount: postCount ?? this.postCount,
+    );
   }
 
   Map<String, dynamic> toJson() {

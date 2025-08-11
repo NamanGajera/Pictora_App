@@ -1,7 +1,9 @@
+import 'package:bloc_concurrency/bloc_concurrency.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pictora/network/repository.dart';
 import 'package:pictora/utils/Constants/enums.dart';
+import 'package:pictora/utils/services/custom_logger.dart';
 
 import '../../../../model/user_model.dart';
 import '../../../../utils/helper/helper_function.dart';
@@ -15,6 +17,7 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
 
   ProfileBloc(this.repository) : super(ProfileState()) {
     on<GetUserDataEvent>(_getUserData);
+    on<ModifyUserCountEvent>(_modifyUserCounts, transformer: sequential());
   }
 
   Future<void> _getUserData(GetUserDataEvent event, Emitter<ProfileState> emit) async {
@@ -36,15 +39,33 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
     } catch (error, stackTrace) {
       emit(state.copyWith(getUserDataApiStatus: ApiStatus.failure));
       ThemeHelper.showToastMessage("$error");
-      handleError(
-        error: error,
-        stackTrace: stackTrace,
-        emit: emit,
-        stateCopyWith: (statusCode, errorMessage) => state.copyWith(
-          statusCode: statusCode,
-          errorMessage: errorMessage,
-        ),
-      );
+      handleApiError(error, stackTrace, emit);
     }
+  }
+
+  Future<void> _modifyUserCounts(ModifyUserCountEvent event, Emitter<ProfileState> emit) async {
+    try {
+      if (event.postsCount != null) {
+        logDebug(message: "Modifying posts count by ${event.postsCount}");
+        emit(state.copyWith(
+          userData: state.userData
+              ?.copyWith(counts: state.userData?.counts?.copyWith(postCount: (state.userData?.counts?.postCount ?? 0) + (event.postsCount ?? 0))),
+        ));
+      }
+    } catch (error, stackTrace) {
+      handleApiError(error, stackTrace, emit);
+    }
+  }
+
+  void handleApiError(dynamic error, dynamic stackTrace, Emitter<ProfileState> emit) {
+    handleError(
+      error: error,
+      stackTrace: stackTrace,
+      emit: emit,
+      stateCopyWith: (statusCode, errorMessage) => state.copyWith(
+        statusCode: statusCode,
+        errorMessage: errorMessage,
+      ),
+    );
   }
 }

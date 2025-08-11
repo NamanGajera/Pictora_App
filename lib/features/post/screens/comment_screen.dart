@@ -170,6 +170,14 @@ class _CommentScreenState extends State<CommentScreen> {
                     fit: BoxFit.cover,
                   );
                 },
+                imageBuilder: (context, imageProvider) => Container(
+                  decoration: BoxDecoration(
+                    image: DecorationImage(
+                      image: imageProvider,
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                ),
               ),
             ),
             const SizedBox(width: 8),
@@ -448,6 +456,14 @@ class _CommentItemState extends State<CommentItem> {
                           fit: BoxFit.cover,
                         );
                       },
+                      imageBuilder: (context, imageProvider) => Container(
+                        decoration: BoxDecoration(
+                          image: DecorationImage(
+                            image: imageProvider,
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                      ),
                     ),
                   ),
                 ),
@@ -885,6 +901,14 @@ class _ChildCommentItemState extends State<ChildCommentItem> {
                         fit: BoxFit.cover,
                       );
                     },
+                    imageBuilder: (context, imageProvider) => Container(
+                      decoration: BoxDecoration(
+                        image: DecorationImage(
+                          image: imageProvider,
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                    ),
                     placeholder: (context, url) {
                       return Image.asset(
                         AppAssets.profilePng,
@@ -1104,6 +1128,14 @@ class HighlightedComment extends StatelessWidget {
                   fit: BoxFit.cover,
                 );
               },
+              imageBuilder: (context, imageProvider) => Container(
+                decoration: BoxDecoration(
+                  image: DecorationImage(
+                    image: imageProvider,
+                    fit: BoxFit.cover,
+                  ),
+                ),
+              ),
             ),
           ),
           const SizedBox(width: 12),
