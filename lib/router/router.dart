@@ -18,6 +18,7 @@ import '../features/auth/screens/splash_screen.dart';
 import '../features/post/screens/video_cover_selector_screen.dart';
 import '../features/profile/screens/profile_screen.dart';
 import '../features/widgets/app_bottom_navigation_bar.dart';
+import '../utils/constants/screens_keys.dart';
 import 'router_name.dart';
 
 final GoRouter appRouter = GoRouter(
@@ -86,7 +87,9 @@ final GoRouter appRouter = GoRouter(
               name: RouterName.postAssetPicker.name,
               pageBuilder: (BuildContext context, GoRouterState state) => NoTransitionPage<void>(
                 key: state.pageKey,
-                child: const PostAssetPickerScreen(),
+                child: PostAssetPickerScreen(
+                  key: assetPickerScreenKey,
+                ),
               ),
             ),
           ],

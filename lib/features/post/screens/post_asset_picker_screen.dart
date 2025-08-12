@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:insta_assets_picker/insta_assets_picker.dart';
 import 'package:pictora/router/router.dart';
 import 'package:pictora/router/router_name.dart';
+import 'package:pictora/utils/services/custom_logger.dart';
 import 'package:video_player/video_player.dart';
 
 import 'add_post_screen.dart';
@@ -10,10 +11,10 @@ class PostAssetPickerScreen extends StatefulWidget {
   const PostAssetPickerScreen({super.key});
 
   @override
-  State<PostAssetPickerScreen> createState() => _PostAssetPickerScreenState();
+  State<PostAssetPickerScreen> createState() => PostAssetPickerScreenState();
 }
 
-class _PostAssetPickerScreenState extends State<PostAssetPickerScreen> {
+class PostAssetPickerScreenState extends State<PostAssetPickerScreen> with WidgetsBindingObserver {
   List<AssetEntity> selectedAssets = [];
   List<AssetEntity> assets = [];
   List<AssetPathEntity> albums = [];
@@ -29,15 +30,34 @@ class _PostAssetPickerScreenState extends State<PostAssetPickerScreen> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _loadAlbums();
     _scrollController.addListener(_onScroll);
   }
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _scrollController.dispose();
     _videoController?.dispose();
     super.dispose();
+  }
+
+  void pauseVideo() {
+    if (_videoController != null && _isVideoPlaying) {
+      _videoController?.pause();
+      if (mounted) {
+        setState(() {
+          _isVideoPlaying = false;
+        });
+      }
+    }
+  }
+
+  void clearSelections() {
+    logDebug(message: 'Clearing selections');
+    selectedAssets.clear();
+    setState(() {});
   }
 
   void _onScroll() {
@@ -47,8 +67,7 @@ class _PostAssetPickerScreenState extends State<PostAssetPickerScreen> {
 
     double maxScroll = _scrollController.position.maxScrollExtent;
     double currentScroll = _scrollController.position.pixels;
-    double scrollProgress =
-        maxScroll > 0 ? (currentScroll / maxScroll).clamp(0.0, 0.3) : 0.0;
+    double scrollProgress = maxScroll > 0 ? (currentScroll / maxScroll).clamp(0.0, 0.3) : 0.0;
 
     double newHeight = 0.4 - (scrollProgress * 0.8);
     newHeight = newHeight.clamp(0.2, 0.4);
@@ -69,8 +88,7 @@ class _PostAssetPickerScreenState extends State<PostAssetPickerScreen> {
     final bool hasAccess = result.hasAccess;
 
     if (hasAccess) {
-      final List<AssetPathEntity> albumList =
-          await PhotoManager.getAssetPathList(
+      final List<AssetPathEntity> albumList = await PhotoManager.getAssetPathList(
         type: RequestType.common,
       );
 
@@ -145,8 +163,9 @@ class _PostAssetPickerScreenState extends State<PostAssetPickerScreen> {
           ..initialize().then((_) {
             if (mounted) {
               setState(() {});
-              _videoController?.play();
-              _isVideoPlaying = true;
+              // Don't auto-play videos, let user decide
+              // _videoController?.play();
+              // _isVideoPlaying = true;
             }
           });
       }
@@ -239,9 +258,9 @@ class _PostAssetPickerScreenState extends State<PostAssetPickerScreen> {
           TextButton(
             onPressed: selectedAssets.isNotEmpty
                 ? () {
-                    appRouter.push(RouterName.addPost.path,
-                        extra: AddPostScreenDataModel(
-                            selectedAssets: selectedAssets));
+                    // Pause video before navigating
+                    pauseVideo();
+                    appRouter.push(RouterName.addPost.path, extra: AddPostScreenDataModel(selectedAssets: selectedAssets));
                   }
                 : null,
             child: Text(
@@ -269,8 +288,7 @@ class _PostAssetPickerScreenState extends State<PostAssetPickerScreen> {
                         child: AnimatedContainer(
                           duration: const Duration(milliseconds: 200),
                           curve: Curves.easeOut,
-                          height: MediaQuery.of(context).size.height *
-                              _previewHeight,
+                          height: MediaQuery.of(context).size.height * _previewHeight,
                           child: _buildPreviewSection(),
                         ),
                       ),
@@ -319,8 +337,7 @@ class _PostAssetPickerScreenState extends State<PostAssetPickerScreen> {
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
-              const Icon(Icons.arrow_drop_down,
-                  size: 24, color: Colors.black54),
+              const Icon(Icons.arrow_drop_down, size: 24, color: Colors.black54),
             ],
           ),
         ),
@@ -357,20 +374,15 @@ class _PostAssetPickerScreenState extends State<PostAssetPickerScreen> {
                   itemBuilder: (context, index) {
                     final album = albums[index];
                     return ListTile(
-                      leading:
-                          const Icon(Icons.photo_album, color: Colors.black87),
+                      leading: const Icon(Icons.photo_album, color: Colors.black87),
                       title: Text(
                         album.name,
                         style: TextStyle(
                           fontSize: 16,
-                          fontWeight: album == selectedAlbum
-                              ? FontWeight.w600
-                              : FontWeight.normal,
+                          fontWeight: album == selectedAlbum ? FontWeight.w600 : FontWeight.normal,
                         ),
                       ),
-                      trailing: album == selectedAlbum
-                          ? const Icon(Icons.check, color: Colors.blue)
-                          : null,
+                      trailing: album == selectedAlbum ? const Icon(Icons.check, color: Colors.blue) : null,
                       onTap: () {
                         Navigator.pop(context);
                         if (album != selectedAlbum) {
@@ -445,8 +457,7 @@ class _PostAssetPickerScreenState extends State<PostAssetPickerScreen> {
     }
 
     // Only show the preview if the asset is in selectedAssets or if no assets are selected
-    final shouldShowPreview =
-        selectedAssets.isEmpty || selectedAssets.contains(previewAsset);
+    final shouldShowPreview = selectedAssets.isEmpty || selectedAssets.contains(previewAsset);
 
     if (!shouldShowPreview) {
       return Container(
@@ -466,7 +477,7 @@ class _PostAssetPickerScreenState extends State<PostAssetPickerScreen> {
           boxShadow: _isScrolling
               ? [
                   BoxShadow(
-                    color: Colors.grey.withOpacity(0.1),
+                    color: Colors.grey.withValues(alpha: 0.1),
                     spreadRadius: 1,
                     blurRadius: 3,
                     offset: const Offset(0, 1),
@@ -476,8 +487,7 @@ class _PostAssetPickerScreenState extends State<PostAssetPickerScreen> {
         ),
         child: Stack(
           children: [
-            if (previewAsset!.type == AssetType.video &&
-                _videoController != null)
+            if (previewAsset!.type == AssetType.video && _videoController != null)
               GestureDetector(
                 onTap: _toggleVideoPlayback,
                 child: Center(
@@ -503,14 +513,13 @@ class _PostAssetPickerScreenState extends State<PostAssetPickerScreen> {
                   );
                 },
               ),
-            if (previewAsset!.type == AssetType.video &&
-                _videoController != null)
+            if (previewAsset!.type == AssetType.video && _videoController != null)
               Center(
                 child: IconButton(
                   icon: Icon(
                     _isVideoPlaying ? Icons.pause : Icons.play_arrow,
                     size: 50,
-                    color: Colors.white.withOpacity(0.8),
+                    color: Colors.white.withValues(alpha: 0.8),
                   ),
                   onPressed: _toggleVideoPlayback,
                 ),
@@ -520,14 +529,13 @@ class _PostAssetPickerScreenState extends State<PostAssetPickerScreen> {
                 top: 16,
                 right: 16,
                 child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
                     color: Colors.blue,
                     borderRadius: BorderRadius.circular(20),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
+                        color: Colors.black.withValues(alpha: 0.1),
                         spreadRadius: 1,
                         blurRadius: 3,
                         offset: const Offset(0, 1),
@@ -551,11 +559,11 @@ class _PostAssetPickerScreenState extends State<PostAssetPickerScreen> {
                 child: Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.9),
+                    color: Colors.white.withValues(alpha: 0.9),
                     borderRadius: BorderRadius.circular(20),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
+                        color: Colors.black.withValues(alpha: 0.1),
                         spreadRadius: 1,
                         blurRadius: 3,
                         offset: const Offset(0, 1),
@@ -584,8 +592,7 @@ class _PostAssetPickerScreenState extends State<PostAssetPickerScreen> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.photo_library_outlined,
-                    size: 64, color: Colors.grey[400]),
+                Icon(Icons.photo_library_outlined, size: 64, color: Colors.grey[400]),
                 const SizedBox(height: 16),
                 Text(
                   'No media found',
@@ -647,7 +654,7 @@ class _PostAssetPickerScreenState extends State<PostAssetPickerScreen> {
                     if (isSelected)
                       Positioned.fill(
                         child: Container(
-                          color: Colors.blue.withOpacity(0.2),
+                          color: Colors.blue.withValues(alpha: 0.2),
                         ),
                       ),
                     if (isSelected)
@@ -663,7 +670,7 @@ class _PostAssetPickerScreenState extends State<PostAssetPickerScreen> {
                             border: Border.all(color: Colors.white, width: 2),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withOpacity(0.1),
+                                color: Colors.black.withValues(alpha: 0.1),
                                 spreadRadius: 1,
                                 blurRadius: 2,
                                 offset: const Offset(0, 1),
@@ -687,10 +694,9 @@ class _PostAssetPickerScreenState extends State<PostAssetPickerScreen> {
                         bottom: 4,
                         right: 4,
                         child: Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 4, vertical: 2),
+                          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
                           decoration: BoxDecoration(
-                            color: Colors.black.withOpacity(0.7),
+                            color: Colors.black.withValues(alpha: 0.7),
                             borderRadius: BorderRadius.circular(4),
                           ),
                           child: Text(
@@ -730,8 +736,7 @@ class _ShimmerWidget extends StatefulWidget {
   _ShimmerWidgetState createState() => _ShimmerWidgetState();
 }
 
-class _ShimmerWidgetState extends State<_ShimmerWidget>
-    with SingleTickerProviderStateMixin {
+class _ShimmerWidgetState extends State<_ShimmerWidget> with SingleTickerProviderStateMixin {
   late AnimationController _animationController;
   late Animation<double> _animation;
 

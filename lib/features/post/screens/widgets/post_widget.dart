@@ -1,3 +1,4 @@
+import "package:cached_network_image/cached_network_image.dart";
 import "package:flutter/material.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
 import "package:flutter_svg/flutter_svg.dart";
@@ -9,7 +10,7 @@ import "package:pictora/utils/constants/app_assets.dart";
 import "package:pictora/utils/constants/enums.dart";
 import "package:pictora/utils/extensions/widget_extension.dart";
 import "package:pictora/utils/widgets/custom_widget.dart";
-
+import 'package:shimmer/shimmer.dart';
 import "../../../../utils/constants/bloc_instances.dart";
 import "../../../../utils/constants/colors.dart";
 import "../../../../utils/constants/constants.dart";
@@ -30,12 +31,13 @@ class PostWidget extends StatefulWidget {
   State<PostWidget> createState() => _PostWidgetState();
 }
 
-class _PostWidgetState extends State<PostWidget> {
+class _PostWidgetState extends State<PostWidget> with AutomaticKeepAliveClientMixin {
   PageController pageController = PageController();
   int currentMediaIndex = 0;
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
@@ -57,7 +59,7 @@ class _PostWidgetState extends State<PostWidget> {
             mediaData: widget.post?.mediaData,
             postId: widget.post?.id ?? '',
             isLike: widget.post?.isLiked ?? false,
-          ).withAutomaticKeepAlive(),
+          ),
           _buildActionButtons(),
           _buildLikesSection(),
           _buildCaptionSection(),
@@ -73,35 +75,51 @@ class _PostWidgetState extends State<PostWidget> {
       child: Row(
         children: [
           Container(
-            padding: const EdgeInsets.all(2),
+            padding: const EdgeInsets.all(1.5),
             decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: LinearGradient(
-                colors: [
-                  primaryColor,
-                  primaryColor.withValues(alpha: 0.6),
-                ],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-            ),
-            child: Container(
-              padding: const EdgeInsets.all(2),
-              decoration: const BoxDecoration(
-                color: Colors.white,
                 shape: BoxShape.circle,
-              ),
-              child: CircleAvatar(
-                radius: 18,
-                backgroundColor: primaryColor.withValues(alpha: 0.1),
-                backgroundImage: (widget.post?.userData?.profile?.profilePicture ?? '').isNotEmpty
-                    ? NetworkImage(widget.post?.userData?.profile?.profilePicture ?? '')
-                    : null,
-                child:
-                    (widget.post?.userData?.profile?.profilePicture ?? '').isEmpty ? const Icon(Icons.person, color: primaryColor, size: 20) : null,
+                border: Border.all(
+                  color: primaryColor,
+                  width: 1.5,
+                )),
+            child: ClipOval(
+              child: CachedNetworkImage(
+                imageUrl: widget.post?.userData?.profile?.profilePicture ?? '',
+                fit: BoxFit.cover,
+                height: 40,
+                width: 40,
+                placeholder: (context, url) => Container(
+                  color: Colors.grey[100],
+                  child: const Center(
+                    child: SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor: AlwaysStoppedAnimation<Color>(Color(0xff9CA3AF)),
+                      ),
+                    ),
+                  ),
+                ),
+                errorWidget: (context, url, error) => Container(
+                  color: const Color(0xffF3F4F6),
+                  child: const Icon(
+                    Icons.person,
+                    color: Color(0xff9CA3AF),
+                    size: 32,
+                  ),
+                ),
+                imageBuilder: (context, imageProvider) => Container(
+                  decoration: BoxDecoration(
+                    image: DecorationImage(
+                      image: imageProvider,
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                ),
               ),
             ),
-          ),
+          ).withAutomaticKeepAlive(),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
@@ -118,12 +136,6 @@ class _PostWidgetState extends State<PostWidget> {
                       ),
                     ),
                     const SizedBox(width: 4),
-                    // Verified badge (optional)
-                    // Icon(
-                    //   Icons.verified,
-                    //   size: 16,
-                    //   color: primaryColor,
-                    // ),
                   ],
                 ),
                 const SizedBox(height: 2),
@@ -340,7 +352,7 @@ class _PostWidgetState extends State<PostWidget> {
       context: bottomBarContext!,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      barrierColor: Colors.black.withOpacity(0.5),
+      barrierColor: Colors.black.withValues(alpha: 0.5),
       builder: (context) {
         return Container(
           decoration: const BoxDecoration(
@@ -502,7 +514,7 @@ class _PostWidgetState extends State<PostWidget> {
                 width: 48,
                 height: 48,
                 decoration: BoxDecoration(
-                  color: isDestructive ? Colors.red.withOpacity(0.1) : Colors.grey[100],
+                  color: isDestructive ? Colors.red.withValues(alpha: 0.1) : Colors.grey[100],
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(
@@ -560,7 +572,7 @@ class _PostWidgetState extends State<PostWidget> {
     showDialog(
       context: bottomBarContext!,
       barrierDismissible: false,
-      barrierColor: Colors.black.withOpacity(0.6),
+      barrierColor: Colors.black.withValues(alpha: 0.6),
       builder: (context) => Dialog(
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(24),
@@ -574,7 +586,7 @@ class _PostWidgetState extends State<PostWidget> {
             borderRadius: BorderRadius.circular(24),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.1),
+                color: Colors.black.withValues(alpha: 0.1),
                 blurRadius: 20,
                 offset: const Offset(0, 8),
               ),
@@ -588,7 +600,7 @@ class _PostWidgetState extends State<PostWidget> {
                 width: 64,
                 height: 64,
                 decoration: BoxDecoration(
-                  color: Colors.red.withOpacity(0.1),
+                  color: Colors.red.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(32),
                 ),
                 child: const Icon(
@@ -672,5 +684,223 @@ class _PostWidgetState extends State<PostWidget> {
       return '${(number / 1000).toStringAsFixed(1)}K';
     }
     return number.toString();
+  }
+
+  @override
+  bool get wantKeepAlive => true;
+}
+
+class ShimmerPostWidget extends StatelessWidget {
+  const ShimmerPostWidget({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildShimmerHeader(),
+          _buildShimmerMedia(),
+          _buildShimmerActions(),
+          _buildShimmerLikes(),
+          _buildShimmerCaption(),
+          const SizedBox(height: 8),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildShimmerHeader() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      child: Row(
+        children: [
+          Shimmer.fromColors(
+            baseColor: Colors.grey[300]!,
+            highlightColor: Colors.grey[100]!,
+            child: Container(
+              width: 40,
+              height: 40,
+              decoration: const BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.white,
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Shimmer.fromColors(
+                  baseColor: Colors.grey[300]!,
+                  highlightColor: Colors.grey[100]!,
+                  child: Container(
+                    width: 120,
+                    height: 16,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Shimmer.fromColors(
+                  baseColor: Colors.grey[300]!,
+                  highlightColor: Colors.grey[100]!,
+                  child: Container(
+                    width: 180,
+                    height: 12,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Shimmer.fromColors(
+            baseColor: Colors.grey[300]!,
+            highlightColor: Colors.grey[100]!,
+            child: Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildShimmerMedia() {
+    return Shimmer.fromColors(
+      baseColor: Colors.grey[300]!,
+      highlightColor: Colors.grey[100]!,
+      child: Container(
+        height: 375,
+        width: double.infinity,
+        color: Colors.white,
+      ),
+    );
+  }
+
+  Widget _buildShimmerActions() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Row(
+        children: [
+          Shimmer.fromColors(
+            baseColor: Colors.grey[300]!,
+            highlightColor: Colors.grey[100]!,
+            child: Container(
+              width: 26,
+              height: 26,
+              color: Colors.white,
+            ),
+          ),
+          const SizedBox(width: 8),
+          Shimmer.fromColors(
+            baseColor: Colors.grey[300]!,
+            highlightColor: Colors.grey[100]!,
+            child: Container(
+              width: 26,
+              height: 26,
+              color: Colors.white,
+            ),
+          ),
+          const SizedBox(width: 8),
+          Shimmer.fromColors(
+            baseColor: Colors.grey[300]!,
+            highlightColor: Colors.grey[100]!,
+            child: Container(
+              width: 26,
+              height: 26,
+              color: Colors.white,
+            ),
+          ),
+          const Spacer(),
+          Shimmer.fromColors(
+            baseColor: Colors.grey[300]!,
+            highlightColor: Colors.grey[100]!,
+            child: Container(
+              width: 26,
+              height: 26,
+              color: Colors.white,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildShimmerLikes() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Shimmer.fromColors(
+        baseColor: Colors.grey[300]!,
+        highlightColor: Colors.grey[100]!,
+        child: Container(
+          width: 100,
+          height: 16,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(8),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildShimmerCaption() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Shimmer.fromColors(
+            baseColor: Colors.grey[300]!,
+            highlightColor: Colors.grey[100]!,
+            child: Container(
+              width: 250,
+              height: 14,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(7),
+              ),
+            ),
+          ),
+          const SizedBox(height: 6),
+          Shimmer.fromColors(
+            baseColor: Colors.grey[300]!,
+            highlightColor: Colors.grey[100]!,
+            child: Container(
+              width: 200,
+              height: 14,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(7),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }

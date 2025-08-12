@@ -17,3 +17,15 @@ class ModifyUserCountEvent extends ProfileEvent {
     this.followingCount,
   });
 }
+
+class ModifyUserDataEvent extends ProfileEvent {
+  final String userId;
+  final bool? isFollowed;
+  final bool? isInFollowing;
+
+  ModifyUserDataEvent({
+    required this.userId,
+    this.isFollowed,
+    this.isInFollowing,
+  });
+}

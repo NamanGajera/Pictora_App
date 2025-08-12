@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
+import 'package:pictora/utils/constants/screens_keys.dart';
 
 import '../../router/router_name.dart';
 import '../../utils/constants/app_assets.dart';
@@ -55,7 +56,8 @@ class _AppBottomNavigationBarState extends State<AppBottomNavigationBar> {
       canPop: false,
       onPopInvokedWithResult: (didPop, result) {
         if (didPop) return;
-
+        assetPickerScreenKey.currentState?.pauseVideo();
+        assetPickerScreenKey.currentState?.clearSelections();
         if (widget.navigationShell.currentIndex != 0) {
           widget.navigationShell.goBranch(0);
         } else {
@@ -75,6 +77,8 @@ class _AppBottomNavigationBarState extends State<AppBottomNavigationBar> {
               currentIndex: widget.navigationShell.currentIndex,
               onTap: (index) {
                 if (widget.navigationShell.currentIndex != index) {
+                  assetPickerScreenKey.currentState?.pauseVideo();
+                  assetPickerScreenKey.currentState?.clearSelections();
                   widget.navigationShell.goBranch(
                     index,
                     initialLocation: index == widget.navigationShell.currentIndex,

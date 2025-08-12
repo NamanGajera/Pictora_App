@@ -1,6 +1,6 @@
 extension StringExtensions on String {
   // Check if a string is null or empty
-  bool get isNullOrEmpty => isEmpty;
+  bool get isNullOrEmpty => trim().isEmpty;
 
   // Validate if the string is an email
   bool get isValidEmail {
@@ -8,7 +8,17 @@ extension StringExtensions on String {
     return regex.hasMatch(this);
   }
 
-  // Capitalize the first letter of the string
+  // All common video extensions
+  static final List<String> _videoExtensions = ['.mp4', '.mov', '.avi', '.mkv', '.flv', '.wmv', '.webm', '.mpeg', '.mpg', '.3gp', '.m4v', '.ts'];
+
+  // All common image extensions
+  static final List<String> _imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.tiff', '.webp', '.heic', '.heif', '.svg'];
+
+  bool get isVideoUrl => _videoExtensions.any((ext) => toLowerCase().endsWith(ext));
+
+  bool get isImageUrl => _imageExtensions.any((ext) => toLowerCase().endsWith(ext));
+
+  // Capitalize the first letter
   String capitalize() {
     if (isEmpty) return '';
     return this[0].toUpperCase() + substring(1);

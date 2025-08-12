@@ -16,6 +16,7 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
   ProfileBloc(this.repository) : super(ProfileState()) {
     on<GetUserDataEvent>(_getUserData);
     on<ModifyUserCountEvent>(_modifyUserCounts, transformer: sequential());
+    on<ModifyUserDataEvent>(_modifyUserData, transformer: sequential());
   }
 
   Future<void> _getUserData(GetUserDataEvent event, Emitter<ProfileState> emit) async {
@@ -65,6 +66,17 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
       }
     } catch (error, stackTrace) {
       handleApiError(error, stackTrace, emit);
+    }
+  }
+
+  void _modifyUserData(ModifyUserDataEvent event, Emitter<ProfileState> emit) {
+    if (state.otherUserData?.id == event.userId) {
+      emit(state.copyWith(
+          otherUserData: state.otherUserData?.copyWith(
+        isFollowed: event.isFollowed ?? state.otherUserData?.isFollowed,
+        showFollowBack: event.isInFollowing == null ? state.otherUserData?.showFollowBack : !(event.isInFollowing ?? false),
+        followRequestStatus: (state.otherUserData?.profile?.isPrivate ?? false) && event.isFollowed == true ? FollowRequest.pending.name : null,
+      )));
     }
   }
 

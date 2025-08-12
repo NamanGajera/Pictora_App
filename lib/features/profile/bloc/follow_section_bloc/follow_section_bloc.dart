@@ -107,6 +107,13 @@ class FollowSectionBloc extends Bloc<FollowSectionEvent, FollowSectionState> {
           ),
         );
       }
+      profileBloc.add(
+        ModifyUserDataEvent(
+          userId: event.userId,
+          isFollowed: event.isFollowing,
+          isInFollowing: !isInFollower,
+        ),
+      );
       await repository.toggleUserFollow(body: {
         "userId": event.userId,
         "shouldFollow": event.isFollowing,

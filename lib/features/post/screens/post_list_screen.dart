@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:pictora/features/post/bloc/post_bloc.dart';
 import 'package:pictora/features/post/models/post_data.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
@@ -36,15 +38,20 @@ class _PostListScreenState extends State<PostListScreen> {
           ),
         ),
       ),
-      body: ScrollablePositionedList.builder(
-        itemPositionsListener: _itemPositionsListener,
-        initialScrollIndex: widget.index ?? 0,
-        itemCount: widget.postsData.length,
-        padding: EdgeInsets.symmetric(horizontal: 6),
-        itemBuilder: (context, index) {
-          return PostWidget(
-            key: ValueKey("post_$index"),
-            post: widget.postsData[index],
+      body: BlocBuilder<PostBloc, PostState>(
+        builder: (context, state) {
+          return ScrollablePositionedList.builder(
+            itemPositionsListener: _itemPositionsListener,
+            initialScrollIndex: widget.index ?? 0,
+            itemCount: widget.postsData.length,
+            physics: state.isBlockScroll ? const NeverScrollableScrollPhysics() : const ClampingScrollPhysics(),
+            padding: EdgeInsets.symmetric(horizontal: 6),
+            itemBuilder: (context, index) {
+              return PostWidget(
+                key: ValueKey("post_$index"),
+                post: widget.postsData[index],
+              );
+            },
           );
         },
       ),

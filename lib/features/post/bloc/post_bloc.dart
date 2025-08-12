@@ -32,6 +32,9 @@ class PostBloc extends Bloc<PostEvent, PostState> {
         super(PostState()) {
     on<CreatePostEvent>(_createPost, transformer: droppable());
     on<GetAllPostEvent>(_getAllPost);
+    on<LoadMorePostEvent>(_loadMorePost, transformer: droppable());
+    on<LoadMoreMyPostEvent>(_loadMoreMyPost, transformer: droppable());
+    on<LoadMoreOtherUserPostEvent>(_loadMoreOtherUserPost, transformer: droppable());
     on<GetPostCommentDataEvent>(_getPostComment, transformer: droppable());
     on<CreateCommentEvent>(_createComment, transformer: droppable());
     on<GetCommentRepliesEvent>(_getReplies, transformer: droppable());
@@ -45,6 +48,7 @@ class PostBloc extends Bloc<PostEvent, PostState> {
     on<GetLikedByUserEvent>(_getLikedByUser, transformer: droppable());
     on<GetMyPostEvent>(_getMyPost);
     on<GetOtherUserPostsEvent>(_getOtherUserPost);
+    on<BlockScrollEvent>(_blockScroll);
   }
 
   Future<void> _createPost(CreatePostEvent event, Emitter<PostState> emit) async {
@@ -88,6 +92,57 @@ class PostBloc extends Bloc<PostEvent, PostState> {
       emit(state.copyWith(
         getAllPostApiStatus: ApiStatus.success,
         allPostData: data.data,
+      ));
+    } catch (error, stackTrace) {
+      emit(state.copyWith(getAllPostApiStatus: ApiStatus.failure));
+      ThemeHelper.showToastMessage("$error");
+      handleApiError(error, stackTrace, emit);
+    }
+  }
+
+  Future<void> _loadMorePost(LoadMorePostEvent event, Emitter<PostState> emit) async {
+    try {
+      emit(state.copyWith(isLoadMorePost: true));
+      final data = await repository.getAllPost(event.body);
+
+      emit(state.copyWith(
+        isLoadMorePost: false,
+        allPostData: [...?state.allPostData, ...?data.data],
+        hasMorePost: [...?state.allPostData, ...?data.data].length < (data.total ?? 0),
+      ));
+    } catch (error, stackTrace) {
+      emit(state.copyWith(getAllPostApiStatus: ApiStatus.failure));
+      ThemeHelper.showToastMessage("$error");
+      handleApiError(error, stackTrace, emit);
+    }
+  }
+
+  Future<void> _loadMoreOtherUserPost(LoadMoreOtherUserPostEvent event, Emitter<PostState> emit) async {
+    try {
+      emit(state.copyWith(isLoadMoreOtherUserPost: true));
+      final data = await repository.getAllPost(event.body);
+
+      emit(state.copyWith(
+        isLoadMoreOtherUserPost: false,
+        otherUserPostData: [...?state.otherUserPostData, ...?data.data],
+        hasMoreOtherUserPost: [...?state.otherUserPostData, ...?data.data].length < (data.total ?? 0),
+      ));
+    } catch (error, stackTrace) {
+      emit(state.copyWith(getAllPostApiStatus: ApiStatus.failure));
+      ThemeHelper.showToastMessage("$error");
+      handleApiError(error, stackTrace, emit);
+    }
+  }
+
+  Future<void> _loadMoreMyPost(LoadMoreMyPostEvent event, Emitter<PostState> emit) async {
+    try {
+      emit(state.copyWith(isLoadMoreMyPost: true));
+      final data = await repository.getAllPost(event.body);
+
+      emit(state.copyWith(
+        isLoadMoreMyPost: false,
+        myPostData: [...?state.myPostData, ...?data.data],
+        hasMoreMyPost: [...?state.myPostData, ...?data.data].length < (data.total ?? 0),
       ));
     } catch (error, stackTrace) {
       emit(state.copyWith(getAllPostApiStatus: ApiStatus.failure));
@@ -195,7 +250,6 @@ class PostBloc extends Bloc<PostEvent, PostState> {
         commentData: data,
       );
       _updatePostLists(emit: emit, postId: event.postId, updateCommentCount: true);
-      ThemeHelper.showToastMessage("Comment add successfully");
     } catch (error, stackTrace) {
       _updateComment(
         commentId: newComment.id ?? '',
@@ -388,6 +442,11 @@ class PostBloc extends Bloc<PostEvent, PostState> {
       ThemeHelper.showToastMessage("$error");
       handleApiError(error, stackTrace, emit);
     }
+  }
+
+  void _blockScroll(BlockScrollEvent event, Emitter<PostState> emit) {
+    emit(state.copyWith(isBlockScroll: event.isBlockScroll));
+    logDebug(message: "Block scroll status: ${event.isBlockScroll}");
   }
 
   void _updateComment({

@@ -24,10 +24,26 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    postBloc.add(GetAllPostEvent(body: {"skip": 0, "take": 10}));
+    postBloc.add(GetAllPostEvent(body: postBody));
+    _scrollController.addListener(_scrollListener);
   }
 
+  final postBody = {"skip": 0, "take": 10};
   final ScrollController _scrollController = ScrollController();
+
+  void _scrollListener() {
+    if (_scrollController.position.pixels > _scrollController.position.maxScrollExtent - 100) {
+      _loadMoreData();
+    }
+  }
+
+  Future<void> _loadMoreData() async {
+    final currentState = postBloc.state;
+    if (currentState.hasMorePost) {
+      postBody["skip"] = (currentState.allPostData?.length ?? 0);
+      postBloc.add(LoadMorePostEvent(body: postBody));
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -35,8 +51,10 @@ class _HomeScreenState extends State<HomeScreen> {
       backgroundColor: scaffoldBgColor,
       appBar: _buildAppBar(),
       body: RefreshIndicator(
+        backgroundColor: Colors.white,
+        color: primaryColor,
         onRefresh: () async {
-          await Future.delayed(const Duration(seconds: 1));
+          postBloc.add(GetAllPostEvent(body: postBody));
         },
         child: Column(
           children: [
@@ -94,13 +112,30 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             BlocBuilder<PostBloc, PostState>(
               builder: (context, state) {
+                if (state.getAllPostApiStatus == ApiStatus.loading) {
+                  return Expanded(
+                      child: ListView.builder(
+                    itemCount: 20,
+                    itemBuilder: (context, index) {
+                      return ShimmerPostWidget();
+                    },
+                  ));
+                }
+
                 return Expanded(
                   child: ListView.builder(
                     controller: _scrollController,
-                    itemCount: state.allPostData?.length ?? 0,
-                    physics: ClampingScrollPhysics(),
+                    itemCount: (state.allPostData?.length ?? 0) + (state.isLoadMorePost && state.hasMorePost ? 1 : 0),
+                    physics: state.isBlockScroll ? NeverScrollableScrollPhysics() : ClampingScrollPhysics(),
                     padding: EdgeInsets.symmetric(horizontal: 6),
                     itemBuilder: (context, index) {
+                      if (index == state.allPostData?.length) {
+                        return const Center(
+                            child: Padding(
+                          padding: EdgeInsets.all(8.0),
+                          child: CircularProgressIndicator(),
+                        ));
+                      }
                       return PostWidget(
                         key: ValueKey("post_$index"),
                         post: state.allPostData?[index],

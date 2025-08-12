@@ -16,6 +16,13 @@ class PostState extends Equatable {
   final List<PostData>? myPostData;
   final List<User>? likedByUserData;
   final List<CommentData>? commentDataList;
+  final bool isBlockScroll;
+  final bool isLoadMorePost;
+  final bool hasMorePost;
+  final bool isLoadMoreMyPost;
+  final bool hasMoreMyPost;
+  final bool hasMoreOtherUserPost;
+  final bool isLoadMoreOtherUserPost;
   final int? statusCode;
   final String? errorMessage;
 
@@ -29,6 +36,13 @@ class PostState extends Equatable {
     this.likeByUserApiStatus = ApiStatus.initial,
     this.getOtherUserPostApiStatus = ApiStatus.initial,
     this.getMyPostApiStatus = ApiStatus.initial,
+    this.isBlockScroll = false,
+    this.isLoadMorePost = false,
+    this.hasMorePost = true,
+    this.isLoadMoreMyPost = false,
+    this.hasMoreMyPost = true,
+    this.isLoadMoreOtherUserPost = false,
+    this.hasMoreOtherUserPost = true,
     this.likedByUserData,
     this.myPostData,
     this.otherUserPostData,
@@ -55,6 +69,13 @@ class PostState extends Equatable {
     List<User>? likedByUserData,
     Map<String, bool>? showReplies,
     List<CommentData>? commentDataList,
+    bool? isBlockScroll,
+    bool? hasMorePost,
+    bool? isLoadMorePost,
+    bool? hasMoreMyPost,
+    bool? isLoadMoreMyPost,
+    bool? isLoadMoreOtherUserPost,
+    bool? hasMoreOtherUserPost,
     int? statusCode,
     String? errorMessage,
   }) {
@@ -74,6 +95,13 @@ class PostState extends Equatable {
       showReplies: showReplies ?? this.showReplies,
       allPostData: allPostData ?? this.allPostData,
       commentDataList: commentDataList ?? this.commentDataList,
+      isBlockScroll: isBlockScroll ?? this.isBlockScroll,
+      isLoadMorePost: isLoadMorePost ?? this.isLoadMorePost,
+      hasMoreMyPost: hasMoreMyPost ?? this.hasMoreMyPost,
+      isLoadMoreMyPost: isLoadMoreMyPost ?? this.isLoadMoreMyPost,
+      hasMorePost: hasMorePost ?? this.hasMorePost,
+      hasMoreOtherUserPost: hasMoreOtherUserPost ?? this.hasMoreOtherUserPost,
+      isLoadMoreOtherUserPost: isLoadMoreOtherUserPost ?? this.isLoadMoreOtherUserPost,
       errorMessage: errorMessage,
       statusCode: statusCode,
     );
@@ -97,6 +125,13 @@ class PostState extends Equatable {
         showReplies,
         commentDataList,
         errorMessage,
+        isLoadMorePost,
+        isLoadMoreMyPost,
+        hasMoreMyPost,
+        hasMorePost,
+        isBlockScroll,
+        isLoadMoreOtherUserPost,
+        hasMoreOtherUserPost,
         statusCode,
       ];
 }

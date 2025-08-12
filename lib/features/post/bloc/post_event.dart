@@ -21,14 +21,29 @@ class GetAllPostEvent extends PostEvent {
   GetAllPostEvent({required this.body});
 }
 
+class LoadMorePostEvent extends PostEvent {
+  final Map<String, dynamic> body;
+  LoadMorePostEvent({required this.body});
+}
+
 class GetMyPostEvent extends PostEvent {
   final Map<String, dynamic> body;
   GetMyPostEvent({required this.body});
 }
 
+class LoadMoreMyPostEvent extends PostEvent {
+  final Map<String, dynamic> body;
+  LoadMoreMyPostEvent({required this.body});
+}
+
 class GetOtherUserPostsEvent extends PostEvent {
   final Map<String, dynamic> body;
   GetOtherUserPostsEvent({required this.body});
+}
+
+class LoadMoreOtherUserPostEvent extends PostEvent {
+  final Map<String, dynamic> body;
+  LoadMoreOtherUserPostEvent({required this.body});
 }
 
 class GetPostCommentDataEvent extends PostEvent {
@@ -110,3 +125,10 @@ class GetLikedByUserEvent extends PostEvent {
     required this.postId,
   });
 }
+
+class BlockScrollEvent extends PostEvent {
+  final bool isBlockScroll;
+  BlockScrollEvent({required this.isBlockScroll});
+}
+
+class GetAllExplorePostsEvent extends PostEvent {}

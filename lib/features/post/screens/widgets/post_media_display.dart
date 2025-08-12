@@ -1,18 +1,14 @@
-import 'dart:async';
-
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:pictora/features/post/bloc/post_bloc.dart';
-import 'package:pictora/utils/extensions/widget_extension.dart';
+import 'package:pictora/features/post/screens/widgets/heart_animation.dart';
+import 'package:pictora/utils/extensions/string_extensions.dart';
 import 'package:pinch_zoom_release_unzoom/pinch_zoom_release_unzoom.dart';
 import 'package:video_player/video_player.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 
-import '../../../../utils/constants/app_assets.dart';
 import '../../../../utils/constants/bloc_instances.dart';
-import '../../../../utils/services/custom_logger.dart';
+import '../../bloc/post_bloc.dart';
 import '../../models/post_data.dart';
-import 'heart_animation.dart';
 
 class PostMediaDisplay extends StatefulWidget {
   final List<MediaData>? mediaData;
@@ -30,90 +26,63 @@ class PostMediaDisplay extends StatefulWidget {
   State<PostMediaDisplay> createState() => _PostMediaDisplayState();
 }
 
-class _PostMediaDisplayState extends State<PostMediaDisplay> {
-  late bool hasVideos;
-  Map<String, VideoPlayerController> videoControllers = {};
-  Map<String, bool> isInitialized = {};
-  Map<String, bool> isPlaying = {};
+class _PostMediaDisplayState extends State<PostMediaDisplay> with AutomaticKeepAliveClientMixin {
+  final ValueNotifier<Map<String, VideoPlayerController>> _videoControllers = ValueNotifier({});
+  final ValueNotifier<Map<String, bool>> _isInitialized = ValueNotifier({});
+  final ValueNotifier<int> _currentPage = ValueNotifier(0);
+  final PageController _pageController = PageController();
   Map<String, ValueNotifier<bool>> isLikedNotifierAnimation = {};
-  int currentPage = 0;
-  PageController controller = PageController();
+  final Map<String, bool> _isPlaying = {};
 
   @override
   void initState() {
     super.initState();
     _initializeMedia();
-
+    _videoControllers.addListener(_updateState);
+    _isInitialized.addListener(_updateState);
     isLikedNotifierAnimation[widget.postId] = ValueNotifier<bool>(false);
   }
 
+  void _updateState() => setState(() {});
+
   void _initializeMedia() {
-    // Get all media items from postMappings
-    final mediaItems = widget.mediaData;
-    hasVideos = false;
-
-    if ((mediaItems ?? []).isNotEmpty) {
-      for (var i = 0; i < (mediaItems ?? []).length; i++) {
-        final fileUrl = '${mediaItems?[i].mediaUrl}';
-        if (VideoExtension(fileUrl).isVideoUrl) {
-          final videoKey = '${widget.postId}_$i';
-          videoControllers[videoKey] = VideoPlayerController.networkUrl(Uri.parse(fileUrl));
-          isInitialized[videoKey] = false;
-          isPlaying[videoKey] = false;
-          hasVideos = true;
-
-          _initializeVideoController(videoKey);
+    for (var i = 0; i < (widget.mediaData ?? []).length; i++) {
+      final fileUrl = '${widget.mediaData?[i].mediaUrl}';
+      if (fileUrl.isVideoUrl) {
+        final videoKey = '${widget.postId}_$i';
+        if (!_videoControllers.value.containsKey(videoKey)) {
+          _videoControllers.value[videoKey] = VideoPlayerController.networkUrl(Uri.parse(fileUrl))
+            ..initialize().then((_) {
+              _isInitialized.value = {..._isInitialized.value, videoKey: true};
+              _videoControllers.value[videoKey]!.setLooping(true);
+            });
+          _isPlaying[videoKey] = false;
         }
-      }
-    }
-  }
-
-  void _initializeVideoController(String key) async {
-    try {
-      await videoControllers[key]?.initialize();
-      if (mounted) {
-        setState(() {
-          isInitialized[key] = true;
-        });
-      }
-    } catch (e) {
-      logInfo(message: "Error initializing video controller: $e");
-      // Handle initialization error
-      if (mounted) {
-        setState(() {
-          isInitialized[key] = false;
-        });
       }
     }
   }
 
   void _togglePlay(String videoKey) {
-    if (videoControllers[videoKey] != null) {
-      setState(() {
-        if (videoControllers[videoKey]!.value.isPlaying) {
-          videoControllers[videoKey]!.pause();
-          isPlaying[videoKey] = false;
-        } else {
-          // Pause all other videos first
-          videoControllers.forEach((key, controller) {
-            if (key != videoKey && controller.value.isPlaying) {
-              controller.pause();
-              isPlaying[key] = false;
-            }
-          });
-
-          videoControllers[videoKey]!.play();
-          isPlaying[videoKey] = true;
-        }
-      });
+    if (_videoControllers.value[videoKey]?.value.isInitialized ?? false) {
+      if (_isPlaying[videoKey] == true) {
+        _videoControllers.value[videoKey]!.pause();
+      } else {
+        _videoControllers.value.forEach((key, controller) {
+          if (key != videoKey && controller.value.isPlaying) controller.pause();
+        });
+        _videoControllers.value[videoKey]!.play();
+      }
+      _isPlaying[videoKey] = !(_isPlaying[videoKey] ?? false);
+      _updateState();
     }
   }
 
   @override
   void dispose() {
-    videoControllers.forEach((key, controller) {
-      controller.dispose();
-    });
+    _videoControllers.value.forEach((_, controller) => controller.dispose());
+    _videoControllers.dispose();
+    _isInitialized.dispose();
+    _pageController.dispose();
     super.dispose();
   }
 
@@ -127,148 +96,93 @@ class _PostMediaDisplayState extends State<PostMediaDisplay> {
 
   @override
   Widget build(BuildContext context) {
-    final postMappings = widget.mediaData;
+    super.build(context);
+    final mediaItems = widget.mediaData?.map((media) {
+          return {
+            'type': (media.mediaUrl ?? '').isVideoUrl ? 'video' : 'image',
+            'url': media.mediaUrl,
+          };
+        }).toList() ??
+        [];
 
-    List<Map<String, dynamic>> mediaItems = [];
-
-    for (var i = 0; i < (postMappings ?? []).length; i++) {
-      final fileUrl = '${postMappings?[i].mediaUrl}';
-
-      if (VideoExtension(fileUrl).isVideoUrl) {
-        mediaItems.add({
-          'type': 'video',
-          'url': fileUrl,
-          'key': '${widget.postId}_$i',
-        });
-      } else {
-        // It's an image
-        mediaItems.add({
-          'type': 'image',
-          'url': fileUrl,
-        });
-      }
-    }
-
-    if (mediaItems.isEmpty) {
-      return Container();
-    }
+    if (mediaItems.isEmpty) return Container();
 
     return VisibilityDetector(
-      key: Key('video-${widget.postId}'),
+      key: Key(widget.postId),
       onVisibilityChanged: (info) {
-        final currentMedia = mediaItems.isNotEmpty ? mediaItems[currentPage] : null;
-
-        if (currentMedia != null && currentMedia['type'] == 'video') {
-          final videoKey = currentMedia['key'];
-
+        final currentMedia = mediaItems[_currentPage.value];
+        if (currentMedia['type'] == 'video') {
+          final videoKey = '${widget.postId}_${_currentPage.value}';
           if (info.visibleFraction > 0.9) {
-            logWarn(message: 'Post ${widget.postId} is visible - playing video');
-            if (videoControllers[videoKey] != null && !videoControllers[videoKey]!.value.isPlaying) {
-              videoControllers.forEach((key, controller) {
-                if (key != videoKey && controller.value.isPlaying) {
-                  controller.pause();
-                  isPlaying[key] = false;
-                }
-              });
-
-              videoControllers[videoKey]!.play();
-              isPlaying[videoKey] = true;
-            }
+            _togglePlay(videoKey);
           } else {
-            logWarn(message: 'Post ${widget.postId} is not visible - pausing video');
-            if (videoControllers[videoKey] != null && videoControllers[videoKey]!.value.isPlaying) {
-              videoControllers[videoKey]!.pause();
-              isPlaying[videoKey] = false;
-            }
+            _videoControllers.value[videoKey]?.pause();
+            _isPlaying[videoKey] = false;
           }
         }
       },
       child: GestureDetector(
         onDoubleTap: _handleDoubleTap,
+        onTap: () {
+          final currentMedia = mediaItems[_currentPage.value];
+          if (currentMedia['type'] == 'video') {
+            final videoKey = '${widget.postId}_${_currentPage.value}';
+            _togglePlay(videoKey);
+          }
+        },
         child: Container(
           height: 380,
-          width: double.infinity,
           decoration: BoxDecoration(
-            color: Colors.transparent,
+            color: Colors.black,
             borderRadius: BorderRadius.circular(8),
           ),
           child: Stack(
             children: [
-              BlocBuilder<PostBloc, PostState>(
-                builder: (context, state) {
-                  return PageView.builder(
-                    key: PageStorageKey(widget.postId),
-                    controller: controller,
-                    // physics: state.blockScroll
-                    //     ? const NeverScrollableScrollPhysics()
-                    //     : null,
-                    onPageChanged: (value) {
-                      setState(() {
-                        currentPage = value;
-                      });
-                    },
-                    itemBuilder: (context, index) {
-                      final mediaItem = mediaItems[index];
-
-                      return MediaPageItem(
-                        mediaItem: mediaItem,
-                        videoControllers: videoControllers,
-                        isInitialized: isInitialized,
-                        onTogglePlay: _togglePlay,
-                      );
-                    },
-                    itemCount: mediaItems.length,
-                  );
+              PageView.builder(
+                controller: _pageController,
+                onPageChanged: (value) => _currentPage.value = value,
+                itemCount: mediaItems.length,
+                physics: postBloc.state.isBlockScroll ? const NeverScrollableScrollPhysics() : const ClampingScrollPhysics(),
+                itemBuilder: (_, index) {
+                  final media = mediaItems[index];
+                  return media['type'] == 'video'
+                      ? PinchZoomReleaseUnzoomWidget(
+                          twoFingersOn: () {
+                            postBloc.add(BlockScrollEvent(isBlockScroll: true));
+                          },
+                          twoFingersOff: () => Future.delayed(
+                            PinchZoomReleaseUnzoomWidget.defaultResetDuration,
+                            () {
+                              postBloc.add(BlockScrollEvent(isBlockScroll: false));
+                            },
+                          ),
+                          fingersRequiredToPinch: 2,
+                          log: true,
+                          child: Center(
+                            child: _VideoPlayer(
+                              videoKey: '${widget.postId}_$index',
+                              controllers: _videoControllers.value,
+                              isInitialized: _isInitialized.value,
+                            ),
+                          ),
+                        )
+                      : PinchZoomReleaseUnzoomWidget(
+                          twoFingersOn: () {
+                            postBloc.add(BlockScrollEvent(isBlockScroll: true));
+                          },
+                          twoFingersOff: () => Future.delayed(
+                            PinchZoomReleaseUnzoomWidget.defaultResetDuration,
+                            () {
+                              postBloc.add(BlockScrollEvent(isBlockScroll: false));
+                            },
+                          ),
+                          fingersRequiredToPinch: 2,
+                          log: true,
+                          child: _ImageDisplay(url: media['url'] ?? ''),
+                        );
                 },
               ),
 
-              // Counter indicator
-
-              if (mediaItems.length > 1)
-                Positioned(
-                  top: 12,
-                  right: 12,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                    decoration: BoxDecoration(
-                      color: Colors.black.withValues(alpha: 0.6),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Text(
-                      '${currentPage + 1}/${mediaItems.length}',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ),
-                ),
-
-              if (mediaItems.length > 1)
-                Positioned(
-                  bottom: 12,
-                  left: 0,
-                  right: 0,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: List.generate(
-                      mediaItems.length,
-                      (index) => AnimatedContainer(
-                        duration: const Duration(milliseconds: 200),
-                        margin: const EdgeInsets.symmetric(horizontal: 2),
-                        width: currentPage == index ? 8 : 6,
-                        height: currentPage == index ? 8 : 6,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: currentPage == index ? Colors.white : Colors.white.withValues(alpha: 0.6),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-
-              // Heart animation overlay
               Positioned.fill(
                 child: Center(
                   child: ValueListenableBuilder(
@@ -295,133 +209,156 @@ class _PostMediaDisplayState extends State<PostMediaDisplay> {
                   ),
                 ),
               ),
+
+              // Page indicators
+              if (mediaItems.length > 1) ...[
+                Positioned(
+                  top: 12,
+                  right: 12,
+                  child: ValueListenableBuilder<int>(
+                    valueListenable: _currentPage,
+                    builder: (_, value, __) => Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: 0.6),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        '${value + 1}/${mediaItems.length}',
+                        style: const TextStyle(color: Colors.white, fontSize: 12),
+                      ),
+                    ),
+                  ),
+                ),
+                Positioned(
+                  bottom: 8,
+                  left: 0,
+                  right: 0,
+                  child: ValueListenableBuilder<int>(
+                    valueListenable: _currentPage,
+                    builder: (_, value, __) => Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: List.generate(
+                        mediaItems.length,
+                        (index) => AnimatedContainer(
+                          duration: const Duration(milliseconds: 200),
+                          margin: const EdgeInsets.symmetric(horizontal: 2),
+                          width: value == index ? 8 : 6,
+                          height: value == index ? 8 : 6,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: value == index ? Colors.white : Colors.white.withValues(alpha: 0.6),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ],
           ),
         ),
       ),
     );
   }
+
+  @override
+  bool get wantKeepAlive => true;
 }
 
-class MediaPageItem extends StatefulWidget {
-  final Map<String, dynamic> mediaItem;
-  final Map<String, VideoPlayerController> videoControllers;
+class _VideoPlayer extends StatelessWidget {
+  final String videoKey;
+  final Map<String, VideoPlayerController> controllers;
   final Map<String, bool> isInitialized;
-  final Function(String) onTogglePlay;
 
-  const MediaPageItem({
-    super.key,
-    required this.mediaItem,
-    required this.videoControllers,
+  const _VideoPlayer({
+    required this.videoKey,
+    required this.controllers,
     required this.isInitialized,
-    required this.onTogglePlay,
   });
 
   @override
-  State<MediaPageItem> createState() => _MediaPageItemState();
+  Widget build(BuildContext context) {
+    final controller = controllers[videoKey];
+    final initialized = isInitialized[videoKey] ?? false;
+
+    return SizedBox(
+      width: double.infinity,
+      child: initialized && controller != null
+          ? AspectRatio(
+              aspectRatio: controller.value.aspectRatio,
+              child: Stack(
+                children: [
+                  VideoPlayer(controller),
+                  if (!controller.value.isPlaying)
+                    const Center(
+                      child: Icon(
+                        Icons.play_circle_fill,
+                        color: Colors.white54,
+                        size: 50,
+                      ),
+                    ),
+                ],
+              ),
+            )
+          : const Center(child: CircularProgressIndicator(color: Colors.white)),
+    );
+  }
 }
 
-class _MediaPageItemState extends State<MediaPageItem> with AutomaticKeepAliveClientMixin {
-  @override
-  bool get wantKeepAlive => true;
+class _ImageDisplay extends StatefulWidget {
+  final String url;
 
+  const _ImageDisplay({required this.url});
+
+  @override
+  State<_ImageDisplay> createState() => _ImageDisplayState();
+}
+
+class _ImageDisplayState extends State<_ImageDisplay> with AutomaticKeepAliveClientMixin {
   @override
   Widget build(BuildContext context) {
     super.build(context);
-
-    // Handle the tap on media item
-    Widget mediaContent;
-
-    if (widget.mediaItem['type'] == 'video') {
-      final videoKey = widget.mediaItem['key'];
-      mediaContent = GestureDetector(
-        onTap: () => widget.onTogglePlay(videoKey),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(5),
-          child: CustomVideoPlayer(
-            videoController: widget.videoControllers[videoKey]!,
-            isInitialize: widget.isInitialized[videoKey] ?? false,
-          ).withAutomaticKeepAlive(),
-        ),
-      );
-    } else {
-      // Image content
-      mediaContent = ClipRRect(
-        borderRadius: BorderRadius.circular(5),
-        child: FadeInImage.assetNetwork(
-          height: double.infinity,
-          width: double.infinity,
-          fit: BoxFit.cover,
-          placeholder: AppAssets.appLogo,
-          placeholderFit: BoxFit.fitHeight,
-          image: widget.mediaItem['url'],
-          imageErrorBuilder: ((context, error, stackTrace) {
-            return Image.asset(AppAssets.appLogo);
-          }),
-        ),
-      );
-    }
-
-    // Wrap individual media item with zoom
-    return PinchZoomReleaseUnzoomWidget(
-      twoFingersOn: () {},
-      twoFingersOff: () => Future.delayed(
-        PinchZoomReleaseUnzoomWidget.defaultResetDuration,
-        () {},
-      ),
-      fingersRequiredToPinch: 2,
-      log: true,
-      child: mediaContent,
-    );
-  }
-}
-
-class CustomVideoPlayer extends StatefulWidget {
-  final VideoPlayerController videoController;
-  final bool isInitialize;
-
-  const CustomVideoPlayer({
-    super.key,
-    required this.videoController,
-    required this.isInitialize,
-  });
-
-  @override
-  State<CustomVideoPlayer> createState() => _CustomVideoPlayerState();
-}
-
-class _CustomVideoPlayerState extends State<CustomVideoPlayer> {
-  @override
-  Widget build(BuildContext context) {
-    return Container(
+    return SizedBox(
       width: double.infinity,
-      height: 380,
-      color: Colors.black,
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          if (widget.isInitialize)
-            AspectRatio(
-              aspectRatio: widget.videoController.value.aspectRatio,
-              child: VideoPlayer(widget.videoController),
-            )
-          else
-            const Center(
+      height: double.infinity,
+      child: CachedNetworkImage(
+        imageUrl: widget.url,
+        cacheKey: 'media_${widget.url}',
+        fit: BoxFit.cover,
+        placeholder: (context, url) => Container(
+          color: Colors.grey[100],
+          child: const Center(
+            child: SizedBox(
+              width: 20,
+              height: 20,
               child: CircularProgressIndicator(
-                color: Colors.white,
+                strokeWidth: 2,
+                valueColor: AlwaysStoppedAnimation<Color>(Color(0xff9CA3AF)),
               ),
             ),
-        ],
+          ),
+        ),
+        errorWidget: (context, url, error) => Container(
+          color: const Color(0xffF3F4F6),
+          child: const Icon(
+            Icons.image_outlined,
+            color: Color(0xff9CA3AF),
+            size: 32,
+          ),
+        ),
+        imageBuilder: (context, imageProvider) => Container(
+          decoration: BoxDecoration(
+            image: DecorationImage(
+              image: imageProvider,
+              fit: BoxFit.cover,
+            ),
+          ),
+        ),
       ),
     );
   }
-}
 
-extension VideoExtension on String {
-  static final List<String> _videoExtensions = ['.mp4', '.mov', '.avi', '.mkv', '.flv', '.wmv', '.webm', '.3gp', '.mpeg', '.mpg', '.m4v'];
-
-  bool get isVideoUrl {
-    final path = toLowerCase(); // Normalize to lowercase
-    return _videoExtensions.any((ext) => path.endsWith(ext));
-  }
+  @override
+  bool get wantKeepAlive => true;
 }
