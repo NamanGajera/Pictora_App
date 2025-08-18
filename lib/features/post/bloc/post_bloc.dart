@@ -1,21 +1,24 @@
 import 'dart:io';
 import 'dart:math' as math;
-
 import 'package:bloc_concurrency/bloc_concurrency.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:pictora/model/user_model.dart';
-import 'package:pictora/network/repository.dart';
+import 'package:pictora/data/hiveModel/post_mapper.dart';
+import 'package:pictora/data/model/user_model.dart';
+import 'package:pictora/data/repository/repository.dart';
 import 'package:pictora/router/router.dart';
 import 'package:pictora/router/router_name.dart';
-import 'package:pictora/utils/constants/constants.dart';
-import 'package:pictora/utils/constants/enums.dart';
-import 'package:pictora/utils/services/custom_logger.dart';
+import 'package:pictora/core/utils/constants/constants.dart';
+import 'package:pictora/core/utils/constants/enums.dart';
+import 'package:pictora/core/utils/services/custom_logger.dart';
 import 'package:uuid/uuid.dart';
-
-import '../../../utils/constants/bloc_instances.dart';
-import '../../../utils/helper/helper_function.dart';
-import '../../../utils/helper/theme_helper.dart';
+import '../../../core/database/hive_boxes.dart';
+import '../../../core/database/hive_service.dart';
+import '../../../core/network/connectivity_service.dart';
+import '../../../core/utils/constants/bloc_instances.dart';
+import '../../../core/utils/helper/helper_function.dart';
+import '../../../core/utils/helper/theme_helper.dart';
+import '../../../data/hiveModel/post_hive_model.dart';
 import '../../home/screens/home_screen.dart';
 import '../../profile/bloc/profile_bloc/profile_bloc.dart';
 import '../models/post_comment_data_model.dart';
@@ -88,25 +91,41 @@ class PostBloc extends Bloc<PostEvent, PostState> {
   }
 
   Future<void> _getAllPost(GetAllPostEvent event, Emitter<PostState> emit) async {
+    final connectivityService = ConnectivityService();
+    bool isOnline = await connectivityService.checkConnection();
+
+    logDebug(message: "Online: $isOnline");
+
+    final cachedPost = await getCachedPosts();
+    List<PostData> postData = cachedPost.map((h) => h.toEntity()).toList();
+    if (isOnline) {
+      clearCache();
+    }
     try {
       emit(state.copyWith(getAllPostApiStatus: ApiStatus.loading));
       final data = await repository.getAllPost(event.body);
 
-      logDebug(message: "Get all post data:${(data.data ?? []).length} <<<< ${(data.total ?? 0)}");
       emit(state.copyWith(
         getAllPostApiStatus: ApiStatus.success,
-        allPostData: data.data,
+        allPostData: isOnline ? data.data : postData,
         hasMorePost: (data.data ?? []).length < (data.total ?? 0),
       ));
+      final hivePosts = (data.data ?? []).map((p) => p.toHiveModel()).toList();
+      await cachePosts(hivePosts);
     } catch (error, stackTrace) {
-      emit(state.copyWith(getAllPostApiStatus: ApiStatus.failure));
-      ThemeHelper.showToastMessage("$error");
+      emit(state.copyWith(
+        getAllPostApiStatus: ApiStatus.failure,
+        allPostData: postData,
+      ));
+      // ThemeHelper.showToastMessage("$error");
       handleApiError(error, stackTrace, emit);
     }
   }
 
   Future<void> _loadMorePost(LoadMorePostEvent event, Emitter<PostState> emit) async {
     try {
+      //   final hivePosts = await localDataSource.getCachedPosts();
+      // return ;
       emit(state.copyWith(isLoadMorePost: true));
       final data = await repository.getAllPost(event.body);
 
@@ -676,5 +695,20 @@ class PostBloc extends Bloc<PostEvent, PostState> {
         errorMessage: errorMessage,
       ),
     );
+  }
+
+  Future<void> cachePosts(List<PostHiveModel> posts) async {
+    final box = await HiveService.openBox<PostHiveModel>(HiveBoxes.posts);
+    await box.clear();
+    await box.addAll(posts);
+  }
+
+  Future<List<PostHiveModel>> getCachedPosts() async {
+    final box = await HiveService.openBox<PostHiveModel>(HiveBoxes.posts);
+    return box.values.toList();
+  }
+
+  Future<void> clearCache() async {
+    await HiveService.clearBox<PostHiveModel>(HiveBoxes.posts);
   }
 }

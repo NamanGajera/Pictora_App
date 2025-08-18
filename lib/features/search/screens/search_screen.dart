@@ -1,14 +1,14 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:pictora/utils/extensions/string_extensions.dart';
-import 'package:pictora/utils/extensions/widget_extension.dart';
-import 'package:pictora/utils/widgets/custom_widget.dart';
+import 'package:pictora/core/utils/extensions/string_extensions.dart';
+import 'package:pictora/core/utils/extensions/widget_extension.dart';
+import 'package:pictora/core/utils/widgets/custom_widget.dart';
 import 'package:shimmer/shimmer.dart';
 
 import '../../../router/router.dart';
 import '../../../router/router_name.dart';
-import '../../../utils/constants/enums.dart';
+import '../../../core/utils/constants/enums.dart';
 import '../../post/bloc/post_bloc.dart';
 import '../../post/models/post_data.dart';
 import '../../post/screens/post_list_screen.dart';

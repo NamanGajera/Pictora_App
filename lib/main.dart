@@ -1,25 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:pictora/core/database/hive_service.dart';
 import 'package:pictora/features/auth/bloc/auth_bloc.dart';
 import 'package:pictora/features/post/bloc/post_bloc.dart';
 import 'package:pictora/features/profile/bloc/profile_bloc/profile_bloc.dart';
-import 'package:pictora/utils/services/app_env_manager.dart';
+import 'package:pictora/core/utils/services/app_env_manager.dart';
 import 'package:timeago/timeago.dart' as timeago;
-
 import 'features/profile/bloc/follow_section_bloc/follow_section_bloc.dart';
 import 'router/router.dart';
-import 'utils/constants/colors.dart';
-import 'utils/constants/enums.dart';
-import 'utils/di/dependency_injection.dart';
-import 'utils/helper/date_formatter.dart';
-import 'utils/helper/shared_prefs_helper.dart';
-import 'utils/services/device_info_service.dart';
+import 'core/utils/constants/colors.dart';
+import 'core/utils/constants/enums.dart';
+import 'core/di/dependency_injection.dart';
+import 'core/utils/helper/date_formatter.dart';
+import 'core/utils/helper/shared_prefs_helper.dart';
+import 'core/utils/services/device_info_service.dart';
 
 void main() async {
   AppEnvManager.currentEnv = AppEnv.local;
   AppEnvManager.setLocalBaseUrl("http://192.168.1.110:5000");
 
   WidgetsFlutterBinding.ensureInitialized();
+
+  await HiveService.init();
   await SharedPrefsHelper.init();
   await DeviceInfoService().init();
   await setupDependencies();

@@ -5,15 +5,15 @@ import 'package:insta_assets_picker/insta_assets_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:pictora/features/post/bloc/post_bloc.dart';
-import 'package:pictora/utils/constants/bloc_instances.dart';
-import 'package:pictora/utils/services/custom_logger.dart';
+import 'package:pictora/core/utils/constants/bloc_instances.dart';
+import 'package:pictora/core/utils/services/custom_logger.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:video_thumbnail/video_thumbnail.dart';
 import 'dart:io';
 
 import '../../../router/router.dart';
 import '../../../router/router_name.dart';
-import '../../../utils/constants/screens_keys.dart';
+import '../../../core/utils/constants/screens_keys.dart';
 import 'video_cover_selector_screen.dart';
 
 class AddPostScreen extends StatefulWidget {

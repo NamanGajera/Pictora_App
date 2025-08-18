@@ -5,12 +5,12 @@ import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
 import 'package:pictora/features/auth/bloc/auth_bloc.dart';
 import 'package:pictora/router/router.dart';
 import 'package:pictora/router/router_name.dart';
-import 'package:pictora/utils/constants/colors.dart';
-import 'package:pictora/utils/constants/enums.dart';
-import 'package:pictora/utils/extensions/string_extensions.dart';
-import '../../../utils/constants/app_assets.dart';
-import '../../../utils/constants/bloc_instances.dart';
-import '../../../utils/widgets/custom_widget.dart';
+import 'package:pictora/core/utils/constants/colors.dart';
+import 'package:pictora/core/utils/constants/enums.dart';
+import 'package:pictora/core/utils/extensions/string_extensions.dart';
+import '../../../core/utils/constants/app_assets.dart';
+import '../../../core/utils/constants/bloc_instances.dart';
+import '../../../core/utils/widgets/custom_widget.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -105,8 +105,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         controller: fullNameController,
                         hintText: 'Enter your full name',
                         labelText: 'Full Name',
-                        hintStyle: TextStyle(
-                            color: textSecondary.withValues(alpha: 0.7)),
+                        hintStyle: TextStyle(color: textSecondary.withValues(alpha: 0.7)),
                         isRequired: true,
                         labelStyle: const TextStyle(
                           fontSize: 16,
@@ -131,8 +130,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         controller: userNameController,
                         hintText: 'Enter your username',
                         labelText: 'Username',
-                        hintStyle: TextStyle(
-                            color: textSecondary.withValues(alpha: 0.7)),
+                        hintStyle: TextStyle(color: textSecondary.withValues(alpha: 0.7)),
                         isRequired: true,
                         labelStyle: const TextStyle(
                           fontSize: 16,
@@ -163,8 +161,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           fontWeight: FontWeight.w600,
                           color: primaryColor,
                         ),
-                        hintStyle: TextStyle(
-                            color: textSecondary.withValues(alpha: 0.7)),
+                        hintStyle: TextStyle(color: textSecondary.withValues(alpha: 0.7)),
                         prefixIcon: Icons.email_outlined,
                         prefixIconColor: primaryColor,
                         fillColor: backgroundColor,
@@ -185,8 +182,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         controller: passwordController,
                         hintText: 'Enter your password',
                         labelText: 'Password',
-                        hintStyle: TextStyle(
-                            color: textSecondary.withValues(alpha: 0.7)),
+                        hintStyle: TextStyle(color: textSecondary.withValues(alpha: 0.7)),
                         isRequired: true,
                         labelStyle: const TextStyle(
                           fontSize: 16,
@@ -214,8 +210,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         controller: confirmPasswordController,
                         hintText: 'Confirm you password',
                         labelText: 'Confirm Password',
-                        hintStyle: TextStyle(
-                            color: textSecondary.withValues(alpha: 0.7)),
+                        hintStyle: TextStyle(color: textSecondary.withValues(alpha: 0.7)),
                         isRequired: true,
                         labelStyle: const TextStyle(
                           fontSize: 16,
@@ -243,8 +238,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       const SizedBox(height: 20),
                       _buildTermsCheckbox(),
                       const SizedBox(height: 32),
-                      BlocBuilder<AuthBloc, AuthState>(
-                          builder: (context, state) {
+                      BlocBuilder<AuthBloc, AuthState>(builder: (context, state) {
                         return CustomButton(
                           text: "Create Account",
                           onTap: () {
@@ -260,10 +254,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             }
                           },
                           height: 52,
-                          showLoader:
-                              state.registerUserApiStatus == ApiStatus.loading,
-                          backgroundColor:
-                              _agreeToTerms ? primaryColor : Colors.grey,
+                          showLoader: state.registerUserApiStatus == ApiStatus.loading,
+                          backgroundColor: _agreeToTerms ? primaryColor : Colors.grey,
                         );
                       }),
                     ],

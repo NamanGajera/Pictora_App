@@ -3,12 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
-import 'package:pictora/utils/constants/screens_keys.dart';
+import 'package:pictora/core/utils/constants/screens_keys.dart';
 
 import '../../router/router_name.dart';
-import '../../utils/constants/app_assets.dart';
-import '../../utils/constants/colors.dart';
-import '../../utils/constants/constants.dart';
+import '../../core/utils/constants/app_assets.dart';
+import '../../core/utils/constants/colors.dart';
+import '../../core/utils/constants/constants.dart';
 
 class AppBottomNavigationBar extends StatefulWidget {
   final StatefulNavigationShell navigationShell;

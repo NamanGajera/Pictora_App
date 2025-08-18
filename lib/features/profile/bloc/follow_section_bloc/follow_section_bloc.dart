@@ -2,14 +2,14 @@ import 'package:bloc_concurrency/bloc_concurrency.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pictora/features/profile/bloc/profile_bloc/profile_bloc.dart';
-import 'package:pictora/network/repository.dart';
-import 'package:pictora/utils/constants/bloc_instances.dart';
-import 'package:pictora/utils/services/custom_logger.dart';
+import 'package:pictora/data/repository/repository.dart';
+import 'package:pictora/core/utils/constants/bloc_instances.dart';
+import 'package:pictora/core/utils/services/custom_logger.dart';
 
-import '../../../../model/user_model.dart';
-import '../../../../utils/constants/enums.dart';
-import '../../../../utils/helper/helper_function.dart';
-import '../../../../utils/helper/theme_helper.dart';
+import '../../../../data/model/user_model.dart';
+import '../../../../core/utils/constants/enums.dart';
+import '../../../../core/utils/helper/helper_function.dart';
+import '../../../../core/utils/helper/theme_helper.dart';
 import '../../model/follow_request_model.dart';
 
 part 'follow_section_event.dart';

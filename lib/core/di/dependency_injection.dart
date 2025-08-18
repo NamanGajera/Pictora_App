@@ -4,8 +4,8 @@ import 'package:pictora/features/post/bloc/post_bloc.dart';
 import 'package:pictora/features/profile/bloc/follow_section_bloc/follow_section_bloc.dart';
 import 'package:pictora/features/profile/bloc/profile_bloc/profile_bloc.dart';
 
-import '../../network/api_client.dart';
-import '../../network/repository.dart';
+import '../network/api_client.dart';
+import '../../data/repository/repository.dart';
 
 final getIt = GetIt.instance;
 

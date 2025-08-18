@@ -5,13 +5,13 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pictora/features/post/bloc/post_bloc.dart';
 import 'package:pictora/router/router.dart';
 import 'package:pictora/router/router_name.dart';
-import 'package:pictora/utils/constants/bloc_instances.dart';
-import 'package:pictora/utils/constants/constants.dart';
-import 'package:pictora/utils/constants/enums.dart';
-import 'package:pictora/utils/extensions/build_context_extension.dart';
-import 'package:pictora/utils/widgets/custom_widget.dart';
+import 'package:pictora/core/utils/constants/bloc_instances.dart';
+import 'package:pictora/core/utils/constants/constants.dart';
+import 'package:pictora/core/utils/constants/enums.dart';
+import 'package:pictora/core/utils/extensions/build_context_extension.dart';
+import 'package:pictora/core/utils/widgets/custom_widget.dart';
 
-import '../../../utils/constants/colors.dart';
+import '../../../core/utils/constants/colors.dart';
 import '../../post/screens/widgets/post_widget.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -56,7 +56,7 @@ class _HomeScreenState extends State<HomeScreen> {
         backgroundColor: Colors.white,
         color: primaryColor,
         onRefresh: () async {
-          postBloc.add(GetAllPostEvent(body: postBody));
+          postBloc.add(GetAllPostEvent(body: {"skip": 0, "take": 24}));
         },
         child: Column(
           children: [

@@ -5,13 +5,13 @@ import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
 import 'package:pictora/features/auth/bloc/auth_bloc.dart';
 import 'package:pictora/router/router.dart';
 import 'package:pictora/router/router_name.dart';
-import 'package:pictora/utils/constants/app_assets.dart';
-import 'package:pictora/utils/constants/bloc_instances.dart';
-import 'package:pictora/utils/extensions/string_extensions.dart';
+import 'package:pictora/core/utils/constants/app_assets.dart';
+import 'package:pictora/core/utils/constants/bloc_instances.dart';
+import 'package:pictora/core/utils/extensions/string_extensions.dart';
 
-import '../../../utils/constants/colors.dart';
-import '../../../utils/constants/enums.dart';
-import '../../../utils/widgets/custom_widget.dart';
+import '../../../core/utils/constants/colors.dart';
+import '../../../core/utils/constants/enums.dart';
+import '../../../core/utils/widgets/custom_widget.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -105,8 +105,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           fontWeight: FontWeight.w600,
                           color: primaryColor,
                         ),
-                        hintStyle: TextStyle(
-                            color: textSecondary.withValues(alpha: 0.7)),
+                        hintStyle: TextStyle(color: textSecondary.withValues(alpha: 0.7)),
                         prefixIcon: Icons.email_outlined,
                         prefixIconColor: primaryColor,
                         fillColor: backgroundColor,
@@ -127,8 +126,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         controller: passwordController,
                         hintText: 'Enter your password',
                         labelText: 'Password',
-                        hintStyle: TextStyle(
-                            color: textSecondary.withValues(alpha: 0.7)),
+                        hintStyle: TextStyle(color: textSecondary.withValues(alpha: 0.7)),
                         isRequired: true,
                         labelStyle: const TextStyle(
                           fontSize: 16,
@@ -166,8 +164,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ),
                       const SizedBox(height: 32),
-                      BlocBuilder<AuthBloc, AuthState>(
-                          builder: (context, state) {
+                      BlocBuilder<AuthBloc, AuthState>(builder: (context, state) {
                         return CustomButton(
                           text: "Sign In",
                           onTap: () {
@@ -181,8 +178,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             }
                           },
                           height: 52,
-                          showLoader:
-                              state.loginUserApiStatus == ApiStatus.loading,
+                          showLoader: state.loginUserApiStatus == ApiStatus.loading,
                         );
                       }),
                       const SizedBox(height: 10),

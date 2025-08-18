@@ -2,17 +2,17 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pictora/features/auth/model/auth_model.dart';
-import 'package:pictora/network/repository.dart';
+import 'package:pictora/data/repository/repository.dart';
 import 'package:pictora/router/router.dart';
 import 'package:pictora/router/router_name.dart';
-import 'package:pictora/utils/constants/constants.dart';
-import 'package:pictora/utils/constants/enums.dart';
-import 'package:pictora/utils/constants/shared_pref_keys.dart';
-import 'package:pictora/utils/helper/shared_prefs_helper.dart';
-import 'package:pictora/utils/helper/theme_helper.dart';
+import 'package:pictora/core/utils/constants/constants.dart';
+import 'package:pictora/core/utils/constants/enums.dart';
+import 'package:pictora/core/utils/constants/shared_pref_keys.dart';
+import 'package:pictora/core/utils/helper/shared_prefs_helper.dart';
+import 'package:pictora/core/utils/helper/theme_helper.dart';
 
-import '../../../model/user_model.dart';
-import '../../../utils/helper/helper_function.dart';
+import '../../../data/model/user_model.dart';
+import '../../../core/utils/helper/helper_function.dart';
 
 part 'auth_event.dart';
 part 'auth_state.dart';

@@ -1,11 +1,11 @@
 import 'package:bloc_concurrency/bloc_concurrency.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:pictora/network/repository.dart';
-import '../../../../model/user_model.dart';
-import '../../../../utils/constants/enums.dart';
-import '../../../../utils/helper/helper_function.dart';
-import '../../../../utils/helper/theme_helper.dart';
+import 'package:pictora/data/repository/repository.dart';
+import '../../../../data/model/user_model.dart';
+import '../../../../core/utils/constants/enums.dart';
+import '../../../../core/utils/helper/helper_function.dart';
+import '../../../../core/utils/helper/theme_helper.dart';
 
 part 'profile_event.dart';
 part 'profile_state.dart';

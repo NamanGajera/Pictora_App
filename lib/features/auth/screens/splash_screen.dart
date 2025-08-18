@@ -1,14 +1,14 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:pictora/utils/extensions/build_context_extension.dart';
-import 'package:pictora/utils/services/custom_logger.dart';
+import 'package:pictora/core/utils/extensions/build_context_extension.dart';
+import 'package:pictora/core/utils/services/custom_logger.dart';
 
 import '../../../router/router.dart';
 import '../../../router/router_name.dart';
-import '../../../utils/constants/app_assets.dart';
-import '../../../utils/constants/constants.dart';
-import '../../../utils/constants/shared_pref_keys.dart';
-import '../../../utils/helper/shared_prefs_helper.dart';
+import '../../../core/utils/constants/app_assets.dart';
+import '../../../core/utils/constants/constants.dart';
+import '../../../core/utils/constants/shared_pref_keys.dart';
+import '../../../core/utils/helper/shared_prefs_helper.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -42,8 +42,7 @@ class _SplashScreenState extends State<SplashScreen> {
     userFullName = SharedPrefsHelper().getString(SharedPrefKeys.userEmail);
     userEmail = SharedPrefsHelper().getString(SharedPrefKeys.userFullName);
     userName = SharedPrefsHelper().getString(SharedPrefKeys.userName);
-    userProfilePic =
-        SharedPrefsHelper().getString(SharedPrefKeys.userProfilePic);
+    userProfilePic = SharedPrefsHelper().getString(SharedPrefKeys.userProfilePic);
   }
 
   @override

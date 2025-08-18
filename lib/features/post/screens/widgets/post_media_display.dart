@@ -1,12 +1,12 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:pictora/features/post/screens/widgets/heart_animation.dart';
-import 'package:pictora/utils/extensions/string_extensions.dart';
+import 'package:pictora/core/utils/extensions/string_extensions.dart';
 import 'package:pinch_zoom_release_unzoom/pinch_zoom_release_unzoom.dart';
 import 'package:video_player/video_player.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 
-import '../../../../utils/constants/bloc_instances.dart';
+import '../../../../core/utils/constants/bloc_instances.dart';
 import '../../bloc/post_bloc.dart';
 import '../../models/post_data.dart';
 

@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:insta_assets_picker/insta_assets_picker.dart';
 import 'package:pictora/router/router.dart';
 import 'package:pictora/router/router_name.dart';
-import 'package:pictora/utils/constants/constants.dart';
-import 'package:pictora/utils/services/custom_logger.dart';
+import 'package:pictora/core/utils/constants/constants.dart';
+import 'package:pictora/core/utils/services/custom_logger.dart';
 import 'package:video_player/video_player.dart';
 
 import 'add_post_screen.dart';

@@ -5,13 +5,13 @@ import 'package:pictora/features/post/bloc/post_bloc.dart';
 import 'package:pictora/features/profile/screens/profile_screen.dart';
 import 'package:pictora/router/router.dart';
 import 'package:pictora/router/router_name.dart';
-import 'package:pictora/utils/constants/bloc_instances.dart';
-import 'package:pictora/utils/constants/constants.dart';
-import 'package:pictora/utils/constants/enums.dart';
+import 'package:pictora/core/utils/constants/bloc_instances.dart';
+import 'package:pictora/core/utils/constants/constants.dart';
+import 'package:pictora/core/utils/constants/enums.dart';
 
-import '../../../model/user_model.dart';
-import '../../../utils/constants/app_assets.dart';
-import '../../../utils/constants/colors.dart';
+import '../../../data/model/user_model.dart';
+import '../../../core/utils/constants/app_assets.dart';
+import '../../../core/utils/constants/colors.dart';
 
 class LikedByUserScreen extends StatefulWidget {
   final String postId;

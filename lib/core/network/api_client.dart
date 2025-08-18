@@ -6,7 +6,7 @@ import 'package:http_parser/http_parser.dart';
 import '../utils/constants/api_end_points.dart';
 import '../utils/helper/helper_function.dart';
 import '../utils/services/custom_logger.dart';
-import 'custom_exception.dart';
+import '../utils/helper/custom_exception.dart';
 
 class ApiClient {
   http.Client httpClient = http.Client();

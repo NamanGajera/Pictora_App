@@ -2,17 +2,17 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pictora/features/profile/bloc/follow_section_bloc/follow_section_bloc.dart';
-import 'package:pictora/utils/constants/constants.dart';
-import 'package:pictora/utils/constants/enums.dart';
-import 'package:pictora/utils/extensions/build_context_extension.dart';
-import 'package:pictora/utils/widgets/custom_widget.dart';
+import 'package:pictora/core/utils/constants/constants.dart';
+import 'package:pictora/core/utils/constants/enums.dart';
+import 'package:pictora/core/utils/extensions/build_context_extension.dart';
+import 'package:pictora/core/utils/widgets/custom_widget.dart';
 
-import '../../../model/user_model.dart';
+import '../../../data/model/user_model.dart';
 import '../../../router/router.dart';
 import '../../../router/router_name.dart';
-import '../../../utils/constants/app_assets.dart';
-import '../../../utils/constants/bloc_instances.dart';
-import '../../../utils/constants/colors.dart';
+import '../../../core/utils/constants/app_assets.dart';
+import '../../../core/utils/constants/bloc_instances.dart';
+import '../../../core/utils/constants/colors.dart';
 import 'profile_screen.dart';
 
 class FollowSectionScreen extends StatefulWidget {

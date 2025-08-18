@@ -3,14 +3,14 @@ import 'package:pictora/features/post/models/post_comment_data_model.dart';
 import 'package:pictora/features/post/models/post_create_model.dart';
 import 'package:pictora/features/post/models/post_data_model.dart';
 import 'package:pictora/features/profile/model/follow_request_model.dart';
-import 'package:pictora/model/common_message_model.dart';
-import 'package:pictora/model/user_list_data_model.dart';
-import 'package:pictora/utils/constants/api_end_points.dart';
-import 'package:pictora/utils/constants/constants.dart';
+import 'package:pictora/data/model/common_message_model.dart';
+import 'package:pictora/data/model/user_list_data_model.dart';
+import 'package:pictora/core/utils/constants/api_end_points.dart';
+import 'package:pictora/core/utils/constants/constants.dart';
 
 import '../model/user_model.dart';
-import 'api_client.dart';
-import 'custom_exception.dart';
+import '../../core/network/api_client.dart';
+import '../../core/utils/helper/custom_exception.dart';
 
 class Repository {
   final ApiClient apiClient;

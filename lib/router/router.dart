@@ -11,14 +11,14 @@ import 'package:pictora/features/post/screens/post_asset_picker_screen.dart';
 import 'package:pictora/features/post/screens/post_list_screen.dart';
 import 'package:pictora/features/profile/screens/follow_section_screen.dart';
 import 'package:pictora/features/search/screens/search_screen.dart';
-import 'package:pictora/utils/helper/page_transition.dart';
+import 'package:pictora/core/utils/helper/page_transition.dart';
 
 import '../features/auth/screens/login_screen.dart';
 import '../features/auth/screens/splash_screen.dart';
 import '../features/post/screens/video_cover_selector_screen.dart';
 import '../features/profile/screens/profile_screen.dart';
 import '../features/widgets/app_bottom_navigation_bar.dart';
-import '../utils/constants/screens_keys.dart';
+import '../core/utils/constants/screens_keys.dart';
 import 'router_name.dart';
 
 final GoRouter appRouter = GoRouter(

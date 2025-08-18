@@ -1,5 +1,5 @@
-import '../../../model/user_model.dart';
-import '../../../utils/constants/enums.dart';
+import '../../../data/model/user_model.dart';
+import '../../../core/utils/constants/enums.dart';
 
 class PostCommentDataModel {
   int? statusCode;

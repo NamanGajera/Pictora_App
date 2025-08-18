@@ -29,3 +29,11 @@ class ServerValidationError extends CustomException {
 class UnderMaintenanceError extends CustomException {
   UnderMaintenanceError([String? message]) : super(message, "");
 }
+
+class HiveStorageException implements Exception {
+  final String message;
+  HiveStorageException(this.message);
+
+  @override
+  String toString() => 'HiveStorageException: $message';
+}

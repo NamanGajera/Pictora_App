@@ -3,7 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pictora/features/post/bloc/post_bloc.dart';
 import 'package:pictora/features/post/models/post_data.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
-import '../../../utils/constants/enums.dart';
+import '../../../core/utils/constants/enums.dart';
 import 'widgets/post_widget.dart';
 
 class PostListScreen extends StatefulWidget {
