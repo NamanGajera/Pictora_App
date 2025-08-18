@@ -10,6 +10,12 @@ class FollowSectionState extends Equatable {
   final List<User>? following;
   final List<Request>? followRequests;
   final List<User>? discoverUsers;
+  final bool isLoadMoreFollowers;
+  final bool hasMoreFollowers;
+  final bool isLoadMoreFollowing;
+  final bool hasMoreFollowing;
+  final bool isLoadMoreDiscover;
+  final bool hasMoreDiscover;
   final String? errorMessage;
   final int? statusCode;
 
@@ -23,6 +29,12 @@ class FollowSectionState extends Equatable {
     this.following,
     this.discoverUsers,
     this.followRequests,
+    this.isLoadMoreFollowers = false,
+    this.hasMoreFollowers = true,
+    this.isLoadMoreFollowing = false,
+    this.hasMoreFollowing = true,
+    this.isLoadMoreDiscover = false,
+    this.hasMoreDiscover = true,
     this.errorMessage,
     this.statusCode,
   });
@@ -37,6 +49,12 @@ class FollowSectionState extends Equatable {
     List<User>? following,
     List<Request>? followRequests,
     List<User>? discoverUsers,
+    bool? isLoadMoreFollowers,
+    bool? hasMoreFollowers,
+    bool? isLoadMoreFollowing,
+    bool? hasMoreFollowing,
+    bool? isLoadMoreDiscover,
+    bool? hasMoreDiscover,
     String? errorMessage,
     int? statusCode,
   }) {
@@ -50,6 +68,12 @@ class FollowSectionState extends Equatable {
       following: following ?? this.following,
       followRequests: followRequests ?? this.followRequests,
       discoverUsers: discoverUsers ?? this.discoverUsers,
+      isLoadMoreFollowers: isLoadMoreFollowers ?? this.isLoadMoreFollowers,
+      hasMoreFollowers: hasMoreFollowers ?? this.hasMoreFollowers,
+      isLoadMoreFollowing: isLoadMoreFollowing ?? this.isLoadMoreFollowing,
+      hasMoreFollowing: hasMoreFollowing ?? this.hasMoreFollowing,
+      isLoadMoreDiscover: isLoadMoreDiscover ?? this.isLoadMoreDiscover,
+      hasMoreDiscover: hasMoreDiscover ?? this.hasMoreDiscover,
       errorMessage: errorMessage,
       statusCode: statusCode,
     );
@@ -66,6 +90,12 @@ class FollowSectionState extends Equatable {
         following,
         discoverUsers,
         followRequests,
+        hasMoreFollowers,
+        isLoadMoreFollowers,
+        isLoadMoreFollowing,
+        hasMoreFollowing,
+        isLoadMoreDiscover,
+        hasMoreDiscover,
         errorMessage,
         statusCode,
       ];

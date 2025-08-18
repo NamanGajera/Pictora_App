@@ -17,7 +17,7 @@ import 'core/utils/services/device_info_service.dart';
 
 void main() async {
   AppEnvManager.currentEnv = AppEnv.local;
-  AppEnvManager.setLocalBaseUrl("http://192.168.1.110:5000");
+  AppEnvManager.setLocalBaseUrl("http://192.168.1.34:5000");
 
   WidgetsFlutterBinding.ensureInitialized();
 

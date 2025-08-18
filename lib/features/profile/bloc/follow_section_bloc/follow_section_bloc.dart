@@ -19,8 +19,11 @@ class FollowSectionBloc extends Bloc<FollowSectionEvent, FollowSectionState> {
   final Repository repository;
   FollowSectionBloc(this.repository) : super(FollowSectionState()) {
     on<GetFollowersEvent>(_getFollowers, transformer: droppable());
+    on<LoadMoreFollowersEvent>(_loadMoreFollower, transformer: droppable());
     on<GetFollowingEvent>(_getFollowing, transformer: droppable());
+    on<LoadMoreFollowingEvent>(_loadMoreFollowing, transformer: droppable());
     on<GetDiscoverUsersEvent>(_getDiscoverUsers, transformer: droppable());
+    on<LoadMoreDiscoverUserEvent>(_loadMoreDiscoverUsers, transformer: droppable());
     on<GetFollowRequestEvent>(_getFollowRequests, transformer: droppable());
     on<ToggleFollowUserEvent>(_toggleFollowUser, transformer: droppable());
     on<ManageFollowRequestEvent>(_manageFollowRequest, transformer: droppable());
@@ -33,9 +36,26 @@ class FollowSectionBloc extends Bloc<FollowSectionEvent, FollowSectionState> {
       emit(state.copyWith(
         getFollowersApiStatus: ApiStatus.success,
         followers: followers.data ?? [],
+        hasMoreFollowers: (followers.data ?? []).length < (followers.total ?? 0),
       ));
     } catch (error, stackTrace) {
       emit(state.copyWith(getFollowersApiStatus: ApiStatus.failure));
+      ThemeHelper.showToastMessage("$error");
+      handleApiError(error, stackTrace, emit);
+    }
+  }
+
+  Future<void> _loadMoreFollower(LoadMoreFollowersEvent event, Emitter<FollowSectionState> emit) async {
+    try {
+      emit(state.copyWith(isLoadMoreFollowers: true));
+      final followers = await repository.getFollowers(body: event.body);
+      emit(state.copyWith(
+        isLoadMoreFollowers: false,
+        followers: [...(state.followers ?? []), ...(followers.data ?? [])],
+        hasMoreFollowers: [...(state.followers ?? []), ...(followers.data ?? [])].length < (followers.total ?? 0),
+      ));
+    } catch (error, stackTrace) {
+      emit(state.copyWith(isLoadMoreFollowers: false));
       ThemeHelper.showToastMessage("$error");
       handleApiError(error, stackTrace, emit);
     }
@@ -48,9 +68,26 @@ class FollowSectionBloc extends Bloc<FollowSectionEvent, FollowSectionState> {
       emit(state.copyWith(
         getFollowingApiStatus: ApiStatus.success,
         following: following.data ?? [],
+        hasMoreFollowers: (following.data ?? []).length < (following.total ?? 0),
       ));
     } catch (error, stackTrace) {
       emit(state.copyWith(getFollowingApiStatus: ApiStatus.failure));
+      ThemeHelper.showToastMessage("$error");
+      handleApiError(error, stackTrace, emit);
+    }
+  }
+
+  Future<void> _loadMoreFollowing(LoadMoreFollowingEvent event, Emitter<FollowSectionState> emit) async {
+    try {
+      emit(state.copyWith(isLoadMoreFollowing: true));
+      final following = await repository.getFollowing(body: event.body);
+      emit(state.copyWith(
+        isLoadMoreFollowing: false,
+        following: [...(state.following ?? []), ...(following.data ?? [])],
+        hasMoreFollowing: [...(state.following ?? []), ...(following.data ?? [])].length < (following.total ?? 0),
+      ));
+    } catch (error, stackTrace) {
+      emit(state.copyWith(isLoadMoreFollowing: false));
       ThemeHelper.showToastMessage("$error");
       handleApiError(error, stackTrace, emit);
     }
@@ -76,14 +113,31 @@ class FollowSectionBloc extends Bloc<FollowSectionEvent, FollowSectionState> {
       emit(state.copyWith(getDiscoverUsersApiStatus: ApiStatus.loading));
       final users = await repository.getDiscoverUsers(body: {
         "skip": 0,
-        "take": 25,
+        "take": 10,
       });
       emit(state.copyWith(
         getDiscoverUsersApiStatus: ApiStatus.success,
         discoverUsers: users.data ?? [],
+        hasMoreDiscover: (users.data ?? []).length < (users.total ?? 0),
       ));
     } catch (error, stackTrace) {
       emit(state.copyWith(getDiscoverUsersApiStatus: ApiStatus.failure));
+      ThemeHelper.showToastMessage("$error");
+      handleApiError(error, stackTrace, emit);
+    }
+  }
+
+  Future<void> _loadMoreDiscoverUsers(LoadMoreDiscoverUserEvent event, Emitter<FollowSectionState> emit) async {
+    try {
+      emit(state.copyWith(isLoadMoreDiscover: true));
+      final users = await repository.getDiscoverUsers(body: event.body);
+      emit(state.copyWith(
+        isLoadMoreDiscover: false,
+        discoverUsers: [...(state.discoverUsers ?? []), ...(users.data ?? [])],
+        hasMoreDiscover: [...(state.discoverUsers ?? []), ...(users.data ?? [])].length < (users.total ?? 0),
+      ));
+    } catch (error, stackTrace) {
+      emit(state.copyWith(isLoadMoreDiscover: false));
       ThemeHelper.showToastMessage("$error");
       handleApiError(error, stackTrace, emit);
     }

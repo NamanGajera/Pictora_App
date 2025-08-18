@@ -39,6 +39,52 @@ class _FollowSectionScreenState extends State<FollowSectionScreen> with SingleTi
     followSectionBloc.add(GetDiscoverUsersEvent());
 
     _selectedIndex = widget.tabIndex;
+
+    _followerScrollController.addListener(followerScrollListener);
+    _followingScrollController.addListener(followingScrollListener);
+    _discoverScrollController.addListener(discoverScrollListener);
+  }
+
+  final ScrollController _followerScrollController = ScrollController();
+  final ScrollController _followingScrollController = ScrollController();
+  final ScrollController _discoverScrollController = ScrollController();
+
+  void followerScrollListener() {
+    if (_followerScrollController.position.pixels > _followerScrollController.position.maxScrollExtent - 150) {
+      final state = followSectionBloc.state;
+      if (state.hasMoreFollowers) {
+        followSectionBloc.add(LoadMoreFollowersEvent(body: {
+          "userId": widget.userId,
+          "skip": state.followers?.length ?? 0,
+          "take": 15,
+        }));
+      }
+    }
+  }
+
+  void followingScrollListener() {
+    if (_followingScrollController.position.pixels > _followingScrollController.position.maxScrollExtent - 150) {
+      final state = followSectionBloc.state;
+      if (state.hasMoreFollowing) {
+        followSectionBloc.add(LoadMoreFollowingEvent(body: {
+          "userId": widget.userId,
+          "skip": state.following?.length ?? 0,
+          "take": 15,
+        }));
+      }
+    }
+  }
+
+  void discoverScrollListener() {
+    if (_discoverScrollController.position.pixels > _discoverScrollController.position.maxScrollExtent - 150) {
+      final state = followSectionBloc.state;
+      if (state.hasMoreDiscover) {
+        followSectionBloc.add(LoadMoreDiscoverUserEvent(body: {
+          "skip": state.discoverUsers?.length ?? 0,
+          "take": 15,
+        }));
+      }
+    }
   }
 
   int _selectedIndex = 0;
@@ -120,134 +166,220 @@ class _FollowSectionScreenState extends State<FollowSectionScreen> with SingleTi
   }
 
   Widget _buildFollowerUsersList() {
-    return BlocBuilder<FollowSectionBloc, FollowSectionState>(
-      buildWhen: (previous, current) => previous.getFollowersApiStatus != current.getFollowersApiStatus || previous.followers != current.followers,
-      builder: (context, state) {
-        if (state.getFollowersApiStatus == ApiStatus.loading) {
-          return Center(
-            child: CircularProgressIndicator(),
-          );
-        }
-        if ((state.followers ?? []).isEmpty) {
-          return _buildEmptyState();
-        }
-
-        return ListView.builder(
-          padding: EdgeInsets.symmetric(vertical: 8),
-          itemCount: state.followers?.length,
-          itemBuilder: (context, index) {
-            final User? user = state.followers?[index];
-            return InkWell(
-              onTap: () {
-                appRouter.push(RouterName.otherUserProfile.path, extra: ProfileScreenDataModel(userId: user?.id ?? ''));
-              },
-              child: _buildUserTile(
-                user,
-                FollowSectionTab.follower,
-              ),
-            );
-          },
-        );
+    return RefreshIndicator(
+      backgroundColor: Colors.white,
+      color: primaryColor,
+      onRefresh: () async {
+        followSectionBloc.add(GetFollowersEvent(
+          userId: widget.userId,
+        ));
       },
+      child: BlocBuilder<FollowSectionBloc, FollowSectionState>(
+        buildWhen: (previous, current) =>
+            previous.getFollowersApiStatus != current.getFollowersApiStatus ||
+            previous.followers != current.followers ||
+            previous.isLoadMoreFollowers != current.isLoadMoreFollowers,
+        builder: (context, state) {
+          if (state.getFollowersApiStatus == ApiStatus.loading) {
+            return Center(
+              child: CircularProgressIndicator(),
+            );
+          }
+          if ((state.followers ?? []).isEmpty) {
+            return _buildEmptyState();
+          }
+
+          return Column(
+            children: [
+              Expanded(
+                child: ListView.builder(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  controller: _followerScrollController,
+                  padding: EdgeInsets.symmetric(vertical: 8),
+                  itemCount: state.followers?.length,
+                  itemBuilder: (context, index) {
+                    final User? user = state.followers?[index];
+                    return InkWell(
+                      onTap: () {
+                        appRouter.push(RouterName.otherUserProfile.path, extra: ProfileScreenDataModel(userId: user?.id ?? ''));
+                      },
+                      child: _buildUserTile(
+                        user,
+                        FollowSectionTab.follower,
+                      ),
+                    );
+                  },
+                ),
+              ),
+              if (state.isLoadMoreFollowing)
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Center(
+                    child: CircularProgressIndicator(),
+                  ),
+                ),
+            ],
+          );
+        },
+      ),
     );
   }
 
   Widget _buildFollowingUsersList() {
-    return BlocBuilder<FollowSectionBloc, FollowSectionState>(
-      buildWhen: (previous, current) => previous.getFollowingApiStatus != current.getFollowingApiStatus || previous.following != current.following,
-      builder: (context, state) {
-        if (state.getFollowingApiStatus == ApiStatus.loading) {
-          return Center(
-            child: CircularProgressIndicator(),
-          );
-        }
-        if ((state.following ?? []).isEmpty) {
-          return _buildEmptyState();
-        }
-
-        return ListView.builder(
-          padding: EdgeInsets.symmetric(vertical: 8),
-          itemCount: state.following?.length,
-          itemBuilder: (context, index) {
-            final User? user = state.following?[index];
-            return InkWell(
-              onTap: () {
-                appRouter.push(RouterName.otherUserProfile.path, extra: ProfileScreenDataModel(userId: user?.id ?? ''));
-              },
-              child: _buildUserTile(
-                user,
-                FollowSectionTab.following,
-              ),
-            );
-          },
-        );
+    return RefreshIndicator(
+      backgroundColor: Colors.white,
+      color: primaryColor,
+      onRefresh: () async {
+        followSectionBloc.add(GetFollowingEvent(
+          userId: widget.userId,
+        ));
       },
+      child: BlocBuilder<FollowSectionBloc, FollowSectionState>(
+        buildWhen: (previous, current) =>
+            previous.getFollowingApiStatus != current.getFollowingApiStatus ||
+            previous.following != current.following ||
+            previous.isLoadMoreFollowing != current.isLoadMoreFollowing,
+        builder: (context, state) {
+          if (state.getFollowingApiStatus == ApiStatus.loading) {
+            return Center(
+              child: CircularProgressIndicator(),
+            );
+          }
+          if ((state.following ?? []).isEmpty) {
+            return _buildEmptyState();
+          }
+
+          return Column(
+            children: [
+              Expanded(
+                child: ListView.builder(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  controller: _followingScrollController,
+                  padding: EdgeInsets.symmetric(vertical: 8),
+                  itemCount: state.following?.length,
+                  itemBuilder: (context, index) {
+                    final User? user = state.following?[index];
+                    return InkWell(
+                      onTap: () {
+                        appRouter.push(RouterName.otherUserProfile.path, extra: ProfileScreenDataModel(userId: user?.id ?? ''));
+                      },
+                      child: _buildUserTile(
+                        user,
+                        FollowSectionTab.following,
+                      ),
+                    );
+                  },
+                ),
+              ),
+              if (state.isLoadMoreFollowing)
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Center(
+                    child: CircularProgressIndicator(),
+                  ),
+                ),
+            ],
+          );
+        },
+      ),
     );
   }
 
   Widget _buildFollowRequestList() {
-    return BlocBuilder<FollowSectionBloc, FollowSectionState>(
-      buildWhen: (previous, current) =>
-          previous.getFollowRequestApiStatus != current.getFollowRequestApiStatus || previous.followRequests != current.followRequests,
-      builder: (context, state) {
-        if (state.getFollowRequestApiStatus == ApiStatus.loading) {
-          return Center(
-            child: CircularProgressIndicator(),
-          );
-        }
-        if ((state.followRequests ?? []).isEmpty) {
-          return _buildEmptyState();
-        }
-
-        return ListView.builder(
-          padding: EdgeInsets.symmetric(vertical: 8),
-          itemCount: state.followRequests?.length,
-          itemBuilder: (context, index) {
-            final User? user = state.followRequests?[index].requester;
-            return InkWell(
-              onTap: () {
-                appRouter.push(RouterName.otherUserProfile.path, extra: ProfileScreenDataModel(userId: user?.id ?? ''));
-              },
-              child: _buildUserTile(
-                user,
-                FollowSectionTab.request,
-                state.followRequests?[index].id,
-              ),
-            );
-          },
-        );
+    return RefreshIndicator(
+      backgroundColor: Colors.white,
+      color: primaryColor,
+      onRefresh: () async {
+        followSectionBloc.add(GetFollowRequestEvent());
       },
+      child: BlocBuilder<FollowSectionBloc, FollowSectionState>(
+        buildWhen: (previous, current) =>
+            previous.getFollowRequestApiStatus != current.getFollowRequestApiStatus || previous.followRequests != current.followRequests,
+        builder: (context, state) {
+          if (state.getFollowRequestApiStatus == ApiStatus.loading) {
+            return Center(
+              child: CircularProgressIndicator(),
+            );
+          }
+          if ((state.followRequests ?? []).isEmpty) {
+            return _buildEmptyState();
+          }
+
+          return ListView.builder(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: EdgeInsets.symmetric(vertical: 8),
+            itemCount: state.followRequests?.length,
+            itemBuilder: (context, index) {
+              final User? user = state.followRequests?[index].requester;
+              return InkWell(
+                onTap: () {
+                  appRouter.push(RouterName.otherUserProfile.path, extra: ProfileScreenDataModel(userId: user?.id ?? ''));
+                },
+                child: _buildUserTile(
+                  user,
+                  FollowSectionTab.request,
+                  state.followRequests?[index].id,
+                ),
+              );
+            },
+          );
+        },
+      ),
     );
   }
 
   Widget _buildDiscoverUsersList() {
-    return BlocBuilder<FollowSectionBloc, FollowSectionState>(
-      buildWhen: (previous, current) =>
-          previous.getDiscoverUsersApiStatus != current.getDiscoverUsersApiStatus || previous.discoverUsers != current.discoverUsers,
-      builder: (context, state) {
-        if (state.getDiscoverUsersApiStatus == ApiStatus.loading) {
-          return Center(
-            child: CircularProgressIndicator(),
-          );
-        }
-        if ((state.discoverUsers ?? []).isEmpty) {
-          return _buildEmptyState();
-        }
-
-        return ListView.builder(
-          padding: EdgeInsets.symmetric(vertical: 8),
-          itemCount: state.discoverUsers?.length,
-          itemBuilder: (context, index) {
-            final User? user = state.discoverUsers?[index];
-            return InkWell(
-              onTap: () {
-                appRouter.push(RouterName.otherUserProfile.path, extra: ProfileScreenDataModel(userId: user?.id ?? ''));
-              },
-              child: _buildUserTile(user, FollowSectionTab.discover),
-            );
-          },
-        );
+    return RefreshIndicator(
+      backgroundColor: Colors.white,
+      color: primaryColor,
+      onRefresh: () async {
+        followSectionBloc.add(GetDiscoverUsersEvent());
       },
+      child: BlocBuilder<FollowSectionBloc, FollowSectionState>(
+        buildWhen: (previous, current) =>
+            previous.getDiscoverUsersApiStatus != current.getDiscoverUsersApiStatus ||
+            previous.discoverUsers != current.discoverUsers ||
+            previous.isLoadMoreDiscover != current.isLoadMoreDiscover,
+        builder: (context, state) {
+          if (state.getDiscoverUsersApiStatus == ApiStatus.loading) {
+            return Center(
+              child: CircularProgressIndicator(),
+            );
+          }
+          if ((state.discoverUsers ?? []).isEmpty) {
+            return _buildEmptyState();
+          }
+
+          return Column(
+            children: [
+              Expanded(
+                child: ListView.builder(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  controller: _discoverScrollController,
+                  padding: EdgeInsets.symmetric(vertical: 8),
+                  itemCount: state.discoverUsers?.length,
+                  itemBuilder: (context, index) {
+                    final User? user = state.discoverUsers?[index];
+                    return InkWell(
+                      onTap: () {
+                        appRouter.push(RouterName.otherUserProfile.path, extra: ProfileScreenDataModel(userId: user?.id ?? ''));
+                      },
+                      child: _buildUserTile(user, FollowSectionTab.discover),
+                    );
+                  },
+                ),
+              ),
+              if (state.isLoadMoreDiscover)
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Center(
+                    child: CircularProgressIndicator(),
+                  ),
+                ),
+            ],
+          );
+        },
+      ),
     );
   }
 

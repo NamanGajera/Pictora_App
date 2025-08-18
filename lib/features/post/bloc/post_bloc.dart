@@ -135,7 +135,7 @@ class PostBloc extends Bloc<PostEvent, PostState> {
         hasMorePost: [...?state.allPostData, ...?data.data].length < (data.total ?? 0),
       ));
     } catch (error, stackTrace) {
-      emit(state.copyWith(getAllPostApiStatus: ApiStatus.failure));
+      emit(state.copyWith(isLoadMorePost: false));
       ThemeHelper.showToastMessage("$error");
       handleApiError(error, stackTrace, emit);
     }
@@ -152,7 +152,7 @@ class PostBloc extends Bloc<PostEvent, PostState> {
         hasMoreOtherUserPost: [...?state.otherUserPostData, ...?data.data].length < (data.total ?? 0),
       ));
     } catch (error, stackTrace) {
-      emit(state.copyWith(getAllPostApiStatus: ApiStatus.failure));
+      emit(state.copyWith(isLoadMoreOtherUserPost: false));
       ThemeHelper.showToastMessage("$error");
       handleApiError(error, stackTrace, emit);
     }
@@ -169,7 +169,7 @@ class PostBloc extends Bloc<PostEvent, PostState> {
         hasMoreMyPost: [...?state.myPostData, ...?data.data].length < (data.total ?? 0),
       ));
     } catch (error, stackTrace) {
-      emit(state.copyWith(getAllPostApiStatus: ApiStatus.failure));
+      emit(state.copyWith(isLoadMoreMyPost: false));
       ThemeHelper.showToastMessage("$error");
       handleApiError(error, stackTrace, emit);
     }
@@ -236,7 +236,7 @@ class PostBloc extends Bloc<PostEvent, PostState> {
         hasMorePostComments: [...(state.commentDataList ?? []), ...(data.data ?? [])].length < (data.total ?? 0),
       ));
     } catch (error, stackTrace) {
-      emit(state.copyWith(getPostCommentListApiStatus: ApiStatus.failure));
+      emit(state.copyWith(isLoadMorePostComments: false));
       ThemeHelper.showToastMessage("$error");
       handleApiError(error, stackTrace, emit);
     }
@@ -375,7 +375,7 @@ class PostBloc extends Bloc<PostEvent, PostState> {
         hasMoreCommentReplies: updatedRepliesList.length < (data.total ?? 0),
       ));
     } catch (error, stackTrace) {
-      emit(state.copyWith(getRepliesApiStatus: ApiStatus.failure));
+      emit(state.copyWith(isLoadMoreReplies: false));
       ThemeHelper.showToastMessage("$error");
       handleApiError(error, stackTrace, emit);
     }
@@ -537,7 +537,7 @@ class PostBloc extends Bloc<PostEvent, PostState> {
         hasMoreLikedByUser: [...(state.likedByUserData ?? []), ...(data.data ?? [])].length < (data.total ?? 0),
       ));
     } catch (error, stackTrace) {
-      emit(state.copyWith(likeByUserApiStatus: ApiStatus.failure));
+      emit(state.copyWith(isLoadMoreLikedByUser: false));
       ThemeHelper.showToastMessage("$error");
       handleApiError(error, stackTrace, emit);
     }

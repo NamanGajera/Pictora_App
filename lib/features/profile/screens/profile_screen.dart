@@ -516,6 +516,7 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
         return GridView.builder(
           controller: _scrollController,
           padding: const EdgeInsets.all(1),
+          physics: const AlwaysScrollableScrollPhysics(),
           gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: 3,
             crossAxisSpacing: 1,
