@@ -324,7 +324,8 @@ class _ImageDisplayState extends State<_ImageDisplay> with AutomaticKeepAliveCli
       height: double.infinity,
       child: CachedNetworkImage(
         imageUrl: widget.url,
-        cacheKey: 'media_${widget.url}',
+        cacheKey: widget.url,
+        key: ValueKey(widget.url),
         fit: BoxFit.cover,
         placeholder: (context, url) => Container(
           color: Colors.grey[100],

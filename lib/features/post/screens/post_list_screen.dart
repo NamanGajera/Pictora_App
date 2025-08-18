@@ -3,15 +3,15 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pictora/features/post/bloc/post_bloc.dart';
 import 'package:pictora/features/post/models/post_data.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
-
+import '../../../utils/constants/enums.dart';
 import 'widgets/post_widget.dart';
 
 class PostListScreen extends StatefulWidget {
-  final List<PostData> postsData;
+  final PostListNavigation postListNavigation;
   final int? index;
   const PostListScreen({
     super.key,
-    required this.postsData,
+    required this.postListNavigation,
     this.index,
   });
 
@@ -40,16 +40,21 @@ class _PostListScreenState extends State<PostListScreen> {
       ),
       body: BlocBuilder<PostBloc, PostState>(
         builder: (context, state) {
+          List<PostData> postsData = widget.postListNavigation == PostListNavigation.myProfile
+              ? state.myPostData ?? []
+              : widget.postListNavigation == PostListNavigation.otherProfile
+                  ? state.otherUserPostData ?? []
+                  : state.allPostData ?? [];
           return ScrollablePositionedList.builder(
             itemPositionsListener: _itemPositionsListener,
             initialScrollIndex: widget.index ?? 0,
-            itemCount: widget.postsData.length,
+            itemCount: postsData.length,
             physics: state.isBlockScroll ? const NeverScrollableScrollPhysics() : const ClampingScrollPhysics(),
             padding: EdgeInsets.symmetric(horizontal: 6),
             itemBuilder: (context, index) {
               return PostWidget(
-                key: ValueKey("post_$index"),
-                post: widget.postsData[index],
+                // key: ValueKey(posts[index].id),
+                post: postsData[index],
               );
             },
           );
@@ -60,10 +65,10 @@ class _PostListScreenState extends State<PostListScreen> {
 }
 
 class PostListScreenDataModel {
-  final List<PostData> postData;
+  final PostListNavigation postListNavigation;
   final int? index;
   const PostListScreenDataModel({
-    required this.postData,
+    required this.postListNavigation,
     this.index,
   });
 }

@@ -83,7 +83,7 @@ class _AddPostScreenState extends State<AddPostScreen> {
       final thumbnailPath = await VideoThumbnail.thumbnailFile(
         video: file.path,
         thumbnailPath: (await getTemporaryDirectory()).path,
-        quality: 50,
+        quality: 80,
         imageFormat: ImageFormat.JPEG,
         maxWidth: 300,
         timeMs: 0,

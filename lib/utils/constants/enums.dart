@@ -42,3 +42,9 @@ enum FollowRequest {
 
   const FollowRequest(this.name);
 }
+
+enum PostListNavigation {
+  search,
+  myProfile,
+  otherProfile,
+}

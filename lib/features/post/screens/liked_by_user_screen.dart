@@ -29,7 +29,22 @@ class _LikedByUserScreenState extends State<LikedByUserScreen> {
   void initState() {
     super.initState();
     postBloc.add(GetLikedByUserEvent(postId: widget.postId));
+    _scrollController.addListener(scrollListener);
   }
+
+  void scrollListener() {
+    if (_scrollController.position.pixels > _scrollController.position.maxScrollExtent - 200) {
+      final state = postBloc.state;
+      if (state.hasMoreLikedByUser && !state.isLoadMoreLikedByUser) {
+        postBloc.add(LoadMoreLikedByUserEvent(
+          body: {"skip": state.likedByUserData?.length ?? 0, "take": 20},
+          postId: widget.postId,
+        ));
+      }
+    }
+  }
+
+  final ScrollController _scrollController = ScrollController();
 
   @override
   Widget build(BuildContext context) {
@@ -86,31 +101,43 @@ class _LikedByUserScreenState extends State<LikedByUserScreen> {
   }
 
   Widget _buildUsersList() {
-    return BlocBuilder<PostBloc, PostState>(
-      buildWhen: (previous, current) => previous.likeByUserApiStatus != current.likeByUserApiStatus,
-      builder: (context, state) {
-        if (state.likeByUserApiStatus == ApiStatus.loading) {
-          return Center(
-            child: CircularProgressIndicator(),
-          );
-        }
-        if ((state.likedByUserData ?? []).isEmpty) {
-          return _buildEmptyState();
-        }
+    return RefreshIndicator(
+      backgroundColor: Colors.white,
+      color: primaryColor,
+      onRefresh: () async {
+        postBloc.add(GetLikedByUserEvent(postId: widget.postId));
+      },
+      child: BlocBuilder<PostBloc, PostState>(
+        buildWhen: (previous, current) => previous.likeByUserApiStatus != current.likeByUserApiStatus,
+        builder: (context, state) {
+          if (state.likeByUserApiStatus == ApiStatus.loading) {
+            return Center(
+              child: CircularProgressIndicator(),
+            );
+          }
+          if ((state.likedByUserData ?? []).isEmpty) {
+            return _buildEmptyState();
+          }
 
-        return ListView.builder(
-          padding: EdgeInsets.symmetric(vertical: 8),
-          itemCount: state.likedByUserData?.length,
-          itemBuilder: (context, index) {
-            final User? user = state.likedByUserData?[index];
-            return InkWell(
+          return ListView.builder(
+            controller: _scrollController,
+            padding: EdgeInsets.symmetric(vertical: 8),
+            physics: const AlwaysScrollableScrollPhysics(),
+            itemCount: state.likedByUserData?.length,
+            itemBuilder: (context, index) {
+              final User? user = state.likedByUserData?[index];
+              return InkWell(
+                key: ValueKey("user_${user?.id}"),
                 onTap: () {
+                  if (user?.id == userId) return;
                   appRouter.push(RouterName.otherUserProfile.path, extra: ProfileScreenDataModel(userId: user?.id ?? ''));
                 },
-                child: _buildUserTile(user));
-          },
-        );
-      },
+                child: _buildUserTile(user),
+              );
+            },
+          );
+        },
+      ),
     );
   }
 
@@ -131,6 +158,7 @@ class _LikedByUserScreenState extends State<LikedByUserScreen> {
               child: (user?.profile?.profilePicture ?? '').isNotEmpty
                   ? CachedNetworkImage(
                       imageUrl: user?.profile?.profilePicture ?? '',
+                      cacheKey: user?.profile?.profilePicture ?? '',
                       fit: BoxFit.cover,
                       errorWidget: (context, url, error) {
                         return Image.asset(

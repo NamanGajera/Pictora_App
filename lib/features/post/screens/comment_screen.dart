@@ -1,5 +1,4 @@
 import 'dart:ui';
-
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -10,7 +9,8 @@ import 'package:pictora/features/post/models/post_comment_data_model.dart';
 import 'package:pictora/utils/constants/bloc_instances.dart';
 import 'package:pictora/utils/constants/constants.dart';
 import 'package:pictora/utils/extensions/build_context_extension.dart';
-
+import '../../../router/router.dart';
+import '../../../router/router_name.dart';
 import '../../../utils/constants/app_assets.dart';
 import '../../../utils/constants/colors.dart';
 import '../../../utils/constants/enums.dart';
@@ -19,6 +19,7 @@ import '../../../utils/helper/date_formatter.dart';
 import '../../../utils/helper/helper_function.dart';
 import '../../../utils/widgets/custom_overlay.dart';
 import '../../../utils/widgets/custom_widget.dart';
+import '../../profile/screens/profile_screen.dart';
 
 class CommentScreen extends StatefulWidget {
   final String postId;
@@ -36,11 +37,13 @@ class CommentScreen extends StatefulWidget {
 class _CommentScreenState extends State<CommentScreen> {
   final TextEditingController _commentController = TextEditingController();
   List<GlobalKey> commentKeys = [];
+  final ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
     super.initState();
     postBloc.add(GetPostCommentDataEvent(postId: widget.postId));
+    _scrollController.addListener(_scrollListener);
   }
 
   @override
@@ -48,6 +51,7 @@ class _CommentScreenState extends State<CommentScreen> {
     _commentController.dispose();
     selectedCommentId.value = null;
     postBloc.add(ClearRepliesData());
+    _scrollController.dispose();
     super.dispose();
   }
 
@@ -63,6 +67,20 @@ class _CommentScreenState extends State<CommentScreen> {
 
     selectedCommentId.value = null;
     _commentController.clear();
+  }
+
+  void _scrollListener() {
+    if (_scrollController.position.pixels > _scrollController.position.maxScrollExtent - 50) {
+      final currentState = postBloc.state;
+
+      if (currentState.hasMorePostComments) {
+        postBloc.add(LoadMorePostCommentDataEvent(body: {
+          "postId": widget.postId,
+          "skip": currentState.commentDataList?.length ?? 0,
+          "take": 15,
+        }));
+      }
+    }
   }
 
   @override
@@ -104,9 +122,10 @@ class _CommentScreenState extends State<CommentScreen> {
                             backgroundColor: Colors.white,
                             color: primaryColor,
                             onRefresh: () async {
-                              // communityBloc.add(FetchAllCommentEvent(postId: widget.postId));
+                              postBloc.add(GetPostCommentDataEvent(postId: widget.postId));
                             },
                             child: ListView.builder(
+                              controller: _scrollController,
                               padding: const EdgeInsets.all(16),
                               itemCount: (state.commentDataList ?? []).length,
                               itemBuilder: (context, index) {
@@ -153,6 +172,7 @@ class _CommentScreenState extends State<CommentScreen> {
                 height: 38,
                 width: 38,
                 imageUrl: userProfilePic ?? '',
+                cacheKey: userProfilePic ?? '',
                 fit: BoxFit.cover,
                 errorWidget: (context, url, error) {
                   return Image.asset(
@@ -431,36 +451,43 @@ class _CommentItemState extends State<CommentItem> {
             Stack(
               clipBehavior: Clip.none,
               children: [
-                CircleAvatar(
-                  radius: 18,
-                  backgroundColor: Colors.grey.shade200,
-                  child: ClipOval(
-                    child: CachedNetworkImage(
-                      imageUrl: widget.comment?.user?.profile?.profilePicture ?? '',
-                      width: 36,
-                      height: 36,
-                      fit: BoxFit.cover,
-                      errorWidget: (context, url, error) {
-                        return Image.asset(
-                          AppAssets.profilePng,
-                          height: 38,
-                          width: 38,
-                          fit: BoxFit.cover,
-                        );
-                      },
-                      placeholder: (context, url) {
-                        return Image.asset(
-                          AppAssets.profilePng,
-                          height: 38,
-                          width: 38,
-                          fit: BoxFit.cover,
-                        );
-                      },
-                      imageBuilder: (context, imageProvider) => Container(
-                        decoration: BoxDecoration(
-                          image: DecorationImage(
-                            image: imageProvider,
+                InkWell(
+                  onTap: () {
+                    if (widget.comment?.user?.id == userId) return;
+                    appRouter.push(RouterName.otherUserProfile.path, extra: ProfileScreenDataModel(userId: widget.comment?.user?.id ?? ''));
+                  },
+                  child: CircleAvatar(
+                    radius: 18,
+                    backgroundColor: Colors.grey.shade200,
+                    child: ClipOval(
+                      child: CachedNetworkImage(
+                        imageUrl: widget.comment?.user?.profile?.profilePicture ?? '',
+                        cacheKey: widget.comment?.user?.profile?.profilePicture ?? '',
+                        width: 36,
+                        height: 36,
+                        fit: BoxFit.cover,
+                        errorWidget: (context, url, error) {
+                          return Image.asset(
+                            AppAssets.profilePng,
+                            height: 38,
+                            width: 38,
                             fit: BoxFit.cover,
+                          );
+                        },
+                        placeholder: (context, url) {
+                          return Image.asset(
+                            AppAssets.profilePng,
+                            height: 38,
+                            width: 38,
+                            fit: BoxFit.cover,
+                          );
+                        },
+                        imageBuilder: (context, imageProvider) => Container(
+                          decoration: BoxDecoration(
+                            image: DecorationImage(
+                              image: imageProvider,
+                              fit: BoxFit.cover,
+                            ),
                           ),
                         ),
                       ),
@@ -510,43 +537,49 @@ class _CommentItemState extends State<CommentItem> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: [
-                      Row(
-                        children: [
-                          Text(
-                            widget.comment?.user?.userName ?? '',
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 14,
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          if (widget.comment?.apiStatus == PostCommentApiStatus.posting) ...[
-                            const CustomText(
-                              'Posting...',
-                              fontSize: 12,
-                              color: Colors.amber,
-                              fontStyle: FontStyle.italic,
-                            ),
-                          ],
-                          if (widget.comment?.apiStatus == PostCommentApiStatus.deleting) ...[
-                            const CustomText(
-                              'Deleting...',
-                              fontSize: 12,
-                              color: Colors.red,
-                              fontStyle: FontStyle.italic,
-                            ),
-                          ],
-                          if (!([PostCommentApiStatus.posting, PostCommentApiStatus.failure, PostCommentApiStatus.deleting]
-                              .contains(widget.comment?.apiStatus))) ...[
+                      InkWell(
+                        onTap: () {
+                          if (widget.comment?.user?.id == userId) return;
+                          appRouter.push(RouterName.otherUserProfile.path, extra: ProfileScreenDataModel(userId: widget.comment?.user?.id ?? ''));
+                        },
+                        child: Row(
+                          children: [
                             Text(
-                              DateFormatter.getRelativeTime(widget.comment?.createdAt),
-                              style: TextStyle(
-                                color: Colors.grey.shade600,
-                                fontSize: 12,
+                              widget.comment?.user?.userName ?? '',
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 14,
                               ),
                             ),
+                            const SizedBox(width: 8),
+                            if (widget.comment?.apiStatus == PostCommentApiStatus.posting) ...[
+                              const CustomText(
+                                'Posting...',
+                                fontSize: 12,
+                                color: Colors.amber,
+                                fontStyle: FontStyle.italic,
+                              ),
+                            ],
+                            if (widget.comment?.apiStatus == PostCommentApiStatus.deleting) ...[
+                              const CustomText(
+                                'Deleting...',
+                                fontSize: 12,
+                                color: Colors.red,
+                                fontStyle: FontStyle.italic,
+                              ),
+                            ],
+                            if (!([PostCommentApiStatus.posting, PostCommentApiStatus.failure, PostCommentApiStatus.deleting]
+                                .contains(widget.comment?.apiStatus))) ...[
+                              Text(
+                                DateFormatter.getRelativeTime(widget.comment?.createdAt),
+                                style: TextStyle(
+                                  color: Colors.grey.shade600,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ],
                           ],
-                        ],
+                        ),
                       ),
                       if (widget.comment?.userId == userId) const SizedBox(height: 4),
                       Text(
@@ -611,33 +644,55 @@ class _CommentItemState extends State<CommentItem> {
                                           fontSize: 14,
                                         ),
                                       )
-                                    : ListView.builder(
-                                        itemCount: (widget.comment?.repliesData ?? []).length,
-                                        shrinkWrap: true,
-                                        padding: EdgeInsets.only(top: 10, bottom: 10),
-                                        physics: NeverScrollableScrollPhysics(),
-                                        itemBuilder: (context, replyIndex) {
-                                          childCommentKeys = List.generate((widget.comment?.repliesData ?? []).length, (_) => GlobalKey());
-                                          final CommentData? childComment = widget.comment?.repliesData?[replyIndex];
+                                    : Column(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          ListView.builder(
+                                            itemCount: (widget.comment?.repliesData ?? []).length,
+                                            shrinkWrap: true,
+                                            padding: EdgeInsets.only(top: 10, bottom: 10),
+                                            physics: NeverScrollableScrollPhysics(),
+                                            itemBuilder: (context, replyIndex) {
+                                              childCommentKeys = List.generate((widget.comment?.repliesData ?? []).length, (_) => GlobalKey());
+                                              final CommentData? childComment = widget.comment?.repliesData?[replyIndex];
 
-                                          return InkWell(
-                                              splashColor: Colors.transparent,
-                                              highlightColor: Colors.transparent,
-                                              onDoubleTap: () {
-                                                if (childComment?.id == null) return;
-                                                postBloc.add(ToggleCommentLikeEvent(
-                                                  commentId: childComment?.id ?? '',
-                                                  isLike: !(childComment?.isLiked ?? false),
-                                                ));
+                                              return InkWell(
+                                                  splashColor: Colors.transparent,
+                                                  highlightColor: Colors.transparent,
+                                                  onDoubleTap: () {
+                                                    if (childComment?.id == null) return;
+                                                    postBloc.add(ToggleCommentLikeEvent(
+                                                      commentId: childComment?.id ?? '',
+                                                      isLike: !(childComment?.isLiked ?? false),
+                                                    ));
+                                                  },
+                                                  child: ChildCommentItem(
+                                                    childComment: childComment,
+                                                    postId: widget.postId,
+                                                    key: childCommentKeys[replyIndex],
+                                                    globalKey: childCommentKeys[replyIndex],
+                                                    parentCommentId: widget.comment?.id ?? '',
+                                                  ));
+                                            },
+                                          ),
+                                          if (state.hasMoreCommentReplies)
+                                            InkWell(
+                                              onTap: () {
+                                                postBloc.add(
+                                                  LoadMoreCommentRepliesEvent(
+                                                    commentId: widget.comment?.id ?? '',
+                                                    skip: widget.comment?.repliesData?.length ?? 0,
+                                                    take: 10,
+                                                  ),
+                                                );
                                               },
-                                              child: ChildCommentItem(
-                                                childComment: childComment,
-                                                postId: widget.postId,
-                                                key: childCommentKeys[replyIndex],
-                                                globalKey: childCommentKeys[replyIndex],
-                                                parentCommentId: widget.comment?.id ?? '',
-                                              ));
-                                        },
+                                              child: CustomText(
+                                                state.isLoadMoreReplies ? "Loading..." : "View more replies",
+                                                fontSize: 13,
+                                                color: Colors.grey.shade600,
+                                              ),
+                                            ),
+                                        ],
                                       )
                                 : Column(
                                     children: [
@@ -887,36 +942,43 @@ class _ChildCommentItemState extends State<ChildCommentItem> {
             Stack(
               clipBehavior: Clip.none,
               children: [
-                ClipOval(
-                  child: CachedNetworkImage(
-                    height: 26,
-                    width: 26,
-                    imageUrl: widget.childComment?.user?.profile?.profilePicture ?? '',
-                    fit: BoxFit.cover,
-                    errorWidget: (context, url, error) {
-                      return Image.asset(
-                        AppAssets.profilePng,
-                        height: 26,
-                        width: 26,
-                        fit: BoxFit.cover,
-                      );
-                    },
-                    imageBuilder: (context, imageProvider) => Container(
-                      decoration: BoxDecoration(
-                        image: DecorationImage(
-                          image: imageProvider,
+                InkWell(
+                  onTap: () {
+                    if (widget.childComment?.user?.id == userId) return;
+                    appRouter.push(RouterName.otherUserProfile.path, extra: ProfileScreenDataModel(userId: widget.childComment?.user?.id ?? ''));
+                  },
+                  child: ClipOval(
+                    child: CachedNetworkImage(
+                      height: 26,
+                      width: 26,
+                      imageUrl: widget.childComment?.user?.profile?.profilePicture ?? '',
+                      cacheKey: widget.childComment?.user?.profile?.profilePicture ?? '',
+                      fit: BoxFit.cover,
+                      errorWidget: (context, url, error) {
+                        return Image.asset(
+                          AppAssets.profilePng,
+                          height: 26,
+                          width: 26,
                           fit: BoxFit.cover,
+                        );
+                      },
+                      imageBuilder: (context, imageProvider) => Container(
+                        decoration: BoxDecoration(
+                          image: DecorationImage(
+                            image: imageProvider,
+                            fit: BoxFit.cover,
+                          ),
                         ),
                       ),
+                      placeholder: (context, url) {
+                        return Image.asset(
+                          AppAssets.profilePng,
+                          height: 26,
+                          width: 26,
+                          fit: BoxFit.cover,
+                        );
+                      },
                     ),
-                    placeholder: (context, url) {
-                      return Image.asset(
-                        AppAssets.profilePng,
-                        height: 26,
-                        width: 26,
-                        fit: BoxFit.cover,
-                      );
-                    },
                   ),
                 ),
                 if (widget.childComment?.apiStatus == PostCommentApiStatus.posting)
@@ -964,11 +1026,18 @@ class _ChildCommentItemState extends State<ChildCommentItem> {
                     children: [
                       Row(
                         children: [
-                          Text(
-                            widget.childComment?.user?.userName ?? '',
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 13,
+                          InkWell(
+                            onTap: () {
+                              if (widget.childComment?.user?.id == userId) return;
+                              appRouter.push(RouterName.otherUserProfile.path,
+                                  extra: ProfileScreenDataModel(userId: widget.childComment?.user?.id ?? ''));
+                            },
+                            child: Text(
+                              widget.childComment?.user?.userName ?? '',
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 13,
+                              ),
                             ),
                           ),
                           const SizedBox(width: 8),
@@ -1111,6 +1180,7 @@ class HighlightedComment extends StatelessWidget {
               height: 35,
               width: 35,
               imageUrl: comment?.user?.profile?.profilePicture ?? '',
+              cacheKey: comment?.user?.profile?.profilePicture ?? '',
               fit: BoxFit.cover,
               errorWidget: (context, url, error) {
                 return Image.asset(

@@ -51,11 +51,23 @@ class GetPostCommentDataEvent extends PostEvent {
   GetPostCommentDataEvent({required this.postId});
 }
 
+class LoadMorePostCommentDataEvent extends PostEvent {
+  final Map<String, dynamic> body;
+  LoadMorePostCommentDataEvent({required this.body});
+}
+
 class GetCommentRepliesEvent extends PostEvent {
   final String commentId;
   final int skip;
   final int take;
   GetCommentRepliesEvent({required this.commentId, this.skip = 0, this.take = 10});
+}
+
+class LoadMoreCommentRepliesEvent extends PostEvent {
+  final String commentId;
+  final int skip;
+  final int take;
+  LoadMoreCommentRepliesEvent({required this.commentId, this.skip = 0, this.take = 10});
 }
 
 class CreateCommentEvent extends PostEvent {
@@ -124,6 +136,12 @@ class GetLikedByUserEvent extends PostEvent {
   GetLikedByUserEvent({
     required this.postId,
   });
+}
+
+class LoadMoreLikedByUserEvent extends PostEvent {
+  final Map<String, dynamic> body;
+  final String postId;
+  LoadMoreLikedByUserEvent({required this.body, required this.postId});
 }
 
 class BlockScrollEvent extends PostEvent {

@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -93,7 +94,44 @@ class _AppBottomNavigationBarState extends State<AppBottomNavigationBar> {
                 final index = entry.key;
                 final item = entry.value;
                 final isSelected = index == widget.navigationShell.currentIndex;
-
+                if (index == 3 && (userProfilePic ?? '').isNotEmpty) {
+                  return BottomNavigationBarItem(
+                    icon: ClipOval(
+                      child: CachedNetworkImage(
+                        height: 26,
+                        width: 26,
+                        imageUrl: userProfilePic ?? '',
+                        cacheKey: userProfilePic ?? '',
+                        fit: BoxFit.cover,
+                        errorWidget: (context, url, error) {
+                          return Image.asset(
+                            AppAssets.profilePng,
+                            height: 26,
+                            width: 26,
+                            fit: BoxFit.cover,
+                          );
+                        },
+                        placeholder: (context, url) {
+                          return Image.asset(
+                            AppAssets.profilePng,
+                            height: 26,
+                            width: 26,
+                            fit: BoxFit.cover,
+                          );
+                        },
+                        imageBuilder: (context, imageProvider) => Container(
+                          decoration: BoxDecoration(
+                            image: DecorationImage(
+                              image: imageProvider,
+                              fit: BoxFit.cover,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    label: item.label,
+                  );
+                }
                 return BottomNavigationBarItem(
                   icon: SvgPicture.asset(
                     item.iconPath,

@@ -92,13 +92,13 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
           if (widget.userId == null) {
             postBloc.add(GetMyPostEvent(body: {
               "skip": 0,
-              "take": 25,
+              "take": 24,
               "userId": userId,
             }));
           } else {
             postBloc.add(GetOtherUserPostsEvent(body: {
               "skip": 0,
-              "take": 25,
+              "take": 24,
               "userId": widget.userId,
             }));
           }
@@ -235,8 +235,8 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
         child: (userData?.profile?.profilePicture ?? '').isNotEmpty
             ? ClipOval(
                 child: CachedNetworkImage(
-                  cacheKey: 'profile_pic_${userData?.id}',
-                  imageUrl: userData!.profile!.profilePicture!,
+                  imageUrl: userData?.profile?.profilePicture ?? '',
+                  cacheKey: userData?.profile?.profilePicture ?? '',
                   width: 84,
                   height: 84,
                   fit: BoxFit.cover,
@@ -527,7 +527,10 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
               onTap: () {
                 appRouter.push(
                   RouterName.postLists.path,
-                  extra: PostListScreenDataModel(postData: postData, index: index),
+                  extra: PostListScreenDataModel(
+                    postListNavigation: widget.userId == null ? PostListNavigation.myProfile : PostListNavigation.otherProfile,
+                    index: index,
+                  ),
                 );
               },
               child: _buildPostPreview(postData[index]).withAutomaticKeepAlive(),
@@ -553,6 +556,8 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
         children: [
           CachedNetworkImage(
             imageUrl: displayUrl,
+            cacheKey: displayUrl,
+            key: ValueKey(displayUrl),
             fit: BoxFit.cover,
             placeholder: (context, url) => Container(
               color: Colors.grey[100],

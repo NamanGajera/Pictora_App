@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:insta_assets_picker/insta_assets_picker.dart';
 import 'package:pictora/router/router.dart';
 import 'package:pictora/router/router_name.dart';
+import 'package:pictora/utils/constants/constants.dart';
 import 'package:pictora/utils/services/custom_logger.dart';
 import 'package:video_player/video_player.dart';
 
@@ -347,7 +348,7 @@ class PostAssetPickerScreenState extends State<PostAssetPickerScreen> with Widge
 
   void _showAlbumSelectionDialog() {
     showModalBottomSheet(
-      context: context,
+      context: bottomBarContext!,
       backgroundColor: Colors.white,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
@@ -629,6 +630,7 @@ class PostAssetPickerScreenState extends State<PostAssetPickerScreen> with Widge
                   children: [
                     AssetEntityImage(
                       asset,
+                      key: ValueKey(asset.id),
                       width: double.infinity,
                       height: double.infinity,
                       fit: BoxFit.cover,

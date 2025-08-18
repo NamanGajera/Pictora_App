@@ -280,6 +280,7 @@ class _FollowSectionScreenState extends State<FollowSectionScreen> with SingleTi
               child: (user?.profile?.profilePicture ?? '').isNotEmpty
                   ? CachedNetworkImage(
                       imageUrl: user?.profile?.profilePicture ?? '',
+                      cacheKey: user?.profile?.profilePicture ?? '',
                       fit: BoxFit.cover,
                       errorWidget: (context, url, error) {
                         return Image.asset(

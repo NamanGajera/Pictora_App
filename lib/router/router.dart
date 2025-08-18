@@ -177,7 +177,7 @@ final GoRouter appRouter = GoRouter(
         PostListScreenDataModel screenData = state.extra as PostListScreenDataModel;
         return SlideTransitionPage(
           child: PostListScreen(
-            postsData: screenData.postData,
+            postListNavigation: screenData.postListNavigation,
             index: screenData.index,
           ),
         );

@@ -1,4 +1,5 @@
 import "package:cached_network_image/cached_network_image.dart";
+import "package:flutter/gestures.dart";
 import "package:flutter/material.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
 import "package:flutter_svg/flutter_svg.dart";
@@ -15,6 +16,7 @@ import "../../../../utils/constants/bloc_instances.dart";
 import "../../../../utils/constants/colors.dart";
 import "../../../../utils/constants/constants.dart";
 import "../../../../utils/helper/date_formatter.dart";
+import "../../../profile/screens/profile_screen.dart";
 import "../../bloc/post_bloc.dart";
 import "../../models/post_data.dart";
 import "post_media_display.dart";
@@ -62,8 +64,8 @@ class _PostWidgetState extends State<PostWidget> with AutomaticKeepAliveClientMi
           ),
           _buildActionButtons(),
           _buildLikesSection(),
-          _buildCaptionSection(),
-          const SizedBox(height: 8),
+          if ((widget.post?.caption ?? '').isNotEmpty) _buildCaptionSection(),
+          SizedBox(height: (widget.post?.caption ?? '').isNotEmpty ? 8 : 12),
         ],
       ),
     );
@@ -74,114 +76,127 @@ class _PostWidgetState extends State<PostWidget> with AutomaticKeepAliveClientMi
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: Row(
         children: [
-          Container(
-            padding: const EdgeInsets.all(1.5),
-            decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: primaryColor,
-                  width: 1.5,
-                )),
-            child: ClipOval(
-              child: CachedNetworkImage(
-                imageUrl: widget.post?.userData?.profile?.profilePicture ?? '',
-                fit: BoxFit.cover,
-                height: 40,
-                width: 40,
-                placeholder: (context, url) => Container(
-                  color: Colors.grey[100],
-                  child: const Center(
-                    child: SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        valueColor: AlwaysStoppedAnimation<Color>(Color(0xff9CA3AF)),
+          InkWell(
+            onTap: () {
+              if (widget.post?.userData?.id == userId) return;
+              appRouter.push(RouterName.otherUserProfile.path, extra: ProfileScreenDataModel(userId: widget.post?.userData?.id ?? ''));
+            },
+            child: Container(
+              padding: const EdgeInsets.all(1.5),
+              decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: primaryColor,
+                    width: 1.5,
+                  )),
+              child: ClipOval(
+                child: CachedNetworkImage(
+                  imageUrl: widget.post?.userData?.profile?.profilePicture ?? '',
+                  cacheKey: widget.post?.userData?.profile?.profilePicture ?? '',
+                  fit: BoxFit.cover,
+                  height: 40,
+                  width: 40,
+                  placeholder: (context, url) => Container(
+                    color: Colors.grey[100],
+                    child: const Center(
+                      child: SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor: AlwaysStoppedAnimation<Color>(Color(0xff9CA3AF)),
+                        ),
                       ),
                     ),
                   ),
-                ),
-                errorWidget: (context, url, error) => Container(
-                  color: const Color(0xffF3F4F6),
-                  child: const Icon(
-                    Icons.person,
-                    color: Color(0xff9CA3AF),
-                    size: 32,
+                  errorWidget: (context, url, error) => Container(
+                    color: const Color(0xffF3F4F6),
+                    child: const Icon(
+                      Icons.person,
+                      color: Color(0xff9CA3AF),
+                      size: 32,
+                    ),
                   ),
-                ),
-                imageBuilder: (context, imageProvider) => Container(
-                  decoration: BoxDecoration(
-                    image: DecorationImage(
-                      image: imageProvider,
-                      fit: BoxFit.cover,
+                  imageBuilder: (context, imageProvider) => Container(
+                    decoration: BoxDecoration(
+                      image: DecorationImage(
+                        image: imageProvider,
+                        fit: BoxFit.cover,
+                      ),
                     ),
                   ),
                 ),
               ),
-            ),
-          ).withAutomaticKeepAlive(),
+            ).withAutomaticKeepAlive(),
+          ),
           const SizedBox(width: 12),
           Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Text(
-                      widget.post?.userData?.fullName ?? '',
-                      style: const TextStyle(
-                        fontWeight: FontWeight.w700,
-                        fontSize: 15,
-                        color: Colors.black87,
+            child: InkWell(
+              onTap: () {
+                if (widget.post?.userData?.id == userId) return;
+                appRouter.push(RouterName.otherUserProfile.path, extra: ProfileScreenDataModel(userId: widget.post?.userData?.id ?? ''));
+              },
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Text(
+                        widget.post?.userData?.fullName ?? '',
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w700,
+                          fontSize: 15,
+                          color: Colors.black87,
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 4),
-                  ],
-                ),
-                const SizedBox(height: 2),
-                Row(
-                  children: [
-                    Icon(
-                      Icons.access_time,
-                      size: 12,
-                      color: Colors.grey[500],
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      DateFormatter.timeAgoShort(widget.post?.createdAt),
-                      style: TextStyle(
+                      const SizedBox(width: 4),
+                    ],
+                  ),
+                  const SizedBox(height: 2),
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.access_time,
+                        size: 12,
                         color: Colors.grey[500],
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
                       ),
-                    ),
-                    const SizedBox(width: 8),
-                    Container(
-                      width: 3,
-                      height: 3,
-                      decoration: BoxDecoration(
-                        color: Colors.grey[400],
-                        shape: BoxShape.circle,
+                      const SizedBox(width: 4),
+                      Text(
+                        DateFormatter.timeAgoShort(widget.post?.createdAt),
+                        style: TextStyle(
+                          color: Colors.grey[500],
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 8),
-                    Icon(
-                      Icons.public,
-                      size: 12,
-                      color: Colors.grey[500],
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      'Public',
-                      style: TextStyle(
+                      const SizedBox(width: 8),
+                      Container(
+                        width: 3,
+                        height: 3,
+                        decoration: BoxDecoration(
+                          color: Colors.grey[400],
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Icon(
+                        Icons.public,
+                        size: 12,
                         color: Colors.grey[500],
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
                       ),
-                    ),
-                  ],
-                ),
-              ],
+                      const SizedBox(width: 4),
+                      Text(
+                        'Public',
+                        style: TextStyle(
+                          color: Colors.grey[500],
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
           ),
           // Enhanced more options button
@@ -271,7 +286,7 @@ class _PostWidgetState extends State<PostWidget> with AutomaticKeepAliveClientMi
               ],
             ),
           ),
-          const SizedBox(width: 8),
+          SizedBox(width: widget.post?.commentCount != 0 ? 8 : 0),
           GestureDetector(
             onTap: () {},
             child: SvgPicture.asset(
@@ -325,13 +340,17 @@ class _PostWidgetState extends State<PostWidget> with AutomaticKeepAliveClientMi
         text: TextSpan(
           children: [
             TextSpan(
-              text: '${widget.post?.userData?.userName} ',
-              style: const TextStyle(
-                fontWeight: FontWeight.w600,
-                color: Colors.black87,
-                fontSize: 14,
-              ),
-            ),
+                text: '${widget.post?.userData?.userName} ',
+                style: const TextStyle(
+                  fontWeight: FontWeight.w600,
+                  color: Colors.black87,
+                  fontSize: 14,
+                ),
+                recognizer: TapGestureRecognizer()
+                  ..onTap = () {
+                    if (widget.post?.userData?.id == userId) return;
+                    appRouter.push(RouterName.otherUserProfile.path, extra: ProfileScreenDataModel(userId: widget.post?.userData?.id ?? ''));
+                  }),
             TextSpan(
               text: widget.post?.caption ?? '',
               style: const TextStyle(

@@ -3,6 +3,8 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pictora/features/post/bloc/post_bloc.dart';
+import 'package:pictora/router/router.dart';
+import 'package:pictora/router/router_name.dart';
 import 'package:pictora/utils/constants/bloc_instances.dart';
 import 'package:pictora/utils/constants/constants.dart';
 import 'package:pictora/utils/constants/enums.dart';
@@ -28,7 +30,7 @@ class _HomeScreenState extends State<HomeScreen> {
     _scrollController.addListener(_scrollListener);
   }
 
-  final postBody = {"skip": 0, "take": 10};
+  final postBody = {"skip": 0, "take": 24};
   final ScrollController _scrollController = ScrollController();
 
   void _scrollListener() {
@@ -155,12 +157,17 @@ class _HomeScreenState extends State<HomeScreen> {
     return AppBar(
       backgroundColor: Colors.white,
       elevation: 0,
-      title: Text(
-        "@$userName",
-        style: TextStyle(
-          color: primaryColor,
-          fontSize: 20,
-          fontWeight: FontWeight.bold,
+      title: InkWell(
+        onTap: () {
+          appRouter.go(RouterName.profile.path);
+        },
+        child: Text(
+          "@$userName",
+          style: TextStyle(
+            color: primaryColor,
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+          ),
         ),
       ),
     );

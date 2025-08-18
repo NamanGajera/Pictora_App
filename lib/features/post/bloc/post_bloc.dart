@@ -36,8 +36,10 @@ class PostBloc extends Bloc<PostEvent, PostState> {
     on<LoadMoreMyPostEvent>(_loadMoreMyPost, transformer: droppable());
     on<LoadMoreOtherUserPostEvent>(_loadMoreOtherUserPost, transformer: droppable());
     on<GetPostCommentDataEvent>(_getPostComment, transformer: droppable());
+    on<LoadMorePostCommentDataEvent>(_loadMoreComments, transformer: droppable());
     on<CreateCommentEvent>(_createComment, transformer: droppable());
     on<GetCommentRepliesEvent>(_getReplies, transformer: droppable());
+    on<LoadMoreCommentRepliesEvent>(_loadMoreReplies, transformer: droppable());
     on<ClearRepliesData>(_clearRepliesData, transformer: droppable());
     on<DeleteCommentEvent>(_deleteComment, transformer: droppable());
     on<ToggleCommentLikeEvent>(_toggleCommentLike, transformer: sequential());
@@ -46,6 +48,7 @@ class PostBloc extends Bloc<PostEvent, PostState> {
     on<DeletePostEvent>(_deletePost, transformer: droppable());
     on<ArchivePostEvent>(_archivePost, transformer: droppable());
     on<GetLikedByUserEvent>(_getLikedByUser, transformer: droppable());
+    on<LoadMoreLikedByUserEvent>(_loadMoreLikedByUser, transformer: droppable());
     on<GetMyPostEvent>(_getMyPost);
     on<GetOtherUserPostsEvent>(_getOtherUserPost);
     on<BlockScrollEvent>(_blockScroll);
@@ -89,9 +92,11 @@ class PostBloc extends Bloc<PostEvent, PostState> {
       emit(state.copyWith(getAllPostApiStatus: ApiStatus.loading));
       final data = await repository.getAllPost(event.body);
 
+      logDebug(message: "Get all post data:${(data.data ?? []).length} <<<< ${(data.total ?? 0)}");
       emit(state.copyWith(
         getAllPostApiStatus: ApiStatus.success,
         allPostData: data.data,
+        hasMorePost: (data.data ?? []).length < (data.total ?? 0),
       ));
     } catch (error, stackTrace) {
       emit(state.copyWith(getAllPostApiStatus: ApiStatus.failure));
@@ -155,10 +160,10 @@ class PostBloc extends Bloc<PostEvent, PostState> {
     try {
       emit(state.copyWith(getMyPostApiStatus: ApiStatus.loading));
       final data = await repository.getAllPost(event.body);
-
       emit(state.copyWith(
         getMyPostApiStatus: ApiStatus.success,
         myPostData: data.data,
+        hasMoreMyPost: (data.data ?? []).length < (data.total ?? 0),
       ));
     } catch (error, stackTrace) {
       emit(state.copyWith(getMyPostApiStatus: ApiStatus.failure));
@@ -171,10 +176,11 @@ class PostBloc extends Bloc<PostEvent, PostState> {
     try {
       emit(state.copyWith(getOtherUserPostApiStatus: ApiStatus.loading));
       final data = await repository.getAllPost(event.body);
-
+      logDebug(message: "Get all post data OTHER:${(data.data ?? []).length} <<<< ${(data.total ?? 0)}");
       emit(state.copyWith(
         getOtherUserPostApiStatus: ApiStatus.success,
         otherUserPostData: data.data,
+        hasMoreOtherUserPost: (data.data ?? []).length < (data.total ?? 0),
       ));
     } catch (error, stackTrace) {
       emit(state.copyWith(getOtherUserPostApiStatus: ApiStatus.failure));
@@ -191,6 +197,24 @@ class PostBloc extends Bloc<PostEvent, PostState> {
       emit(state.copyWith(
         getPostCommentListApiStatus: ApiStatus.success,
         commentDataList: data.data,
+        hasMorePostComments: (data.data ?? []).length < (data.total ?? 0),
+      ));
+    } catch (error, stackTrace) {
+      emit(state.copyWith(getPostCommentListApiStatus: ApiStatus.failure));
+      ThemeHelper.showToastMessage("$error");
+      handleApiError(error, stackTrace, emit);
+    }
+  }
+
+  Future<void> _loadMoreComments(LoadMorePostCommentDataEvent event, Emitter<PostState> emit) async {
+    try {
+      emit(state.copyWith(isLoadMorePostComments: true));
+      final data = await repository.getPostComment(event.body);
+
+      emit(state.copyWith(
+        isLoadMorePostComments: false,
+        commentDataList: [...(state.commentDataList ?? []), ...(data.data ?? [])],
+        hasMorePostComments: [...(state.commentDataList ?? []), ...(data.data ?? [])].length < (data.total ?? 0),
       ));
     } catch (error, stackTrace) {
       emit(state.copyWith(getPostCommentListApiStatus: ApiStatus.failure));
@@ -266,6 +290,7 @@ class PostBloc extends Bloc<PostEvent, PostState> {
   Future<void> _getReplies(GetCommentRepliesEvent event, Emitter<PostState> emit) async {
     try {
       final Map<String, bool> repliesIdData = {};
+      // repliesIdData.addAll(state.showReplies ?? {});
       if (repliesIdData.containsKey(event.commentId)) {
         repliesIdData.remove(event.commentId);
       } else {
@@ -273,7 +298,6 @@ class PostBloc extends Bloc<PostEvent, PostState> {
       }
       emit(state.copyWith(showReplies: repliesIdData));
 
-      add(GetCommentRepliesEvent(commentId: event.commentId));
       final data = await repository.getCommentReplies({
         "skip": event.skip,
         "take": event.take,
@@ -294,6 +318,42 @@ class PostBloc extends Bloc<PostEvent, PostState> {
         getRepliesApiStatus: ApiStatus.success,
         commentDataList: updatedList,
         showReplies: repliesIdData,
+        hasMoreCommentReplies: (data.data ?? []).length < (data.total ?? 0),
+      ));
+    } catch (error, stackTrace) {
+      emit(state.copyWith(getRepliesApiStatus: ApiStatus.failure));
+      ThemeHelper.showToastMessage("$error");
+      handleApiError(error, stackTrace, emit);
+    }
+  }
+
+  Future<void> _loadMoreReplies(LoadMoreCommentRepliesEvent event, Emitter<PostState> emit) async {
+    try {
+      emit(state.copyWith(isLoadMoreReplies: true));
+      final data = await repository.getCommentReplies({
+        "skip": event.skip,
+        "take": event.take,
+        "commentId": event.commentId,
+      });
+
+      final CommentData comment = (state.commentDataList ?? []).firstWhere(
+        (comment) => comment.id == event.commentId,
+        orElse: () => CommentData(),
+      );
+
+      final List<CommentData> updatedRepliesList = [...(comment.repliesData ?? []), ...(data.data ?? [])];
+
+      final List<CommentData> updatedCommentList = (state.commentDataList ?? []).map((comment) {
+        if (comment.id == event.commentId) {
+          return comment.copyWith(repliesData: updatedRepliesList);
+        }
+        return comment;
+      }).toList();
+
+      emit(state.copyWith(
+        isLoadMoreReplies: false,
+        commentDataList: updatedCommentList,
+        hasMoreCommentReplies: updatedRepliesList.length < (data.total ?? 0),
       ));
     } catch (error, stackTrace) {
       emit(state.copyWith(getRepliesApiStatus: ApiStatus.failure));
@@ -436,6 +496,26 @@ class PostBloc extends Bloc<PostEvent, PostState> {
       emit(state.copyWith(
         likeByUserApiStatus: ApiStatus.success,
         likedByUserData: data.data,
+        hasMoreLikedByUser: (data.data ?? []).length < (data.total ?? 0),
+      ));
+    } catch (error, stackTrace) {
+      emit(state.copyWith(likeByUserApiStatus: ApiStatus.failure));
+      ThemeHelper.showToastMessage("$error");
+      handleApiError(error, stackTrace, emit);
+    }
+  }
+
+  Future<void> _loadMoreLikedByUser(LoadMoreLikedByUserEvent event, Emitter<PostState> emit) async {
+    try {
+      emit(state.copyWith(isLoadMoreLikedByUser: true));
+      final data = await repository.getLikedByUser(
+        postId: event.postId,
+        body: event.body,
+      );
+      emit(state.copyWith(
+        isLoadMoreLikedByUser: false,
+        likedByUserData: [...(state.likedByUserData ?? []), ...(data.data ?? [])],
+        hasMoreLikedByUser: [...(state.likedByUserData ?? []), ...(data.data ?? [])].length < (data.total ?? 0),
       ));
     } catch (error, stackTrace) {
       emit(state.copyWith(likeByUserApiStatus: ApiStatus.failure));
