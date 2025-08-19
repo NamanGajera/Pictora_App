@@ -27,6 +27,7 @@ class FollowSectionBloc extends Bloc<FollowSectionEvent, FollowSectionState> {
     on<GetFollowRequestEvent>(_getFollowRequests, transformer: droppable());
     on<ToggleFollowUserEvent>(_toggleFollowUser, transformer: droppable());
     on<ManageFollowRequestEvent>(_manageFollowRequest, transformer: droppable());
+    on<ShowDiscoverUserOnProfileEvent>(_showDiscoverUser, transformer: droppable());
   }
 
   Future<void> _getFollowers(GetFollowersEvent event, Emitter<FollowSectionState> emit) async {
@@ -113,7 +114,7 @@ class FollowSectionBloc extends Bloc<FollowSectionEvent, FollowSectionState> {
       emit(state.copyWith(getDiscoverUsersApiStatus: ApiStatus.loading));
       final users = await repository.getDiscoverUsers(body: {
         "skip": 0,
-        "take": 10,
+        "take": 20,
       });
       emit(state.copyWith(
         getDiscoverUsersApiStatus: ApiStatus.success,
@@ -203,6 +204,13 @@ class FollowSectionBloc extends Bloc<FollowSectionEvent, FollowSectionState> {
       emit(state.copyWith(manageFollowRequestApiStatus: ApiStatus.failure));
       ThemeHelper.showToastMessage("$error");
       handleApiError(error, stackTrace, emit);
+    }
+  }
+
+  void _showDiscoverUser(ShowDiscoverUserOnProfileEvent event, Emitter<FollowSectionState> emit) {
+    emit(state.copyWith(showDiscoverUserOnProfile: event.showUser));
+    if (event.showUser) {
+      add(GetDiscoverUsersEvent());
     }
   }
 

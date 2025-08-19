@@ -3,7 +3,6 @@ import "package:flutter/gestures.dart";
 import "package:flutter/material.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
 import "package:flutter_svg/flutter_svg.dart";
-import "package:pictora/core/utils/services/custom_logger.dart";
 import "package:pictora/features/post/screens/comment_screen.dart";
 import "package:pictora/features/post/screens/liked_by_user_screen.dart";
 import "package:pictora/router/router.dart";

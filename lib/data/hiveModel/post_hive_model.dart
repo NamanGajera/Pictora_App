@@ -1,4 +1,5 @@
 import 'package:hive/hive.dart';
+import 'user_hive_model.dart';
 
 part 'post_hive_model.g.dart';
 
@@ -66,31 +67,4 @@ class MediaHiveModel {
 
   @HiveField(5)
   String? updatedAt;
-}
-
-@HiveType(typeId: 2)
-class UserHiveModel {
-  @HiveField(0)
-  String? id;
-
-  @HiveField(1)
-  String? fullName;
-
-  @HiveField(2)
-  String? userName;
-
-  @HiveField(3)
-  String? email;
-
-  @HiveField(4)
-  ProfileHiveModel? profile;
-}
-
-@HiveType(typeId: 3)
-class ProfileHiveModel {
-  @HiveField(0)
-  String? profilePicture;
-
-  @HiveField(1)
-  bool? isPrivate;
 }

@@ -45,3 +45,5 @@ String followRequestUserApiEndPoint = "$userRoute/follow/requests";
 String getDiscoverUserApiEndPoint = "$userRoute/discover";
 
 String toggleFollowUserApiEndPoint = "$userRoute/follow";
+
+String searchUserApiEndPoint = "$userRoute/search";

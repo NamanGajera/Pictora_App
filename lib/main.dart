@@ -7,6 +7,7 @@ import 'package:pictora/features/profile/bloc/profile_bloc/profile_bloc.dart';
 import 'package:pictora/core/utils/services/app_env_manager.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'features/profile/bloc/follow_section_bloc/follow_section_bloc.dart';
+import 'features/search/bloc/search_bloc.dart';
 import 'router/router.dart';
 import 'core/utils/constants/colors.dart';
 import 'core/utils/constants/enums.dart';
@@ -17,7 +18,7 @@ import 'core/utils/services/device_info_service.dart';
 
 void main() async {
   AppEnvManager.currentEnv = AppEnv.local;
-  AppEnvManager.setLocalBaseUrl("http://192.168.1.34:5000");
+  AppEnvManager.setLocalBaseUrl("http://192.168.1.110:5000");
 
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -41,6 +42,7 @@ class MyApp extends StatelessWidget {
         BlocProvider(create: (_) => getIt<PostBloc>()),
         BlocProvider(create: (_) => getIt<ProfileBloc>()),
         BlocProvider(create: (_) => getIt<FollowSectionBloc>()),
+        BlocProvider(create: (_) => getIt<SearchBloc>()),
       ],
       child: MediaQuery(
         data: MediaQuery.of(context).copyWith(textScaler: TextScaler.noScaling),

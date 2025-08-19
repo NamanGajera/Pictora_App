@@ -19,6 +19,7 @@ import '../../../core/utils/constants/enums.dart';
 import '../../../core/utils/widgets/custom_widget.dart';
 import '../bloc/follow_section_bloc/follow_section_bloc.dart';
 import 'follow_section_screen.dart';
+import 'widgets/discover_user_card.dart';
 
 class ProfileScreen extends StatefulWidget {
   final String? userId;
@@ -106,6 +107,44 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
         child: Column(
           children: [
             _buildProfileInfo(),
+            BlocBuilder<FollowSectionBloc, FollowSectionState>(
+              buildWhen: (previous, current) =>
+                  previous.showDiscoverUserOnProfile != current.showDiscoverUserOnProfile || previous.discoverUsers != current.discoverUsers,
+              builder: (context, state) {
+                final users = state.discoverUsers ?? [];
+
+                if (users.isNotEmpty && state.showDiscoverUserOnProfile) {
+                  return SizedBox(
+                    height: 242,
+                    child: ListView.separated(
+                      scrollDirection: Axis.horizontal,
+                      padding: EdgeInsets.only(top: 12, bottom: 12, left: 10),
+                      itemCount: ((users.take(5)).length) + (users.length > 5 ? 1 : 0),
+                      itemBuilder: (context, index) {
+                        List<String> randomProfiles = [];
+                        if (index == 5 && users.length > 2) {
+                          List<User> availableUsers = List.from(users);
+
+                          availableUsers.shuffle();
+
+                          randomProfiles = availableUsers.take(2).map((user) => user.profile?.profilePicture ?? '').toList();
+                        }
+
+                        final user = users[index];
+                        return DiscoverUserCard(
+                          key: ValueKey("discover_${user.id}"),
+                          user: user,
+                          isLast: index == 5,
+                          lastTwoUserProfile: randomProfiles,
+                        );
+                      },
+                      separatorBuilder: (context, index) => const SizedBox(width: 10),
+                    ),
+                  );
+                }
+                return const SizedBox.shrink();
+              },
+            ),
             Expanded(
               child: _buildPostsGrid(),
             ),
@@ -143,42 +182,46 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
-                        _buildStatItem('Posts', userData?.counts?.postCount ?? 0),
+                        Expanded(child: _buildStatItem('Posts', userData?.counts?.postCount ?? 0)),
                         Container(
                           width: 1,
                           height: 40,
                           color: Colors.grey[200],
                         ),
-                        InkWell(
-                          onTap: () {
-                            appRouter.push(
-                              RouterName.followSection.path,
-                              extra: FollowSectionScreenDataModel(
-                                userId: userData?.id ?? '',
-                                userName: userData?.userName ?? '',
-                                tabIndex: 0,
-                              ),
-                            );
-                          },
-                          child: _buildStatItem('Followers', userData?.counts?.followerCount ?? 0),
+                        Expanded(
+                          child: InkWell(
+                            onTap: () {
+                              appRouter.push(
+                                RouterName.followSection.path,
+                                extra: FollowSectionScreenDataModel(
+                                  userId: userData?.id ?? '',
+                                  userName: userData?.userName ?? '',
+                                  tabIndex: 0,
+                                ),
+                              );
+                            },
+                            child: _buildStatItem('Followers', userData?.counts?.followerCount ?? 0),
+                          ),
                         ),
                         Container(
                           width: 1,
                           height: 40,
                           color: Colors.grey[200],
                         ),
-                        InkWell(
-                          onTap: () {
-                            appRouter.push(
-                              RouterName.followSection.path,
-                              extra: FollowSectionScreenDataModel(
-                                userId: userData?.id ?? '',
-                                userName: userData?.userName ?? '',
-                                tabIndex: 1,
-                              ),
-                            );
-                          },
-                          child: _buildStatItem('Following', userData?.counts?.followingCount ?? 0),
+                        Expanded(
+                          child: InkWell(
+                            onTap: () {
+                              appRouter.push(
+                                RouterName.followSection.path,
+                                extra: FollowSectionScreenDataModel(
+                                  userId: userData?.id ?? '',
+                                  userName: userData?.userName ?? '',
+                                  tabIndex: 1,
+                                ),
+                              );
+                            },
+                            child: _buildStatItem('Following', userData?.counts?.followingCount ?? 0),
+                          ),
                         ),
                       ],
                     ),
@@ -229,55 +272,9 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
           ),
         ],
       ),
-      child: CircleAvatar(
+      child: RoundProfileAvatar(
+        imageUrl: userData?.profile?.profilePicture ?? '',
         radius: 42,
-        backgroundColor: const Color(0xffF5F5F5),
-        child: (userData?.profile?.profilePicture ?? '').isNotEmpty
-            ? ClipOval(
-                child: CachedNetworkImage(
-                  imageUrl: userData?.profile?.profilePicture ?? '',
-                  cacheKey: userData?.profile?.profilePicture ?? '',
-                  width: 84,
-                  height: 84,
-                  fit: BoxFit.cover,
-                  placeholder: (context, url) => Container(
-                    color: Colors.grey[100],
-                    child: const Center(
-                      child: SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          valueColor: AlwaysStoppedAnimation<Color>(Color(0xff9CA3AF)),
-                        ),
-                      ),
-                    ),
-                  ),
-                  errorWidget: (context, url, error) => Container(
-                    color: const Color(0xffF3F4F6),
-                    child: const Icon(
-                      Icons.image_outlined,
-                      color: Color(0xff9CA3AF),
-                      size: 32,
-                    ),
-                  ),
-                  imageBuilder: (context, imageProvider) => Container(
-                    decoration: BoxDecoration(
-                      image: DecorationImage(
-                        image: imageProvider,
-                        fit: BoxFit.cover,
-                      ),
-                    ),
-                  ),
-                  fadeInDuration: Duration.zero,
-                  fadeOutDuration: Duration.zero,
-                ),
-              )
-            : const Icon(
-                Icons.person_rounded,
-                size: 40,
-                color: Color(0xff9CA3AF),
-              ),
       ),
     ).withAutomaticKeepAlive();
   }
@@ -304,6 +301,8 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
             fontWeight: FontWeight.w500,
             letterSpacing: 0.2,
           ),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
         ),
       ],
     );
@@ -324,13 +323,34 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
             ),
           ),
           const SizedBox(width: 12),
-          Expanded(
-            child: _buildButton(
-              'Share Profile',
-              backgroundColor: const Color(0xffF3F4F6),
-              textColor: const Color(0xff374151),
-              onTap: () {},
-            ),
+          BlocBuilder<FollowSectionBloc, FollowSectionState>(
+            builder: (context, state) {
+              return Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  color: const Color(0xffF3F4F6),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Center(
+                  child: state.getDiscoverUsersApiStatus == ApiStatus.loading && (state.discoverUsers ?? []).isEmpty
+                      ? SizedBox(
+                          height: 18,
+                          width: 18,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                          ),
+                        )
+                      : Icon(
+                          Icons.person_add_alt_1,
+                          size: 24,
+                          color: Color(0xff374151),
+                        ),
+                ),
+              ).onTap(() {
+                followSectionBloc.add(ShowDiscoverUserOnProfileEvent(showUser: !state.showDiscoverUserOnProfile));
+              });
+            },
           ),
         ],
       );

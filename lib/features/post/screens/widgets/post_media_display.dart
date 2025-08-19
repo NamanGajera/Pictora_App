@@ -101,6 +101,7 @@ class _PostMediaDisplayState extends State<PostMediaDisplay> with AutomaticKeepA
           return {
             'type': (media.mediaUrl ?? '').isVideoUrl ? 'video' : 'image',
             'url': media.mediaUrl,
+            'thumbnail': media.thumbnail,
           };
         }).toList() ??
         [];
@@ -163,6 +164,7 @@ class _PostMediaDisplayState extends State<PostMediaDisplay> with AutomaticKeepA
                               videoKey: '${widget.postId}_$index',
                               controllers: _videoControllers.value,
                               isInitialized: _isInitialized.value,
+                              thumbnailUrl: media['thumbnail'] ?? '',
                             ),
                           ),
                         )
@@ -268,6 +270,7 @@ class _PostMediaDisplayState extends State<PostMediaDisplay> with AutomaticKeepA
 
 class _VideoPlayer extends StatelessWidget {
   final String videoKey;
+  final String thumbnailUrl;
   final Map<String, VideoPlayerController> controllers;
   final Map<String, bool> isInitialized;
 
@@ -275,6 +278,7 @@ class _VideoPlayer extends StatelessWidget {
     required this.videoKey,
     required this.controllers,
     required this.isInitialized,
+    required this.thumbnailUrl,
   });
 
   @override
@@ -301,7 +305,42 @@ class _VideoPlayer extends StatelessWidget {
                 ],
               ),
             )
-          : const Center(child: CircularProgressIndicator(color: Colors.white)),
+          : CachedNetworkImage(
+              imageUrl: thumbnailUrl,
+              cacheKey: thumbnailUrl,
+              key: ValueKey(thumbnailUrl),
+              fit: BoxFit.cover,
+              placeholder: (context, url) => Container(
+                color: Colors.grey[100],
+                child: const Center(
+                  child: SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation<Color>(Color(0xff9CA3AF)),
+                    ),
+                  ),
+                ),
+              ),
+              errorWidget: (context, url, error) => Container(
+                color: const Color(0xffF3F4F6),
+                height: double.infinity,
+                child: const Icon(
+                  Icons.image_outlined,
+                  color: Color(0xff9CA3AF),
+                  size: 32,
+                ),
+              ),
+              imageBuilder: (context, imageProvider) => Container(
+                decoration: BoxDecoration(
+                  image: DecorationImage(
+                    image: imageProvider,
+                    fit: BoxFit.cover,
+                  ),
+                ),
+              ),
+            ),
     );
   }
 }

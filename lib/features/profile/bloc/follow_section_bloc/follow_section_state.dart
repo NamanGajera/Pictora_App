@@ -10,6 +10,7 @@ class FollowSectionState extends Equatable {
   final List<User>? following;
   final List<Request>? followRequests;
   final List<User>? discoverUsers;
+  final bool showDiscoverUserOnProfile;
   final bool isLoadMoreFollowers;
   final bool hasMoreFollowers;
   final bool isLoadMoreFollowing;
@@ -35,6 +36,7 @@ class FollowSectionState extends Equatable {
     this.hasMoreFollowing = true,
     this.isLoadMoreDiscover = false,
     this.hasMoreDiscover = true,
+    this.showDiscoverUserOnProfile = false,
     this.errorMessage,
     this.statusCode,
   });
@@ -55,6 +57,7 @@ class FollowSectionState extends Equatable {
     bool? hasMoreFollowing,
     bool? isLoadMoreDiscover,
     bool? hasMoreDiscover,
+    bool? showDiscoverUserOnProfile,
     String? errorMessage,
     int? statusCode,
   }) {
@@ -74,6 +77,7 @@ class FollowSectionState extends Equatable {
       hasMoreFollowing: hasMoreFollowing ?? this.hasMoreFollowing,
       isLoadMoreDiscover: isLoadMoreDiscover ?? this.isLoadMoreDiscover,
       hasMoreDiscover: hasMoreDiscover ?? this.hasMoreDiscover,
+      showDiscoverUserOnProfile: showDiscoverUserOnProfile ?? this.showDiscoverUserOnProfile,
       errorMessage: errorMessage,
       statusCode: statusCode,
     );
@@ -96,6 +100,7 @@ class FollowSectionState extends Equatable {
         hasMoreFollowing,
         isLoadMoreDiscover,
         hasMoreDiscover,
+        showDiscoverUserOnProfile,
         errorMessage,
         statusCode,
       ];

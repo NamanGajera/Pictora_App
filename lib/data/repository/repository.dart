@@ -47,7 +47,6 @@ class Repository {
   Future<PostCreateModel> createPost({dynamic fields, dynamic fileFields}) async {
     try {
       Map<String, dynamic> json = await apiClient.multipartPostApiCall(
-        baseUrl: baseUrl,
         endPoint: postCreateApiEndPoint,
         authorizationToken: accessToken,
         fields: fields,
@@ -138,7 +137,6 @@ class Repository {
   Future<CommonMessageModel> deleteComment(String commentId) async {
     try {
       Map<String, dynamic> json = await apiClient.deleteAPICalls(
-        baseUrl: baseUrl,
         endPoint: '$commentRoute/$commentId',
         isAccessToken: accessToken,
       );
@@ -183,7 +181,6 @@ class Repository {
   Future<CommonMessageModel> deletePost(String postId) async {
     try {
       Map<String, dynamic> json = await apiClient.deleteAPICalls(
-        baseUrl: baseUrl,
         endPoint: '$postRoute/$postId',
         isAccessToken: accessToken,
       );
@@ -322,6 +319,20 @@ class Repository {
       );
 
       return CommonMessageModel.fromJson(json);
+    } on CustomException {
+      rethrow;
+    }
+  }
+
+  Future<UserListDataModel> searchUsers(dynamic body) async {
+    try {
+      Map<String, dynamic> json = await apiClient.postApiCall(
+        endPoint: searchUserApiEndPoint,
+        postBody: body,
+        isAccessToken: accessToken,
+      );
+
+      return UserListDataModel.fromJson(json);
     } on CustomException {
       rethrow;
     }

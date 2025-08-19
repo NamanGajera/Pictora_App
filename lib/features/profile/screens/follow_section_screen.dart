@@ -196,7 +196,7 @@ class _FollowSectionScreenState extends State<FollowSectionScreen> with SingleTi
                   physics: const AlwaysScrollableScrollPhysics(),
                   controller: _followerScrollController,
                   padding: EdgeInsets.symmetric(vertical: 8),
-                  itemCount: state.followers?.length,
+                  itemCount: state.followers?.length ?? 0,
                   itemBuilder: (context, index) {
                     final User? user = state.followers?[index];
                     return InkWell(
@@ -256,7 +256,7 @@ class _FollowSectionScreenState extends State<FollowSectionScreen> with SingleTi
                   physics: const AlwaysScrollableScrollPhysics(),
                   controller: _followingScrollController,
                   padding: EdgeInsets.symmetric(vertical: 8),
-                  itemCount: state.following?.length,
+                  itemCount: state.following?.length ?? 0,
                   itemBuilder: (context, index) {
                     final User? user = state.following?[index];
                     return InkWell(
@@ -308,7 +308,7 @@ class _FollowSectionScreenState extends State<FollowSectionScreen> with SingleTi
           return ListView.builder(
             physics: const AlwaysScrollableScrollPhysics(),
             padding: EdgeInsets.symmetric(vertical: 8),
-            itemCount: state.followRequests?.length,
+            itemCount: state.followRequests?.length ?? 0,
             itemBuilder: (context, index) {
               final User? user = state.followRequests?[index].requester;
               return InkWell(
@@ -357,7 +357,7 @@ class _FollowSectionScreenState extends State<FollowSectionScreen> with SingleTi
                   physics: const AlwaysScrollableScrollPhysics(),
                   controller: _discoverScrollController,
                   padding: EdgeInsets.symmetric(vertical: 8),
-                  itemCount: state.discoverUsers?.length,
+                  itemCount: state.discoverUsers?.length ?? 0,
                   itemBuilder: (context, index) {
                     final User? user = state.discoverUsers?[index];
                     return InkWell(

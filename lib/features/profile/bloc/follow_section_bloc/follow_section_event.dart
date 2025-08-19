@@ -58,3 +58,8 @@ class ManageFollowRequestEvent extends FollowSectionEvent {
     required this.isAccept,
   });
 }
+
+class ShowDiscoverUserOnProfileEvent extends FollowSectionEvent {
+  final bool showUser;
+  ShowDiscoverUserOnProfileEvent({required this.showUser});
+}

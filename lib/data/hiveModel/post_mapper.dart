@@ -1,6 +1,7 @@
 import '../../features/post/models/post_data.dart';
 import '../model/user_model.dart';
 import 'post_hive_model.dart';
+import 'user_hive_model.dart';
 
 extension PostMapper on PostData {
   PostHiveModel toHiveModel() {

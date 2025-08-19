@@ -1,6 +1,7 @@
 import 'package:hive_flutter/hive_flutter.dart';
 
 import '../../data/hiveModel/post_hive_model.dart';
+import '../../data/hiveModel/user_hive_model.dart';
 
 class HiveService {
   static Future<void> init() async {

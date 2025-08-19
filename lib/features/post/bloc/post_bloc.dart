@@ -55,6 +55,9 @@ class PostBloc extends Bloc<PostEvent, PostState> {
     on<GetMyPostEvent>(_getMyPost);
     on<GetOtherUserPostsEvent>(_getOtherUserPost);
     on<BlockScrollEvent>(_blockScroll);
+    on<PostEvent>((event, emit) {
+      if (event is DeleteCommentEvent) {}
+    });
   }
 
   Future<void> _createPost(CreatePostEvent event, Emitter<PostState> emit) async {
@@ -80,7 +83,9 @@ class PostBloc extends Bloc<PostEvent, PostState> {
       emit(state.copyWith(
         createPostApiStatus: ApiStatus.success,
         allPostData: [(data.data ?? PostData()), ...(state.allPostData ?? [])],
+        myPostData: [(data.data ?? PostData()), ...(state.allPostData ?? [])],
       ));
+      profileBloc.add(ModifyUserCountEvent(postsCount: 1));
       ThemeHelper.showToastMessage(data.message ?? 'Post created');
       logDebug(message: data.toString());
     } catch (error, stackTrace) {
@@ -98,8 +103,11 @@ class PostBloc extends Bloc<PostEvent, PostState> {
 
     final cachedPost = await getCachedPosts();
     List<PostData> postData = cachedPost.map((h) => h.toEntity()).toList();
-    if (isOnline) {
-      clearCache();
+    if (!isOnline) {
+      emit(state.copyWith(
+        getAllPostApiStatus: ApiStatus.success,
+        allPostData: postData,
+      ));
     }
     try {
       emit(state.copyWith(getAllPostApiStatus: ApiStatus.loading));
@@ -110,6 +118,9 @@ class PostBloc extends Bloc<PostEvent, PostState> {
         allPostData: isOnline ? data.data : postData,
         hasMorePost: (data.data ?? []).length < (data.total ?? 0),
       ));
+      if (isOnline) {
+        clearCache();
+      }
       final hivePosts = (data.data ?? []).map((p) => p.toHiveModel()).toList();
       await cachePosts(hivePosts);
     } catch (error, stackTrace) {
@@ -117,15 +128,13 @@ class PostBloc extends Bloc<PostEvent, PostState> {
         getAllPostApiStatus: ApiStatus.failure,
         allPostData: postData,
       ));
-      // ThemeHelper.showToastMessage("$error");
+      ThemeHelper.showToastMessage("$error");
       handleApiError(error, stackTrace, emit);
     }
   }
 
   Future<void> _loadMorePost(LoadMorePostEvent event, Emitter<PostState> emit) async {
     try {
-      //   final hivePosts = await localDataSource.getCachedPosts();
-      // return ;
       emit(state.copyWith(isLoadMorePost: true));
       final data = await repository.getAllPost(event.body);
 

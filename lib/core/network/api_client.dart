@@ -1,7 +1,5 @@
-import 'dart:convert';
-import 'dart:developer';
 import 'dart:io';
-import 'package:http/http.dart' as http;
+import 'package:dio/dio.dart';
 import 'package:http_parser/http_parser.dart';
 import '../utils/constants/api_end_points.dart';
 import '../utils/helper/helper_function.dart';
@@ -9,35 +7,51 @@ import '../utils/services/custom_logger.dart';
 import '../utils/helper/custom_exception.dart';
 
 class ApiClient {
-  http.Client httpClient = http.Client();
+  final Dio _dio = Dio();
+
+  ApiClient() {
+    _dio.options.baseUrl = baseUrl;
+    _dio.options.connectTimeout = const Duration(seconds: 30);
+    _dio.options.receiveTimeout = const Duration(seconds: 30);
+    _dio.options.headers = {'Content-Type': 'application/json'};
+
+    _dio.interceptors.add(InterceptorsWrapper(
+      onRequest: (options, handler) {
+        logDebug(
+          message: 'URL: ${options.uri}, headers: ${options.headers}',
+          tag: "${options.method} API CALL",
+        );
+        return handler.next(options);
+      },
+      onResponse: (response, handler) {
+        logInfo(
+          message: response.data.toString(),
+          tag: "API RESPONSE [${response.statusCode}]",
+        );
+        return handler.next(response);
+      },
+      onError: (DioException error, handler) {
+        logError(
+          message: error.response?.data?.toString() ?? error.message,
+          tag: "API ERROR [${error.response?.statusCode}]",
+        );
+        return handler.next(error);
+      },
+    ));
+  }
 
   Future<dynamic> getApiCall({required String endPoint, String? isAccessToken}) async {
-    dynamic getResponseJson;
-    String getUrl;
-
-    Map<String, String>? headers;
-
-    getUrl = "$baseUrl$endPoint";
-
-    if (isAccessToken != null) {
-      headers = {
-        "Content-Type": "application/json",
-        "Authorization": isAccessToken,
-      };
-    } else {
-      headers = {"Content-Type": "application/json"};
-    }
-    logDebug(message: 'URL: $getUrl, headers: $headers', tag: "GET API CALL");
     try {
-      var response = await httpClient.get(Uri.parse(getUrl), headers: headers);
-      getResponseJson = await parseApiResponse(response);
-    } on SocketException {
-      throw FetchDataException("No internet connection");
-    } on FormatException {
-      throw FetchDataException("Invalid format");
+      final response = await _dio.get(
+        endPoint,
+        options: Options(
+          headers: _buildHeaders(isAccessToken),
+        ),
+      );
+      return _parseApiResponse(response);
+    } on DioException catch (e) {
+      throw _handleDioError(e);
     }
-
-    return getResponseJson;
   }
 
   Future<dynamic> postApiCall({
@@ -45,35 +59,18 @@ class ApiClient {
     dynamic postBody,
     String? isAccessToken,
   }) async {
-    Map<String, dynamic>? postResponseJson;
-    String postUrl;
-
-    Map<String, String>? headers;
-
-    postUrl = '$baseUrl$endPoint';
-
-    var encodedBody = json.encode(postBody);
-
-    if (isAccessToken != null) {
-      headers = {
-        "Content-Type": "application/json",
-        "Authorization": isAccessToken,
-      };
-    } else {
-      headers = {"Content-Type": "application/json"};
-    }
-
-    logDebug(message: 'URL: $postUrl, headers: $headers, body: $encodedBody', tag: "POST API CALL");
     try {
-      var response = await httpClient.post(Uri.parse(postUrl), headers: headers, body: encodedBody);
-      postResponseJson = await parseApiResponse(response);
-    } on SocketException {
-      throw FetchDataException("No internet connection");
-    } on FormatException {
-      throw FetchDataException("Invalid format");
+      final response = await _dio.post(
+        endPoint,
+        data: postBody,
+        options: Options(
+          headers: _buildHeaders(isAccessToken),
+        ),
+      );
+      return _parseApiResponse(response);
+    } on DioException catch (e) {
+      throw _handleDioError(e);
     }
-
-    return postResponseJson;
   }
 
   Future<dynamic> patchApiCall({
@@ -81,214 +78,140 @@ class ApiClient {
     dynamic patchBody,
     String? isAccessToken,
   }) async {
-    Map<String, dynamic>? postResponseJson;
-    String patchUrl;
-
-    Map<String, String>? headers;
-
-    patchUrl = '$baseUrl$endPoint';
-
-    var encodedBody = json.encode(patchBody);
-
-    if (isAccessToken != null) {
-      headers = {
-        "Content-Type": "application/json",
-        "Authorization": isAccessToken,
-      };
-    } else {
-      headers = {"Content-Type": "application/json"};
-    }
-
-    logDebug(message: 'URL: $patchUrl, headers: $headers, body: $encodedBody', tag: "PATCH API CALL");
     try {
-      var response = await httpClient.patch(Uri.parse(patchUrl), headers: headers, body: encodedBody);
-      postResponseJson = await parseApiResponse(response);
-    } on SocketException {
-      throw FetchDataException("No internet connection");
-    } on FormatException {
-      throw FetchDataException("Invalid format");
+      final response = await _dio.patch(
+        endPoint,
+        data: patchBody,
+        options: Options(
+          headers: _buildHeaders(isAccessToken),
+        ),
+      );
+      return _parseApiResponse(response);
+    } on DioException catch (e) {
+      throw _handleDioError(e);
     }
-
-    return postResponseJson;
   }
 
-  Future<dynamic> putAPICallsWithBody({
+  Future<dynamic> putAPICall({
     required String endPoint,
     dynamic putBody,
     String? isAccessToken,
   }) async {
-    dynamic putResponseJson;
-    String putUrl;
-
-    Map<String, String>? headers;
-
-    putUrl = "$baseUrl$endPoint";
-
-    var encodedBody = json.encode(putBody);
-
-    if (isAccessToken != null) {
-      headers = {
-        "Content-Type": "application/json",
-        "Authorization": isAccessToken,
-      };
-    } else {
-      headers = {"Content-Type": "application/json"};
-    }
-    logDebug(message: 'URL: $putUrl, headers: $headers', tag: "PUT API CALL");
     try {
-      var response = await httpClient.put(Uri.parse(putUrl), headers: headers, body: encodedBody);
-      putResponseJson = await parseApiResponse(response);
-    } on SocketException {
-      throw FetchDataException("No internet connections.");
+      final response = await _dio.put(
+        endPoint,
+        data: putBody,
+        options: Options(
+          headers: _buildHeaders(isAccessToken),
+        ),
+      );
+      return _parseApiResponse(response);
+    } on DioException catch (e) {
+      throw _handleDioError(e);
     }
-
-    return putResponseJson;
   }
 
-  Future<dynamic> deleteAPICalls({required String baseUrl, required String endPoint, String? isAccessToken}) async {
-    dynamic postResponseJson;
-    String deleteUrl;
-
-    Map<String, String>? headers;
-
-    deleteUrl = "$baseUrl$endPoint";
-
-    if (isAccessToken != null) {
-      headers = {
-        "Content-Type": "application/json",
-        "Authorization": isAccessToken,
-      };
-    } else {
-      headers = {"Content-Type": "application/json"};
-    }
-    logDebug(message: 'URL: $deleteUrl, headers: $headers', tag: "DELETE API CALL");
-
+  Future<dynamic> deleteAPICalls({
+    required String endPoint,
+    String? isAccessToken,
+  }) async {
     try {
-      var response = await httpClient.delete(Uri.parse(deleteUrl), headers: headers);
-      postResponseJson = await parseApiResponse(response);
-    } on SocketException {
-      throw FetchDataException("No internet connections.");
-    } on FormatException {
-      throw FetchDataException("Invalid format");
+      final response = await _dio.delete(
+        endPoint,
+        options: Options(
+          headers: _buildHeaders(isAccessToken),
+        ),
+      );
+      return _parseApiResponse(response);
+    } on DioException catch (e) {
+      throw _handleDioError(e);
     }
-
-    return postResponseJson;
   }
 
   Future<dynamic> multipartPostApiCall({
-    required String baseUrl,
     required String endPoint,
     String? authorizationToken,
     Map<String, String>? additionalHeaders,
     required Map<String, dynamic> fields,
     required Map<String, dynamic> fileFields,
   }) async {
-    final url = Uri.parse('$baseUrl$endPoint');
-    final request = http.MultipartRequest('POST', url);
-
-    // Set headers
-    final headers = <String, String>{
-      if (authorizationToken != null) 'Authorization': authorizationToken,
-      ...?additionalHeaders,
-    };
-    request.headers.addAll(headers);
-
-    // Add regular form fields
-    for (final entry in fields.entries) {
-      request.fields[entry.key] = entry.value.toString();
-    }
-
-    // Process file fields
     try {
-      await _addFileFields(request, fileFields);
-    } catch (e) {
-      throw Exception('Error processing files: $e');
-    }
-
-    _logRequestDetails(url, headers, fields, fileFields);
-
-    try {
-      final streamedResponse = await request.send();
-      final response = await http.Response.fromStream(streamedResponse);
-      return parseApiResponse(response); // Your existing response handler
-    } on SocketException {
-      throw FetchDataException('No internet connection');
-    } on FormatException {
-      throw FetchDataException('Invalid format');
-    } catch (e) {
-      log('Error: $e');
-      throw Exception('Error during multipart POST request: $e');
+      final formData = await _buildFormData(fields, fileFields);
+      final response = await _dio.post(
+        endPoint,
+        data: formData,
+        options: Options(
+          headers: _buildHeaders(authorizationToken, additionalHeaders),
+          contentType: 'multipart/form-data',
+        ),
+      );
+      return _parseApiResponse(response);
+    } on DioException catch (e) {
+      throw _handleDioError(e);
     }
   }
 
-  Future<dynamic> multipartPutApiCall(
-    String baseUrl,
-    String endPoint, {
+  Future<dynamic> multipartPutApiCall({
+    required String endPoint,
     String? authorizationToken,
     Map<String, String>? additionalHeaders,
     required Map<String, dynamic> fields,
     required Map<String, dynamic> fileFields,
   }) async {
-    final url = Uri.parse('$baseUrl$endPoint');
-    final request = http.MultipartRequest('PUT', url);
-
-    // Set headers
-    final headers = <String, String>{
-      if (authorizationToken != null) 'Authorization': authorizationToken,
-      ...?additionalHeaders,
-    };
-    request.headers.addAll(headers);
-
-    // Add regular form fields
-    for (final entry in fields.entries) {
-      request.fields[entry.key] = entry.value.toString();
-    }
-
-    // Process file fields
     try {
-      await _addFileFields(request, fileFields);
-    } catch (e) {
-      throw Exception('Error processing files: $e');
-    }
-
-    _logRequestDetails(url, headers, fields, fileFields);
-
-    try {
-      final streamedResponse = await request.send();
-      final response = await http.Response.fromStream(streamedResponse);
-      return parseApiResponse(response); // Your existing response handler
-    } on SocketException {
-      throw FetchDataException('No internet connection');
-    } on FormatException {
-      throw FetchDataException('Invalid format');
-    } catch (e) {
-      log('Error: $e');
-      throw Exception('Error during multipart POST request: $e');
+      final formData = await _buildFormData(fields, fileFields);
+      final response = await _dio.put(
+        endPoint,
+        data: formData,
+        options: Options(
+          headers: _buildHeaders(authorizationToken, additionalHeaders),
+          contentType: 'multipart/form-data',
+        ),
+      );
+      return _parseApiResponse(response);
+    } on DioException catch (e) {
+      throw _handleDioError(e);
     }
   }
 
-  Future<void> _addFileFields(
-    http.MultipartRequest request,
+  // Helper methods
+  Map<String, String> _buildHeaders(String? authToken, [Map<String, String>? additionalHeaders]) {
+    final headers = <String, String>{};
+    if (authToken != null) {
+      headers['Authorization'] = authToken;
+    }
+    if (additionalHeaders != null) {
+      headers.addAll(additionalHeaders);
+    }
+    return headers;
+  }
+
+  Future<FormData> _buildFormData(
+    Map<String, dynamic> fields,
     Map<String, dynamic> fileFields,
   ) async {
+    final formData = FormData.fromMap(fields);
+
     for (final entry in fileFields.entries) {
       final fieldName = entry.key;
       final fieldValue = entry.value;
 
       if (fieldValue is List<File>) {
         for (final file in fieldValue) {
-          await _addFileToRequest(request, fieldName, file);
+          await _addFileToFormData(formData, fieldName, file);
         }
       } else if (fieldValue is File) {
-        await _addFileToRequest(request, fieldName, fieldValue);
+        await _addFileToFormData(formData, fieldName, fieldValue);
       } else {
         throw ArgumentError('File field "$fieldName" must be either File or List<File>');
       }
     }
+
+    return formData;
   }
 
-  Future<void> _addFileToRequest(
-    http.MultipartRequest request,
+  Future<void> _addFileToFormData(
+    FormData formData,
     String fieldName,
     File file,
   ) async {
@@ -299,10 +222,13 @@ class ApiClient {
       throw ArgumentError('Unsupported file type: $fileExtension');
     }
 
-    request.files.add(await http.MultipartFile.fromPath(
+    formData.files.add(MapEntry(
       fieldName,
-      file.path,
-      contentType: contentType,
+      await MultipartFile.fromFile(
+        file.path,
+        filename: file.path.split('/').last,
+        contentType: contentType,
+      ),
     ));
   }
 
@@ -321,71 +247,54 @@ class ApiClient {
     return null;
   }
 
-  void _logRequestDetails(
-    Uri url,
-    Map<String, String> headers,
-    Map<String, dynamic> fields,
-    Map<String, dynamic> fileFields,
-  ) {
-    log('Multipart POST URL: $url');
-    log('Headers: $headers');
-    log('Fields: $fields');
-    log('File Fields: ${fileFields.keys.toList()}');
-    log('File Counts: ${fileFields.map((k, v) => MapEntry(k, v is List ? v.length : 1))}');
-  }
-
-  Future<dynamic> parseApiResponse(http.Response response) async {
-    dynamic responseJson;
+  dynamic _parseApiResponse(Response response) {
+    dynamic responseJson = response.data;
     String? message;
-    try {
-      responseJson = response.body.isNotEmpty ? json.decode(response.body) : null;
-      if (responseJson is Map<String, dynamic>) {
-        message = (responseJson["message"] ?? responseJson["data"] ?? 'Something went Wrong').toString();
-      } else {
-        message = 'Something went Wrong';
-      }
-    } on FormatException {
-      throw FetchDataException("Unable to process the server response. (Invalid format or unexpected content)");
-    } catch (e) {
-      throw FetchDataException(e.toString());
+
+    if (responseJson is Map<String, dynamic>) {
+      message = (responseJson["message"] ?? responseJson["data"] ?? 'Something went Wrong').toString();
+    } else {
+      message = 'Something went Wrong';
     }
 
     switch (response.statusCode) {
       case 200:
-        logInfo(message: responseJson.toString(), tag: "API RESPONSE [200]");
-
         return responseJson ?? {};
-
       case 400:
-        logError(message: responseJson.toString(), tag: "API ERROR [400]");
         throw ServerValidationError(message);
-
       case 401:
-        logError(message: responseJson.toString(), tag: "API ERROR [401]");
         logoutUser();
         throw UnAuthorizedException(message);
-
       case 404:
-        logError(message: responseJson.toString(), tag: "API ERROR [404]");
         throw DoesNotExistException(message);
-
       case 422:
-        logError(message: responseJson.toString(), tag: "API ERROR [422]");
         throw ServerValidationError(message);
-
       case 500:
-        logError(message: responseJson.toString(), tag: "API ERROR [500]");
         throw FetchDataException(message);
-
       case 503:
-        logError(message: responseJson.toString(), tag: "API ERROR [503]");
         throw UnderMaintenanceError(message);
-
       default:
-        logError(message: responseJson.toString(), tag: "API ERROR [${response.statusCode.toString()}]");
-        throw FetchDataException(
-          message,
-        );
+        throw FetchDataException(message);
+    }
+  }
+
+  Exception _handleDioError(DioException error) {
+    if (error.type == DioExceptionType.connectionTimeout ||
+        error.type == DioExceptionType.sendTimeout ||
+        error.type == DioExceptionType.receiveTimeout) {
+      return FetchDataException("Request timed out");
+    } else if (error.type == DioExceptionType.connectionError) {
+      return FetchDataException("No internet connection");
+    } else if (error.type == DioExceptionType.badResponse) {
+      // Response was received but with bad status code
+      if (error.response != null) {
+        return _parseApiResponse(error.response!);
+      }
+      return FetchDataException("Invalid server response");
+    } else if (error.type == DioExceptionType.cancel) {
+      return FetchDataException("Request cancelled");
+    } else {
+      return FetchDataException("Something went wrong");
     }
   }
 }

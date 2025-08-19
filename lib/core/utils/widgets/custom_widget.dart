@@ -1,5 +1,6 @@
 import 'dart:developer';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dropdown_textfield/dropdown_textfield.dart';
 import 'package:flutter/material.dart';
 
@@ -960,6 +961,79 @@ class CustomButton extends StatelessWidget {
                 ),
               ),
       ),
+    );
+  }
+}
+
+class RoundProfileAvatar extends StatelessWidget {
+  final String? imageUrl;
+  final double radius;
+  final Color backgroundColor;
+  final IconData fallbackIcon;
+
+  const RoundProfileAvatar({
+    super.key,
+    this.imageUrl,
+    this.radius = 42,
+    this.backgroundColor = const Color(0xffF5F5F5),
+    this.fallbackIcon = Icons.person_rounded,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final hasImage = (imageUrl ?? '').isNotEmpty;
+
+    return CircleAvatar(
+      radius: radius,
+      backgroundColor: backgroundColor,
+      child: hasImage
+          ? ClipOval(
+              child: CachedNetworkImage(
+                imageUrl: imageUrl!,
+                cacheKey: imageUrl!,
+                width: radius * 2,
+                height: radius * 2,
+                fit: BoxFit.cover,
+                placeholder: (context, url) => Container(
+                  color: Colors.grey[100],
+                  child: const Center(
+                    child: SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          Color(0xff9CA3AF),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                errorWidget: (context, url, error) => Container(
+                  color: const Color(0xffF3F4F6),
+                  child: Icon(
+                    Icons.image_outlined,
+                    color: const Color(0xff9CA3AF),
+                    size: radius, // scale with radius
+                  ),
+                ),
+                imageBuilder: (context, imageProvider) => Container(
+                  decoration: BoxDecoration(
+                    image: DecorationImage(
+                      image: imageProvider,
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                ),
+                fadeInDuration: Duration.zero,
+                fadeOutDuration: Duration.zero,
+              ),
+            )
+          : Icon(
+              fallbackIcon,
+              size: radius, // scaled to avatar size
+              color: const Color(0xff9CA3AF),
+            ),
     );
   }
 }
