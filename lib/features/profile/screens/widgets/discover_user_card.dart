@@ -15,13 +15,13 @@ import '../follow_section_screen.dart';
 class DiscoverUserCard extends StatefulWidget {
   final User user;
   final bool isLast;
-  final List<String>? lastTwoUserProfile;
+  final List<User>? randomTwoUsers;
 
   const DiscoverUserCard({
     super.key,
     required this.user,
     this.isLast = false,
-    this.lastTwoUserProfile,
+    this.randomTwoUsers,
   });
 
   @override
@@ -57,7 +57,7 @@ class _DiscoverUserCardState extends State<DiscoverUserCard> with AutomaticKeepA
                   child: Stack(
                     clipBehavior: Clip.none,
                     children: [
-                      if (widget.lastTwoUserProfile != null && widget.lastTwoUserProfile!.isNotEmpty)
+                      if ((widget.randomTwoUsers ?? []).isNotEmpty)
                         Positioned(
                           left: -15,
                           top: 10,
@@ -68,12 +68,13 @@ class _DiscoverUserCardState extends State<DiscoverUserCard> with AutomaticKeepA
                               shape: BoxShape.circle,
                             ),
                             child: RoundProfileAvatar(
-                              imageUrl: widget.lastTwoUserProfile![0],
+                              imageUrl: widget.randomTwoUsers![0].profile?.profilePicture,
                               radius: 38,
+                              userId: widget.randomTwoUsers?[0].id ?? '',
                             ),
                           ),
                         ),
-                      if (widget.lastTwoUserProfile != null && widget.lastTwoUserProfile!.length > 1)
+                      if (widget.randomTwoUsers != null && widget.randomTwoUsers!.length > 1)
                         Positioned(
                           top: 18,
                           left: 5,
@@ -84,8 +85,9 @@ class _DiscoverUserCardState extends State<DiscoverUserCard> with AutomaticKeepA
                               shape: BoxShape.circle,
                             ),
                             child: RoundProfileAvatar(
-                              imageUrl: widget.lastTwoUserProfile![1],
+                              imageUrl: widget.randomTwoUsers![1].profile?.profilePicture,
                               radius: 38,
+                              userId: widget.randomTwoUsers?[1].id ?? '',
                             ),
                           ),
                         ),
@@ -95,6 +97,7 @@ class _DiscoverUserCardState extends State<DiscoverUserCard> with AutomaticKeepA
               : RoundProfileAvatar(
                   imageUrl: widget.user.profile?.profilePicture ?? '',
                   radius: 42,
+                  userId: widget.user.id ?? '',
                 ),
           const SizedBox(height: 8),
           if (!widget.isLast)

@@ -8,8 +8,13 @@ import '../services/custom_logger.dart';
 import 'shared_prefs_helper.dart';
 import 'theme_helper.dart';
 
-String formattedCount(int count) {
-  return count > 1000 ? '${(count / 1000).toStringAsFixed(1)}K' : '$count';
+String formattedCount(int number) {
+  if (number >= 1000000) {
+    return '${(number / 1000000).toStringAsFixed(1)}M';
+  } else if (number >= 1000) {
+    return '${(number / 1000).toStringAsFixed(1)}K';
+  }
+  return number.toString();
 }
 
 void handleError<State>({

@@ -12,7 +12,8 @@ enum RouterName {
   likedByUsers('/likedByUsers', "likedByUsers"),
   otherUserProfile('/otherUserProfile', "otherUserProfile"),
   postLists('/postLists', "postLists"),
-  followSection('/followSection', "followSection");
+  followSection('/followSection', "followSection"),
+  profileEdit('/profileEdit', "profileEdit");
 
   final String path;
   final String name;

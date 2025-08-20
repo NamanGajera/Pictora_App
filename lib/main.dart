@@ -67,6 +67,7 @@ class MyApp extends StatelessWidget {
               iconTheme: IconThemeData(color: Colors.black),
             ),
             progressIndicatorTheme: ProgressIndicatorThemeData(color: primaryColor),
+            textSelectionTheme: const TextSelectionThemeData(cursorColor: primaryColor, selectionHandleColor: primaryColor),
           ),
           builder: (context, child) {
             return SafeArea(child: child ?? Container());

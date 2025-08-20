@@ -102,6 +102,7 @@ class _PostMediaDisplayState extends State<PostMediaDisplay> with AutomaticKeepA
             'type': (media.mediaUrl ?? '').isVideoUrl ? 'video' : 'image',
             'url': media.mediaUrl,
             'thumbnail': media.thumbnail,
+            'mediaId': media.id,
           };
         }).toList() ??
         [];
@@ -165,6 +166,7 @@ class _PostMediaDisplayState extends State<PostMediaDisplay> with AutomaticKeepA
                               controllers: _videoControllers.value,
                               isInitialized: _isInitialized.value,
                               thumbnailUrl: media['thumbnail'] ?? '',
+                              mediaId: media['mediaId'] ?? '',
                             ),
                           ),
                         )
@@ -180,7 +182,10 @@ class _PostMediaDisplayState extends State<PostMediaDisplay> with AutomaticKeepA
                           ),
                           fingersRequiredToPinch: 2,
                           log: true,
-                          child: _ImageDisplay(url: media['url'] ?? ''),
+                          child: _ImageDisplay(
+                            url: media['url'] ?? '',
+                            mediaId: media['mediaId'] ?? '',
+                          ),
                         );
                 },
               ),
@@ -271,6 +276,7 @@ class _PostMediaDisplayState extends State<PostMediaDisplay> with AutomaticKeepA
 class _VideoPlayer extends StatelessWidget {
   final String videoKey;
   final String thumbnailUrl;
+  final String mediaId;
   final Map<String, VideoPlayerController> controllers;
   final Map<String, bool> isInitialized;
 
@@ -279,6 +285,7 @@ class _VideoPlayer extends StatelessWidget {
     required this.controllers,
     required this.isInitialized,
     required this.thumbnailUrl,
+    required this.mediaId,
   });
 
   @override
@@ -307,8 +314,8 @@ class _VideoPlayer extends StatelessWidget {
             )
           : CachedNetworkImage(
               imageUrl: thumbnailUrl,
-              cacheKey: thumbnailUrl,
-              key: ValueKey(thumbnailUrl),
+              cacheKey: mediaId,
+              key: ValueKey(mediaId),
               fit: BoxFit.cover,
               placeholder: (context, url) => Container(
                 color: Colors.grey[100],
@@ -347,8 +354,9 @@ class _VideoPlayer extends StatelessWidget {
 
 class _ImageDisplay extends StatefulWidget {
   final String url;
+  final String mediaId;
 
-  const _ImageDisplay({required this.url});
+  const _ImageDisplay({required this.url, required this.mediaId});
 
   @override
   State<_ImageDisplay> createState() => _ImageDisplayState();
@@ -363,8 +371,8 @@ class _ImageDisplayState extends State<_ImageDisplay> with AutomaticKeepAliveCli
       height: double.infinity,
       child: CachedNetworkImage(
         imageUrl: widget.url,
-        cacheKey: widget.url,
-        key: ValueKey(widget.url),
+        cacheKey: widget.mediaId,
+        key: ValueKey(widget.mediaId),
         fit: BoxFit.cover,
         placeholder: (context, url) => Container(
           color: Colors.grey[100],

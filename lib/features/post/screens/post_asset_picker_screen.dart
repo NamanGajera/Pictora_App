@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:insta_assets_picker/insta_assets_picker.dart';
+import 'package:pictora/core/utils/constants/app_assets.dart';
 import 'package:pictora/router/router.dart';
 import 'package:pictora/router/router_name.dart';
 import 'package:pictora/core/utils/constants/constants.dart';
@@ -27,6 +29,7 @@ class PostAssetPickerScreenState extends State<PostAssetPickerScreen> with Widge
   bool _isScrolling = false;
   VideoPlayerController? _videoController;
   bool _isVideoPlaying = false;
+  bool selectMultiple = false;
 
   @override
   void initState() {
@@ -164,9 +167,6 @@ class PostAssetPickerScreenState extends State<PostAssetPickerScreen> with Widge
           ..initialize().then((_) {
             if (mounted) {
               setState(() {});
-              // Don't auto-play videos, let user decide
-              // _videoController?.play();
-              // _isVideoPlaying = true;
             }
           });
       }
@@ -178,10 +178,22 @@ class PostAssetPickerScreenState extends State<PostAssetPickerScreen> with Widge
   }
 
   void _onAssetTap(AssetEntity asset) {
+    logDebug(message: "Height ==>>> ${asset.height} ,,,,,, Width ==>>> ${asset.width}");
+    if (!selectMultiple) {
+      setState(() {
+        previewAsset = asset;
+        if (previewAsset != null) {
+          _initializeVideoControllerIfNeeded(previewAsset!);
+        } else {
+          _videoController?.dispose();
+          _videoController = null;
+        }
+      });
+      return;
+    }
     setState(() {
       if (selectedAssets.contains(asset)) {
         selectedAssets.remove(asset);
-        // If we're removing the preview asset, update preview to first selected or first asset
         if (previewAsset == asset) {
           previewAsset = selectedAssets.isNotEmpty
               ? selectedAssets.first
@@ -205,6 +217,7 @@ class PostAssetPickerScreenState extends State<PostAssetPickerScreen> with Widge
 
   void _onAssetLongPress(AssetEntity asset) {
     setState(() {
+      selectMultiple = true;
       if (selectedAssets.contains(asset)) {
         selectedAssets.remove(asset);
         // Update preview if we're removing the current preview asset
@@ -257,17 +270,17 @@ class PostAssetPickerScreenState extends State<PostAssetPickerScreen> with Widge
         ),
         actions: [
           TextButton(
-            onPressed: selectedAssets.isNotEmpty
-                ? () {
-                    // Pause video before navigating
-                    pauseVideo();
-                    appRouter.push(RouterName.addPost.path, extra: AddPostScreenDataModel(selectedAssets: selectedAssets));
-                  }
-                : null,
+            onPressed: () {
+              // Pause video before navigating
+              pauseVideo();
+
+              appRouter.push(RouterName.addPost.path,
+                  extra: AddPostScreenDataModel(selectedAssets: selectedAssets.isEmpty ? [previewAsset!] : selectedAssets));
+            },
             child: Text(
               'Next',
               style: TextStyle(
-                color: selectedAssets.isNotEmpty ? Colors.blue : Colors.grey,
+                color: Colors.blue,
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
               ),
@@ -277,29 +290,27 @@ class PostAssetPickerScreenState extends State<PostAssetPickerScreen> with Widge
       ),
       body: isLoading
           ? _buildLoadingView()
-          : Column(
-              children: [
-                _buildAlbumDropdown(),
-                Expanded(
-                  child: CustomScrollView(
-                    controller: _scrollController,
-                    physics: const ClampingScrollPhysics(),
-                    slivers: [
-                      SliverToBoxAdapter(
-                        child: AnimatedContainer(
-                          duration: const Duration(milliseconds: 200),
-                          curve: Curves.easeOut,
-                          height: MediaQuery.of(context).size.height * _previewHeight,
-                          child: _buildPreviewSection(),
-                        ),
-                      ),
-                      SliverToBoxAdapter(
-                        child: Divider(height: 1, color: Colors.grey[200]),
-                      ),
-                      _buildAssetsGrid(),
-                    ],
+          : CustomScrollView(
+              controller: _scrollController,
+              physics: const ClampingScrollPhysics(),
+              slivers: [
+                SliverToBoxAdapter(
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    curve: Curves.easeOut,
+                    height: MediaQuery.of(context).size.height * _previewHeight,
+                    child: _buildPreviewSection(),
                   ),
                 ),
+                SliverPersistentHeader(
+                  pinned: true,
+                  delegate: _SliverHeaderDelegate(
+                    minHeight: 60,
+                    maxHeight: 60,
+                    child: _buildAlbumDropdown(),
+                  ),
+                ),
+                _buildAssetsGrid(),
               ],
             ),
     );
@@ -307,41 +318,55 @@ class PostAssetPickerScreenState extends State<PostAssetPickerScreen> with Widge
 
   Widget _buildAlbumDropdown() {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      decoration: BoxDecoration(
-        border: Border(bottom: BorderSide(color: Colors.grey[200]!)),
-      ),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(8),
-        onTap: () {
-          _showAlbumSelectionDialog();
-        },
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-          decoration: BoxDecoration(
-            color: Colors.grey[50],
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: Colors.grey[300]!),
-          ),
-          child: Row(
-            children: [
-              const Icon(Icons.photo_album, size: 20, color: Colors.black87),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Text(
-                  selectedAlbum?.name ?? 'Select Album',
-                  style: const TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.black87,
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                ),
+      color: Colors.white,
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      child: Row(
+        children: [
+          InkWell(
+            onTap: () {
+              _showAlbumSelectionDialog();
+            },
+            child: Text(
+              selectedAlbum?.name ?? 'Select Album',
+              style: const TextStyle(
+                fontSize: 17,
+                fontWeight: FontWeight.w400,
+                color: Colors.black,
               ),
-              const Icon(Icons.arrow_drop_down, size: 24, color: Colors.black54),
-            ],
+              overflow: TextOverflow.ellipsis,
+            ),
           ),
-        ),
+          const SizedBox(width: 8),
+          InkWell(
+            onTap: () {
+              _showAlbumSelectionDialog();
+            },
+            child: const Icon(
+              Icons.arrow_drop_down,
+              size: 24,
+              color: Colors.black54,
+            ),
+          ),
+          Spacer(),
+          GestureDetector(
+            onTap: () {
+              setState(() {
+                if (selectMultiple) {
+                  selectedAssets.clear();
+                }
+                selectMultiple = !selectMultiple;
+              });
+            },
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.grey.shade200,
+                shape: BoxShape.circle,
+              ),
+              padding: EdgeInsets.all(10),
+              child: SvgPicture.asset(selectMultiple ? AppAssets.multiFill : AppAssets.multi),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -469,117 +494,114 @@ class PostAssetPickerScreenState extends State<PostAssetPickerScreen> with Widge
       );
     }
 
-    return Hero(
-      tag: 'preview-${previewAsset!.id}',
-      child: Container(
-        width: double.infinity,
-        decoration: BoxDecoration(
-          color: Colors.white,
-          boxShadow: _isScrolling
-              ? [
-                  BoxShadow(
-                    color: Colors.grey.withValues(alpha: 0.1),
-                    spreadRadius: 1,
-                    blurRadius: 3,
-                    offset: const Offset(0, 1),
-                  ),
-                ]
-              : null,
-        ),
-        child: Stack(
-          children: [
-            if (previewAsset!.type == AssetType.video && _videoController != null)
-              GestureDetector(
-                onTap: _toggleVideoPlayback,
-                child: Center(
-                  child: AspectRatio(
-                    aspectRatio: _videoController!.value.aspectRatio,
-                    child: VideoPlayer(_videoController!),
-                  ),
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        boxShadow: _isScrolling
+            ? [
+                BoxShadow(
+                  color: Colors.grey.withValues(alpha: 0.1),
+                  spreadRadius: 1,
+                  blurRadius: 3,
+                  offset: const Offset(0, 1),
                 ),
-              )
-            else
-              AssetEntityImage(
-                previewAsset!,
-                width: double.infinity,
-                height: double.infinity,
-                fit: BoxFit.cover,
-                isOriginal: true,
-                loadingBuilder: (context, child, loadingProgress) {
-                  if (loadingProgress == null) return child;
-                  return _ShimmerWidget(
-                    child: Container(
-                      color: Colors.grey[300],
+              ]
+            : null,
+      ),
+      child: Stack(
+        children: [
+          if (previewAsset!.type == AssetType.video && _videoController != null)
+            GestureDetector(
+              onTap: _toggleVideoPlayback,
+              child: Center(
+                child: AspectRatio(
+                  aspectRatio: _videoController!.value.aspectRatio,
+                  child: VideoPlayer(_videoController!),
+                ),
+              ),
+            )
+          else
+            AssetEntityImage(
+              previewAsset!,
+              width: double.infinity,
+              height: double.infinity,
+              fit: BoxFit.cover,
+              isOriginal: true,
+              loadingBuilder: (context, child, loadingProgress) {
+                if (loadingProgress == null) return child;
+                return _ShimmerWidget(
+                  child: Container(
+                    color: Colors.grey[300],
+                  ),
+                );
+              },
+            ),
+          if (previewAsset!.type == AssetType.video && _videoController != null)
+            Center(
+              child: IconButton(
+                icon: Icon(
+                  _isVideoPlaying ? Icons.pause : Icons.play_arrow,
+                  size: 50,
+                  color: Colors.white.withValues(alpha: 0.8),
+                ),
+                onPressed: _toggleVideoPlayback,
+              ),
+            ),
+          if (selectedAssets.isNotEmpty)
+            Positioned(
+              top: 16,
+              right: 16,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  color: Colors.blue,
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.1),
+                      spreadRadius: 1,
+                      blurRadius: 3,
+                      offset: const Offset(0, 1),
                     ),
-                  );
-                },
-              ),
-            if (previewAsset!.type == AssetType.video && _videoController != null)
-              Center(
-                child: IconButton(
-                  icon: Icon(
-                    _isVideoPlaying ? Icons.pause : Icons.play_arrow,
-                    size: 50,
-                    color: Colors.white.withValues(alpha: 0.8),
+                  ],
+                ),
+                child: Text(
+                  '${selectedAssets.length}',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
                   ),
-                  onPressed: _toggleVideoPlayback,
                 ),
               ),
-            if (selectedAssets.isNotEmpty)
-              Positioned(
-                top: 16,
-                right: 16,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: Colors.blue,
-                    borderRadius: BorderRadius.circular(20),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.1),
-                        spreadRadius: 1,
-                        blurRadius: 3,
-                        offset: const Offset(0, 1),
-                      ),
-                    ],
-                  ),
-                  child: Text(
-                    '${selectedAssets.length}',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 14,
+            ),
+          if (selectedAssets.length > 1)
+            Positioned(
+              bottom: 16,
+              right: 16,
+              child: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.9),
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.1),
+                      spreadRadius: 1,
+                      blurRadius: 3,
+                      offset: const Offset(0, 1),
                     ),
-                  ),
+                  ],
+                ),
+                child: Icon(
+                  Icons.photo_library,
+                  color: Colors.grey[700],
+                  size: 20,
                 ),
               ),
-            if (selectedAssets.length > 1)
-              Positioned(
-                bottom: 16,
-                right: 16,
-                child: Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.9),
-                    borderRadius: BorderRadius.circular(20),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.1),
-                        spreadRadius: 1,
-                        blurRadius: 3,
-                        offset: const Offset(0, 1),
-                      ),
-                    ],
-                  ),
-                  child: Icon(
-                    Icons.photo_library,
-                    color: Colors.grey[700],
-                    size: 20,
-                  ),
-                ),
-              ),
-          ],
-        ),
+            ),
+        ],
       ),
     );
   }
@@ -622,97 +644,94 @@ class PostAssetPickerScreenState extends State<PostAssetPickerScreen> with Widge
           return GestureDetector(
             onTap: () => _onAssetTap(asset),
             onLongPress: () => _onAssetLongPress(asset),
-            child: Hero(
-              tag: 'thumbnail-${asset.id}',
-              child: Material(
-                color: Colors.transparent,
-                child: Stack(
-                  children: [
-                    AssetEntityImage(
-                      asset,
-                      key: ValueKey(asset.id),
-                      width: double.infinity,
-                      height: double.infinity,
-                      fit: BoxFit.cover,
-                      isOriginal: false,
-                      thumbnailSize: const ThumbnailSize.square(200),
-                      loadingBuilder: (context, child, loadingProgress) {
-                        if (loadingProgress == null) return child;
-                        return _ShimmerWidget(
-                          child: Container(
-                            color: Colors.grey[300],
-                          ),
-                        );
-                      },
+            child: Material(
+              color: Colors.transparent,
+              child: Stack(
+                children: [
+                  AssetEntityImage(
+                    asset,
+                    key: ValueKey(asset.id),
+                    width: double.infinity,
+                    height: double.infinity,
+                    fit: BoxFit.cover,
+                    isOriginal: false,
+                    thumbnailSize: const ThumbnailSize.square(200),
+                    loadingBuilder: (context, child, loadingProgress) {
+                      if (loadingProgress == null) return child;
+                      return _ShimmerWidget(
+                        child: Container(
+                          color: Colors.grey[300],
+                        ),
+                      );
+                    },
+                  ),
+                  if (isPreview && (selectedAssets.isEmpty || isSelected))
+                    Positioned.fill(
+                      child: Container(
+                        decoration: BoxDecoration(
+                          border: Border.all(color: Colors.blue, width: 3),
+                        ),
+                      ),
                     ),
-                    if (isPreview && (selectedAssets.isEmpty || isSelected))
-                      Positioned.fill(
-                        child: Container(
-                          decoration: BoxDecoration(
-                            border: Border.all(color: Colors.blue, width: 3),
-                          ),
-                        ),
+                  if (isSelected)
+                    Positioned.fill(
+                      child: Container(
+                        color: Colors.blue.withValues(alpha: 0.2),
                       ),
-                    if (isSelected)
-                      Positioned.fill(
-                        child: Container(
-                          color: Colors.blue.withValues(alpha: 0.2),
-                        ),
-                      ),
-                    if (isSelected)
-                      Positioned(
-                        top: 4,
-                        right: 4,
-                        child: Container(
-                          width: 24,
-                          height: 24,
-                          decoration: BoxDecoration(
-                            color: Colors.blue,
-                            shape: BoxShape.circle,
-                            border: Border.all(color: Colors.white, width: 2),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.1),
-                                spreadRadius: 1,
-                                blurRadius: 2,
-                                offset: const Offset(0, 1),
-                              ),
-                            ],
-                          ),
-                          child: Center(
-                            child: Text(
-                              '${selectionIndex + 1}',
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold,
-                              ),
+                    ),
+                  if (isSelected)
+                    Positioned(
+                      top: 4,
+                      right: 4,
+                      child: Container(
+                        width: 24,
+                        height: 24,
+                        decoration: BoxDecoration(
+                          color: Colors.blue,
+                          shape: BoxShape.circle,
+                          border: Border.all(color: Colors.white, width: 2),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.1),
+                              spreadRadius: 1,
+                              blurRadius: 2,
+                              offset: const Offset(0, 1),
                             ),
-                          ),
+                          ],
                         ),
-                      ),
-                    if (asset.type == AssetType.video)
-                      Positioned(
-                        bottom: 4,
-                        right: 4,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-                          decoration: BoxDecoration(
-                            color: Colors.black.withValues(alpha: 0.7),
-                            borderRadius: BorderRadius.circular(4),
-                          ),
+                        child: Center(
                           child: Text(
-                            _formatDuration(asset.duration),
+                            '${selectionIndex + 1}',
                             style: const TextStyle(
                               color: Colors.white,
-                              fontSize: 10,
-                              fontWeight: FontWeight.w500,
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
                             ),
                           ),
                         ),
                       ),
-                  ],
-                ),
+                    ),
+                  if (asset.type == AssetType.video)
+                    Positioned(
+                      bottom: 4,
+                      right: 4,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: Colors.black.withValues(alpha: 0.7),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Text(
+                          _formatDuration(asset.duration),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 10,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
               ),
             ),
           );
@@ -791,5 +810,33 @@ class _ShimmerWidgetState extends State<_ShimmerWidget> with SingleTickerProvide
         );
       },
     );
+  }
+}
+
+class _SliverHeaderDelegate extends SliverPersistentHeaderDelegate {
+  final double minHeight;
+  final double maxHeight;
+  final Widget child;
+
+  _SliverHeaderDelegate({
+    required this.minHeight,
+    required this.maxHeight,
+    required this.child,
+  });
+
+  @override
+  double get minExtent => minHeight;
+
+  @override
+  double get maxExtent => maxHeight;
+
+  @override
+  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
+    return SizedBox.expand(child: child);
+  }
+
+  @override
+  bool shouldRebuild(_SliverHeaderDelegate oldDelegate) {
+    return maxHeight != oldDelegate.maxHeight || minHeight != oldDelegate.minHeight || child != oldDelegate.child;
   }
 }

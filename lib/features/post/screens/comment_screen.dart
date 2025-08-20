@@ -1,5 +1,4 @@
 import 'dart:ui';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -167,38 +166,10 @@ class _CommentScreenState extends State<CommentScreen> {
       child: SafeArea(
         child: Row(
           children: [
-            ClipOval(
-              child: CachedNetworkImage(
-                height: 38,
-                width: 38,
-                imageUrl: userProfilePic ?? '',
-                cacheKey: userProfilePic ?? '',
-                fit: BoxFit.cover,
-                errorWidget: (context, url, error) {
-                  return Image.asset(
-                    AppAssets.profilePng,
-                    height: 38,
-                    width: 38,
-                    fit: BoxFit.cover,
-                  );
-                },
-                placeholder: (context, url) {
-                  return Image.asset(
-                    AppAssets.profilePng,
-                    height: 38,
-                    width: 38,
-                    fit: BoxFit.cover,
-                  );
-                },
-                imageBuilder: (context, imageProvider) => Container(
-                  decoration: BoxDecoration(
-                    image: DecorationImage(
-                      image: imageProvider,
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-                ),
-              ),
+            RoundProfileAvatar(
+              imageUrl: userProfilePic,
+              radius: 23,
+              userId: userId ?? '',
             ),
             const SizedBox(width: 8),
             Expanded(
@@ -456,42 +427,10 @@ class _CommentItemState extends State<CommentItem> {
                     if (widget.comment?.user?.id == userId) return;
                     appRouter.push(RouterName.otherUserProfile.path, extra: ProfileScreenDataModel(userId: widget.comment?.user?.id ?? ''));
                   },
-                  child: CircleAvatar(
+                  child: RoundProfileAvatar(
+                    imageUrl: widget.comment?.user?.profile?.profilePicture ?? '',
                     radius: 18,
-                    backgroundColor: Colors.grey.shade200,
-                    child: ClipOval(
-                      child: CachedNetworkImage(
-                        imageUrl: widget.comment?.user?.profile?.profilePicture ?? '',
-                        cacheKey: widget.comment?.user?.profile?.profilePicture ?? '',
-                        width: 36,
-                        height: 36,
-                        fit: BoxFit.cover,
-                        errorWidget: (context, url, error) {
-                          return Image.asset(
-                            AppAssets.profilePng,
-                            height: 38,
-                            width: 38,
-                            fit: BoxFit.cover,
-                          );
-                        },
-                        placeholder: (context, url) {
-                          return Image.asset(
-                            AppAssets.profilePng,
-                            height: 38,
-                            width: 38,
-                            fit: BoxFit.cover,
-                          );
-                        },
-                        imageBuilder: (context, imageProvider) => Container(
-                          decoration: BoxDecoration(
-                            image: DecorationImage(
-                              image: imageProvider,
-                              fit: BoxFit.cover,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
+                    userId: widget.comment?.user?.id ?? '',
                   ),
                 ),
                 if (widget.comment?.apiStatus == PostCommentApiStatus.posting)
@@ -947,38 +886,10 @@ class _ChildCommentItemState extends State<ChildCommentItem> {
                     if (widget.childComment?.user?.id == userId) return;
                     appRouter.push(RouterName.otherUserProfile.path, extra: ProfileScreenDataModel(userId: widget.childComment?.user?.id ?? ''));
                   },
-                  child: ClipOval(
-                    child: CachedNetworkImage(
-                      height: 26,
-                      width: 26,
-                      imageUrl: widget.childComment?.user?.profile?.profilePicture ?? '',
-                      cacheKey: widget.childComment?.user?.profile?.profilePicture ?? '',
-                      fit: BoxFit.cover,
-                      errorWidget: (context, url, error) {
-                        return Image.asset(
-                          AppAssets.profilePng,
-                          height: 26,
-                          width: 26,
-                          fit: BoxFit.cover,
-                        );
-                      },
-                      imageBuilder: (context, imageProvider) => Container(
-                        decoration: BoxDecoration(
-                          image: DecorationImage(
-                            image: imageProvider,
-                            fit: BoxFit.cover,
-                          ),
-                        ),
-                      ),
-                      placeholder: (context, url) {
-                        return Image.asset(
-                          AppAssets.profilePng,
-                          height: 26,
-                          width: 26,
-                          fit: BoxFit.cover,
-                        );
-                      },
-                    ),
+                  child: RoundProfileAvatar(
+                    imageUrl: widget.childComment?.user?.profile?.profilePicture ?? '',
+                    radius: 14,
+                    userId: widget.childComment?.user?.id ?? '',
                   ),
                 ),
                 if (widget.childComment?.apiStatus == PostCommentApiStatus.posting)
@@ -1175,38 +1086,10 @@ class HighlightedComment extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          ClipOval(
-            child: CachedNetworkImage(
-              height: 35,
-              width: 35,
-              imageUrl: comment?.user?.profile?.profilePicture ?? '',
-              cacheKey: comment?.user?.profile?.profilePicture ?? '',
-              fit: BoxFit.cover,
-              errorWidget: (context, url, error) {
-                return Image.asset(
-                  AppAssets.profilePng,
-                  height: 35,
-                  width: 35,
-                  fit: BoxFit.cover,
-                );
-              },
-              placeholder: (context, url) {
-                return Image.asset(
-                  AppAssets.profilePng,
-                  height: 35,
-                  width: 35,
-                  fit: BoxFit.cover,
-                );
-              },
-              imageBuilder: (context, imageProvider) => Container(
-                decoration: BoxDecoration(
-                  image: DecorationImage(
-                    image: imageProvider,
-                    fit: BoxFit.cover,
-                  ),
-                ),
-              ),
-            ),
+          RoundProfileAvatar(
+            imageUrl: comment?.user?.profile?.profilePicture,
+            radius: 18,
+            userId: comment?.user?.id ?? '',
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -1216,7 +1099,6 @@ class HighlightedComment extends StatelessWidget {
                 Row(
                   children: [
                     Text(
-                      // comment?.user?.name ?? childComment?.user?.name ?? '',
                       comment?.user?.userName ?? '',
                       style: const TextStyle(
                         fontWeight: FontWeight.bold,
@@ -1235,7 +1117,6 @@ class HighlightedComment extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  // comment?.commentText ?? childComment?.commentText ?? '',
                   comment?.comment ?? '',
                   style: const TextStyle(fontSize: 14),
                 ),

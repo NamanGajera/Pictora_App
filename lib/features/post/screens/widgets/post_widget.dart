@@ -1,4 +1,3 @@
-import "package:cached_network_image/cached_network_image.dart";
 import "package:flutter/gestures.dart";
 import "package:flutter/material.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
@@ -89,43 +88,10 @@ class _PostWidgetState extends State<PostWidget> with AutomaticKeepAliveClientMi
                     color: primaryColor,
                     width: 1.5,
                   )),
-              child: ClipOval(
-                child: CachedNetworkImage(
-                  imageUrl: widget.post?.userData?.profile?.profilePicture ?? '',
-                  cacheKey: widget.post?.userData?.profile?.profilePicture ?? '',
-                  fit: BoxFit.cover,
-                  height: 40,
-                  width: 40,
-                  placeholder: (context, url) => Container(
-                    color: Colors.grey[100],
-                    child: const Center(
-                      child: SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          valueColor: AlwaysStoppedAnimation<Color>(Color(0xff9CA3AF)),
-                        ),
-                      ),
-                    ),
-                  ),
-                  errorWidget: (context, url, error) => Container(
-                    color: const Color(0xffF3F4F6),
-                    child: const Icon(
-                      Icons.person,
-                      color: Color(0xff9CA3AF),
-                      size: 32,
-                    ),
-                  ),
-                  imageBuilder: (context, imageProvider) => Container(
-                    decoration: BoxDecoration(
-                      image: DecorationImage(
-                        image: imageProvider,
-                        fit: BoxFit.cover,
-                      ),
-                    ),
-                  ),
-                ),
+              child: RoundProfileAvatar(
+                imageUrl: widget.post?.userData?.profile?.profilePicture,
+                radius: 20,
+                userId: widget.post?.userData?.id ?? '',
               ),
             ).withAutomaticKeepAlive(),
           ),

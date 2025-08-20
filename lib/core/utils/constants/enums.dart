@@ -48,3 +48,13 @@ enum PostListNavigation {
   myProfile,
   otherProfile,
 }
+
+enum Gender {
+  male("Male"),
+  female("Female"),
+  other("Other");
+
+  final String name;
+
+  const Gender(this.name);
+}

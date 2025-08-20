@@ -10,6 +10,7 @@ import 'package:pictora/features/post/screens/liked_by_user_screen.dart';
 import 'package:pictora/features/post/screens/post_asset_picker_screen.dart';
 import 'package:pictora/features/post/screens/post_list_screen.dart';
 import 'package:pictora/features/profile/screens/follow_section_screen.dart';
+import 'package:pictora/features/profile/screens/profile_edit_screen.dart';
 import 'package:pictora/features/search/screens/search_screen.dart';
 import 'package:pictora/core/utils/helper/page_transition.dart';
 
@@ -27,6 +28,10 @@ final GoRouter appRouter = GoRouter(
     GoRoute(
       path: RouterName.splash.path,
       name: RouterName.splash.name,
+      onExit: (context, state) {
+        FocusManager.instance.primaryFocus?.unfocus();
+        return true;
+      },
       pageBuilder: (BuildContext context, GoRouterState state) => MaterialPage<void>(
         key: state.pageKey,
         child: const SplashScreen(),
@@ -35,6 +40,10 @@ final GoRouter appRouter = GoRouter(
     GoRoute(
       path: RouterName.login.path,
       name: RouterName.login.name,
+      onExit: (context, state) {
+        FocusManager.instance.primaryFocus?.unfocus();
+        return true;
+      },
       pageBuilder: (context, state) {
         return SlideTransitionPage(child: LoginScreen());
       },
@@ -42,6 +51,10 @@ final GoRouter appRouter = GoRouter(
     GoRoute(
       path: RouterName.register.path,
       name: RouterName.register.name,
+      onExit: (context, state) {
+        FocusManager.instance.primaryFocus?.unfocus();
+        return true;
+      },
       pageBuilder: (context, state) {
         return SlideTransitionPage(child: RegisterScreen());
       },
@@ -56,6 +69,10 @@ final GoRouter appRouter = GoRouter(
             GoRoute(
               path: RouterName.home.path,
               name: RouterName.home.name,
+              onExit: (context, state) {
+                FocusManager.instance.primaryFocus?.unfocus();
+                return true;
+              },
               pageBuilder: (BuildContext context, GoRouterState state) {
                 HomeScreenDataModel? screenData = state.extra as HomeScreenDataModel?;
                 return NoTransitionPage<void>(
@@ -73,6 +90,10 @@ final GoRouter appRouter = GoRouter(
             GoRoute(
               path: RouterName.search.path,
               name: RouterName.search.name,
+              onExit: (context, state) {
+                FocusManager.instance.primaryFocus?.unfocus();
+                return true;
+              },
               pageBuilder: (BuildContext context, GoRouterState state) => NoTransitionPage<void>(
                 key: state.pageKey,
                 child: const SearchScreen(),
@@ -85,6 +106,10 @@ final GoRouter appRouter = GoRouter(
             GoRoute(
               path: RouterName.postAssetPicker.path,
               name: RouterName.postAssetPicker.name,
+              onExit: (context, state) {
+                FocusManager.instance.primaryFocus?.unfocus();
+                return true;
+              },
               pageBuilder: (BuildContext context, GoRouterState state) => NoTransitionPage<void>(
                 key: state.pageKey,
                 child: PostAssetPickerScreen(
@@ -99,6 +124,10 @@ final GoRouter appRouter = GoRouter(
             GoRoute(
               path: RouterName.profile.path,
               name: RouterName.profile.name,
+              onExit: (context, state) {
+                FocusManager.instance.primaryFocus?.unfocus();
+                return true;
+              },
               pageBuilder: (BuildContext context, GoRouterState state) => NoTransitionPage<void>(
                 key: state.pageKey,
                 child: const ProfileScreen(),
@@ -111,6 +140,10 @@ final GoRouter appRouter = GoRouter(
     GoRoute(
       path: RouterName.addPost.path,
       name: RouterName.addPost.name,
+      onExit: (context, state) {
+        FocusManager.instance.primaryFocus?.unfocus();
+        return true;
+      },
       pageBuilder: (context, state) {
         AddPostScreenDataModel screenData = state.extra as AddPostScreenDataModel;
         return SlideTransitionPage(
@@ -123,6 +156,10 @@ final GoRouter appRouter = GoRouter(
     GoRoute(
       path: RouterName.videoCoverSelector.path,
       name: RouterName.videoCoverSelector.name,
+      onExit: (context, state) {
+        FocusManager.instance.primaryFocus?.unfocus();
+        return true;
+      },
       pageBuilder: (context, state) {
         VideoCoverSelectorDataModel screenData = state.extra as VideoCoverSelectorDataModel;
         return SlideTransitionPage(
@@ -136,6 +173,10 @@ final GoRouter appRouter = GoRouter(
     GoRoute(
       path: RouterName.postComment.path,
       name: RouterName.postComment.name,
+      onExit: (context, state) {
+        FocusManager.instance.primaryFocus?.unfocus();
+        return true;
+      },
       pageBuilder: (context, state) {
         CommentScreenDataModel screenData = state.extra as CommentScreenDataModel;
         return SlideUpTransitionPage(
@@ -149,6 +190,10 @@ final GoRouter appRouter = GoRouter(
     GoRoute(
       path: RouterName.likedByUsers.path,
       name: RouterName.likedByUsers.name,
+      onExit: (context, state) {
+        FocusManager.instance.primaryFocus?.unfocus();
+        return true;
+      },
       pageBuilder: (context, state) {
         LikedByUserScreenDataModel screenData = state.extra as LikedByUserScreenDataModel;
         return SlideUpTransitionPage(
@@ -161,6 +206,10 @@ final GoRouter appRouter = GoRouter(
     GoRoute(
       path: RouterName.otherUserProfile.path,
       name: RouterName.otherUserProfile.name,
+      onExit: (context, state) {
+        FocusManager.instance.primaryFocus?.unfocus();
+        return true;
+      },
       pageBuilder: (context, state) {
         ProfileScreenDataModel screenData = state.extra as ProfileScreenDataModel;
         return SlideTransitionPage(
@@ -173,6 +222,10 @@ final GoRouter appRouter = GoRouter(
     GoRoute(
       path: RouterName.postLists.path,
       name: RouterName.postLists.name,
+      onExit: (context, state) {
+        FocusManager.instance.primaryFocus?.unfocus();
+        return true;
+      },
       pageBuilder: (context, state) {
         PostListScreenDataModel screenData = state.extra as PostListScreenDataModel;
         return SlideTransitionPage(
@@ -186,6 +239,10 @@ final GoRouter appRouter = GoRouter(
     GoRoute(
       path: RouterName.followSection.path,
       name: RouterName.followSection.name,
+      onExit: (context, state) {
+        FocusManager.instance.primaryFocus?.unfocus();
+        return true;
+      },
       pageBuilder: (context, state) {
         FollowSectionScreenDataModel screenData = state.extra as FollowSectionScreenDataModel;
         return SlideTransitionPage(
@@ -194,6 +251,19 @@ final GoRouter appRouter = GoRouter(
             tabIndex: screenData.tabIndex,
             userName: screenData.userName,
           ),
+        );
+      },
+    ),
+    GoRoute(
+      path: RouterName.profileEdit.path,
+      name: RouterName.profileEdit.name,
+      onExit: (context, state) {
+        FocusManager.instance.primaryFocus?.unfocus();
+        return true;
+      },
+      pageBuilder: (context, state) {
+        return SlideTransitionPage(
+          child: ProfileEditScreen(),
         );
       },
     ),

@@ -282,11 +282,10 @@ class ApiClient {
     if (error.type == DioExceptionType.connectionTimeout ||
         error.type == DioExceptionType.sendTimeout ||
         error.type == DioExceptionType.receiveTimeout) {
-      return FetchDataException("Request timed out");
+      return FetchDataException("Couldn't connect.");
     } else if (error.type == DioExceptionType.connectionError) {
       return FetchDataException("No internet connection");
     } else if (error.type == DioExceptionType.badResponse) {
-      // Response was received but with bad status code
       if (error.response != null) {
         return _parseApiResponse(error.response!);
       }

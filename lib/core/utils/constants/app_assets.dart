@@ -17,4 +17,6 @@ class AppAssets {
   static const String saveFill = '${svgFolderPath}save_fill.svg';
   static const String share = '${svgFolderPath}share.svg';
   static const String comment = '${svgFolderPath}comment.svg';
+  static const String multi = '${svgFolderPath}multi.svg';
+  static const String multiFill = '${svgFolderPath}multi_fill.svg';
 }

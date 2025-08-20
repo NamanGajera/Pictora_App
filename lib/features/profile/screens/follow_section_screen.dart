@@ -1,4 +1,3 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pictora/features/profile/bloc/follow_section_bloc/follow_section_bloc.dart';
@@ -10,7 +9,6 @@ import 'package:pictora/core/utils/widgets/custom_widget.dart';
 import '../../../data/model/user_model.dart';
 import '../../../router/router.dart';
 import '../../../router/router_name.dart';
-import '../../../core/utils/constants/app_assets.dart';
 import '../../../core/utils/constants/bloc_instances.dart';
 import '../../../core/utils/constants/colors.dart';
 import 'profile_screen.dart';
@@ -401,46 +399,10 @@ class _FollowSectionScreenState extends State<FollowSectionScreen> with SingleTi
       padding: EdgeInsets.symmetric(horizontal: 20, vertical: 16),
       child: Row(
         children: [
-          Container(
-            width: 50,
-            height: 50,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: Colors.grey[100],
-            ),
-            child: ClipOval(
-              child: (user?.profile?.profilePicture ?? '').isNotEmpty
-                  ? CachedNetworkImage(
-                      imageUrl: user?.profile?.profilePicture ?? '',
-                      cacheKey: user?.profile?.profilePicture ?? '',
-                      fit: BoxFit.cover,
-                      errorWidget: (context, url, error) {
-                        return Image.asset(
-                          AppAssets.profilePng,
-                          height: 26,
-                          width: 26,
-                          fit: BoxFit.cover,
-                        );
-                      },
-                      placeholder: (context, url) {
-                        return Image.asset(
-                          AppAssets.profilePng,
-                          height: 50,
-                          width: 50,
-                          fit: BoxFit.cover,
-                        );
-                      },
-                      imageBuilder: (context, imageProvider) => Container(
-                        decoration: BoxDecoration(
-                          image: DecorationImage(
-                            image: imageProvider,
-                            fit: BoxFit.cover,
-                          ),
-                        ),
-                      ),
-                    )
-                  : _buildDefaultAvatar(user?.fullName ?? ''),
-            ),
+          RoundProfileAvatar(
+            imageUrl: user?.profile?.profilePicture ?? '',
+            radius: 24,
+            userId: user?.id ?? '',
           ),
 
           SizedBox(width: 16),
@@ -564,30 +526,6 @@ class _FollowSectionScreenState extends State<FollowSectionScreen> with SingleTi
             ]
           ]
         ],
-      ),
-    );
-  }
-
-  Widget _buildDefaultAvatar(String fullName) {
-    final initials = fullName.split(' ').take(2).map((name) => name.isNotEmpty ? name[0].toUpperCase() : '').join();
-
-    return Container(
-      width: 50,
-      height: 50,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: primaryColor.withValues(alpha: 0.7),
-      ),
-      alignment: Alignment.center,
-      child: Center(
-        child: Text(
-          initials,
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
       ),
     );
   }

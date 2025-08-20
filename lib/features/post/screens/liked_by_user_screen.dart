@@ -1,4 +1,3 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pictora/features/post/bloc/post_bloc.dart';
@@ -9,8 +8,8 @@ import 'package:pictora/core/utils/constants/bloc_instances.dart';
 import 'package:pictora/core/utils/constants/constants.dart';
 import 'package:pictora/core/utils/constants/enums.dart';
 
+import '../../../core/utils/widgets/custom_widget.dart';
 import '../../../data/model/user_model.dart';
-import '../../../core/utils/constants/app_assets.dart';
 import '../../../core/utils/constants/colors.dart';
 
 class LikedByUserScreen extends StatefulWidget {
@@ -147,46 +146,10 @@ class _LikedByUserScreenState extends State<LikedByUserScreen> {
       child: Row(
         children: [
           // Profile Image
-          Container(
-            width: 50,
-            height: 50,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: Colors.grey[100],
-            ),
-            child: ClipOval(
-              child: (user?.profile?.profilePicture ?? '').isNotEmpty
-                  ? CachedNetworkImage(
-                      imageUrl: user?.profile?.profilePicture ?? '',
-                      cacheKey: user?.profile?.profilePicture ?? '',
-                      fit: BoxFit.cover,
-                      errorWidget: (context, url, error) {
-                        return Image.asset(
-                          AppAssets.profilePng,
-                          height: 26,
-                          width: 26,
-                          fit: BoxFit.cover,
-                        );
-                      },
-                      placeholder: (context, url) {
-                        return Image.asset(
-                          AppAssets.profilePng,
-                          height: 50,
-                          width: 50,
-                          fit: BoxFit.cover,
-                        );
-                      },
-                      imageBuilder: (context, imageProvider) => Container(
-                        decoration: BoxDecoration(
-                          image: DecorationImage(
-                            image: imageProvider,
-                            fit: BoxFit.cover,
-                          ),
-                        ),
-                      ),
-                    )
-                  : _buildDefaultAvatar(user?.fullName ?? ''),
-            ),
+          RoundProfileAvatar(
+            imageUrl: user?.profile?.profilePicture ?? '',
+            radius: 24,
+            userId: user?.id ?? '',
           ),
 
           SizedBox(width: 16),
@@ -204,7 +167,7 @@ class _LikedByUserScreenState extends State<LikedByUserScreen> {
                     color: Colors.black87,
                   ),
                 ),
-                SizedBox(height: 4),
+                SizedBox(height: 2),
                 Text(
                   user?.fullName ?? 'guest',
                   style: TextStyle(
@@ -218,30 +181,6 @@ class _LikedByUserScreenState extends State<LikedByUserScreen> {
 
           if (user?.id != userId) _buildFollowButton(user),
         ],
-      ),
-    );
-  }
-
-  Widget _buildDefaultAvatar(String fullName) {
-    final initials = fullName.split(' ').take(2).map((name) => name.isNotEmpty ? name[0].toUpperCase() : '').join();
-
-    return Container(
-      width: 50,
-      height: 50,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: primaryColor.withValues(alpha: 0.7),
-      ),
-      alignment: Alignment.center,
-      child: Center(
-        child: Text(
-          initials,
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
       ),
     );
   }

@@ -11,8 +11,6 @@ import 'package:rxdart/rxdart.dart';
 import 'package:shimmer/shimmer.dart';
 import '../../../core/database/hive_boxes.dart';
 import '../../../core/database/hive_service.dart';
-import '../../../core/utils/constants/app_assets.dart';
-import '../../../core/utils/constants/colors.dart';
 import '../../../data/hiveModel/user_hive_model.dart';
 import '../../../data/model/user_model.dart';
 import '../../../router/router.dart';
@@ -79,6 +77,7 @@ class _SearchScreenState extends State<SearchScreen> {
                       controller: _searchController,
                       constraints: const BoxConstraints(maxHeight: 42, minHeight: 42),
                       contentPadding: EdgeInsets.zero,
+                      textInputAction: TextInputAction.search,
                       onChanged: (value) => _searchSubject.add(value),
                       onTap: () => searchBloc.add(ShowSearchUserList(showSearchUser: true)),
                     ),
@@ -228,48 +227,11 @@ class _SearchScreenState extends State<SearchScreen> {
       padding: EdgeInsets.symmetric(horizontal: 14, vertical: 7),
       child: Row(
         children: [
-          Container(
-            width: 42,
-            height: 42,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: Colors.grey[100],
-            ),
-            child: ClipOval(
-              child: (user?.profile?.profilePicture ?? '').isNotEmpty
-                  ? CachedNetworkImage(
-                      imageUrl: user?.profile?.profilePicture ?? '',
-                      cacheKey: user?.profile?.profilePicture ?? '',
-                      fit: BoxFit.cover,
-                      errorWidget: (context, url, error) {
-                        return Image.asset(
-                          AppAssets.profilePng,
-                          height: 26,
-                          width: 26,
-                          fit: BoxFit.cover,
-                        );
-                      },
-                      placeholder: (context, url) {
-                        return Image.asset(
-                          AppAssets.profilePng,
-                          height: 42,
-                          width: 42,
-                          fit: BoxFit.cover,
-                        );
-                      },
-                      imageBuilder: (context, imageProvider) => Container(
-                        decoration: BoxDecoration(
-                          image: DecorationImage(
-                            image: imageProvider,
-                            fit: BoxFit.cover,
-                          ),
-                        ),
-                      ),
-                    )
-                  : _buildDefaultAvatar(user?.fullName ?? ''),
-            ),
+          RoundProfileAvatar(
+            imageUrl: user?.profile?.profilePicture ?? '',
+            radius: 23,
+            userId: user?.id ?? '',
           ),
-
           SizedBox(width: 12),
 
           // User Info
@@ -297,12 +259,12 @@ class _SearchScreenState extends State<SearchScreen> {
           ),
           if (isCachedUser ?? false)
             GestureDetector(
-              behavior: HitTestBehavior.opaque, // Ensures tap is captured here
+              behavior: HitTestBehavior.opaque,
               onTap: () async {
                 await deleteUser(user?.id ?? '');
               },
               child: Padding(
-                padding: const EdgeInsets.all(6.0), // increases touch area
+                padding: const EdgeInsets.all(6.0),
                 child: Icon(
                   Icons.close,
                   size: 18,
@@ -311,30 +273,6 @@ class _SearchScreenState extends State<SearchScreen> {
               ),
             ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildDefaultAvatar(String fullName) {
-    final initials = fullName.split(' ').take(2).map((name) => name.isNotEmpty ? name[0].toUpperCase() : '').join();
-
-    return Container(
-      width: 45,
-      height: 45,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: primaryColor.withValues(alpha: 0.7),
-      ),
-      alignment: Alignment.center,
-      child: Center(
-        child: Text(
-          initials,
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 15,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
       ),
     );
   }
@@ -354,9 +292,9 @@ class _SearchScreenState extends State<SearchScreen> {
         fit: StackFit.expand,
         children: [
           CachedNetworkImage(
-            cacheKey: displayUrl,
+            cacheKey: post?.mediaData?[0].id,
             imageUrl: displayUrl,
-            key: ValueKey(displayUrl),
+            key: ValueKey(post?.mediaData?[0].id),
             fit: BoxFit.cover,
             placeholder: (context, url) => Container(
               color: Colors.grey[100],
@@ -406,7 +344,12 @@ class _SearchScreenState extends State<SearchScreen> {
   Future<void> cacheUser(UserHiveModel? user) async {
     final box = await HiveService.openBox<UserHiveModel>(HiveBoxes.searchUsers);
     if (user == null) return;
-    await box.add(user);
+
+    final alreadyExists = box.values.any((u) => u.id == user.id);
+
+    if (!alreadyExists) {
+      await box.add(user);
+    }
   }
 
   Future<void> deleteUser(String userId) async {

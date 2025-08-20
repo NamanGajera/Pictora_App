@@ -100,17 +100,17 @@ class PostBloc extends Bloc<PostEvent, PostState> {
     bool isOnline = await connectivityService.checkConnection();
 
     logDebug(message: "Online: $isOnline");
-
+    emit(state.copyWith(getAllPostApiStatus: ApiStatus.loading));
     final cachedPost = await getCachedPosts();
     List<PostData> postData = cachedPost.map((h) => h.toEntity()).toList();
-    if (!isOnline) {
-      emit(state.copyWith(
-        getAllPostApiStatus: ApiStatus.success,
-        allPostData: postData,
-      ));
-    }
+    // if (!isOnline) {
+    emit(state.copyWith(
+      getAllPostApiStatus: ApiStatus.success,
+      allPostData: postData,
+    ));
+    // }
     try {
-      emit(state.copyWith(getAllPostApiStatus: ApiStatus.loading));
+      // emit(state.copyWith(getAllPostApiStatus: ApiStatus.loading));
       final data = await repository.getAllPost(event.body);
 
       emit(state.copyWith(

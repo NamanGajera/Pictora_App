@@ -416,12 +416,16 @@ class CustomDropdownButton extends StatelessWidget {
   final BoxConstraints? suffixIconConstraints;
   final int? dropDownItemCount;
   final Color? hintTextColor;
+  final Color? borderColor;
+  final Color? focusedBorderColor;
   final FontWeight? fontWeight;
   final FontWeight? hintFontWeight;
   final bool showNoData;
   final bool showLoading;
   final String? loadingText;
   final String? noDataText;
+  final double borderWidth;
+  final double borderRadius;
 
   const CustomDropdownButton({
     super.key,
@@ -448,11 +452,14 @@ class CustomDropdownButton extends StatelessWidget {
     this.showNoData = false,
     this.loadingText = 'Loading data....',
     this.noDataText = 'No Data Found',
+    this.borderColor,
+    this.focusedBorderColor,
+    this.borderWidth = 1,
+    this.borderRadius = 6,
   });
 
   @override
   Widget build(BuildContext context) {
-    // Create the final dropdown list based on state
     List<DropDownValueModel> finalDropDownList = [];
 
     if (showLoading) {
@@ -513,20 +520,20 @@ class CustomDropdownButton extends StatelessWidget {
             filled: true,
             fillColor: Colors.white,
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(6),
-              borderSide: BorderSide(color: Color(0xFFE0D8D8)),
+              borderRadius: BorderRadius.circular(borderRadius),
+              borderSide: BorderSide(color: borderColor ?? Color(0xFFE0D8D8), width: borderWidth),
             ),
             enabledBorder: OutlineInputBorder(
-              borderSide: BorderSide(color: Color(0xFFE0D8D8)),
-              borderRadius: BorderRadius.circular(6),
+              borderSide: BorderSide(color: borderColor ?? Color(0xFFE0D8D8), width: borderWidth),
+              borderRadius: BorderRadius.circular(borderRadius),
             ),
             focusedBorder: OutlineInputBorder(
-              borderSide: BorderSide(color: primaryColor),
-              borderRadius: BorderRadius.circular(6),
+              borderSide: BorderSide(color: focusedBorderColor ?? primaryColor, width: borderWidth),
+              borderRadius: BorderRadius.circular(borderRadius),
             ),
             errorBorder: OutlineInputBorder(
-              borderSide: BorderSide(color: Colors.red.shade300),
-              borderRadius: BorderRadius.circular(6),
+              borderSide: BorderSide(color: Colors.red.shade300, width: borderWidth),
+              borderRadius: BorderRadius.circular(borderRadius),
             ),
             hintText: hint,
             hintStyle: TextStyle(
@@ -543,15 +550,12 @@ class CustomDropdownButton extends StatelessWidget {
           dropDownItemCount: dropDownItemCount!,
           dropDownList: finalDropDownList,
           onChanged: (value) {
-            // Prevent selection of loading and no data items
             if (value?.value == '__LOADING__' || value?.value == '__NO_DATA__') {
-              // Clear the controller to prevent showing the invalid selection
               Future.delayed(Duration(milliseconds: 50), () {
                 controller?.clearDropDown();
               });
               return;
             }
-            // Call the original onChanged for valid selections
             onChanged?.call(value);
           },
           enableSearch: enableSearch ?? false,
@@ -970,6 +974,7 @@ class RoundProfileAvatar extends StatelessWidget {
   final double radius;
   final Color backgroundColor;
   final IconData fallbackIcon;
+  final String userId;
 
   const RoundProfileAvatar({
     super.key,
@@ -977,6 +982,7 @@ class RoundProfileAvatar extends StatelessWidget {
     this.radius = 42,
     this.backgroundColor = const Color(0xffF5F5F5),
     this.fallbackIcon = Icons.person_rounded,
+    required this.userId,
   });
 
   @override
@@ -990,7 +996,7 @@ class RoundProfileAvatar extends StatelessWidget {
           ? ClipOval(
               child: CachedNetworkImage(
                 imageUrl: imageUrl!,
-                cacheKey: imageUrl!,
+                cacheKey: userId,
                 width: radius * 2,
                 height: radius * 2,
                 fit: BoxFit.cover,
