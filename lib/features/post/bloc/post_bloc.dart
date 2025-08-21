@@ -1,36 +1,37 @@
+// Dart SDK
 import 'dart:io';
 import 'dart:math' as math;
+
+// Third-party
 import 'package:bloc_concurrency/bloc_concurrency.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:pictora/data/hiveModel/post_mapper.dart';
-import 'package:pictora/data/model/user_model.dart';
-import 'package:pictora/data/repository/repository.dart';
-import 'package:pictora/router/router.dart';
-import 'package:pictora/router/router_name.dart';
-import 'package:pictora/core/utils/constants/constants.dart';
-import 'package:pictora/core/utils/constants/enums.dart';
-import 'package:pictora/core/utils/services/custom_logger.dart';
 import 'package:uuid/uuid.dart';
-import '../../../core/database/hive_boxes.dart';
-import '../../../core/database/hive_service.dart';
+
+// Project
+import '../repository/post_repository.dart';
+import '../../home/home.dart';
+import '../../../core/database/hive_model/post_model/post_mapper.dart';
+import '../../../core/utils/model/user_model.dart';
+import '../../../core/config/router.dart';
+import '../../../core/config/router_name.dart';
+import '../../../core/utils/services/service.dart';
+import '../../../core/database/hive/hive_boxes.dart';
+import '../../../core/database/hive/hive_service.dart';
 import '../../../core/network/connectivity_service.dart';
-import '../../../core/utils/constants/bloc_instances.dart';
-import '../../../core/utils/helper/helper_function.dart';
-import '../../../core/utils/helper/theme_helper.dart';
-import '../../../data/hiveModel/post_hive_model.dart';
-import '../../home/screens/home_screen.dart';
+import '../../../core/utils/constants/constants.dart';
+import '../../../core/utils/helper/helper.dart';
+import '../../../core/database/hive_model/post_model/post_hive_model.dart';
 import '../../profile/bloc/profile_bloc/profile_bloc.dart';
-import '../models/post_comment_data_model.dart';
-import '../models/post_data.dart';
+import '../models/models.dart';
 
 part 'post_event.dart';
 part 'post_state.dart';
 
 class PostBloc extends Bloc<PostEvent, PostState> {
-  final Repository repository;
+  final PostRepository postRepository;
   final Uuid uuid;
-  PostBloc(this.repository)
+  PostBloc(this.postRepository)
       : uuid = const Uuid(),
         super(PostState()) {
     on<CreatePostEvent>(_createPost, transformer: droppable());
@@ -78,7 +79,7 @@ class PostBloc extends Bloc<PostEvent, PostState> {
 
       logDebug(message: "Data-->>, $fileFields $fields");
 
-      final data = await repository.createPost(fields: fields, fileFields: fileFields);
+      final data = await postRepository.createPost(fields: fields, fileFields: fileFields);
 
       emit(state.copyWith(
         createPostApiStatus: ApiStatus.success,
@@ -111,7 +112,7 @@ class PostBloc extends Bloc<PostEvent, PostState> {
     // }
     try {
       // emit(state.copyWith(getAllPostApiStatus: ApiStatus.loading));
-      final data = await repository.getAllPost(event.body);
+      final data = await postRepository.getAllPost(event.body);
 
       emit(state.copyWith(
         getAllPostApiStatus: ApiStatus.success,
@@ -136,7 +137,7 @@ class PostBloc extends Bloc<PostEvent, PostState> {
   Future<void> _loadMorePost(LoadMorePostEvent event, Emitter<PostState> emit) async {
     try {
       emit(state.copyWith(isLoadMorePost: true));
-      final data = await repository.getAllPost(event.body);
+      final data = await postRepository.getAllPost(event.body);
 
       emit(state.copyWith(
         isLoadMorePost: false,
@@ -153,7 +154,7 @@ class PostBloc extends Bloc<PostEvent, PostState> {
   Future<void> _loadMoreOtherUserPost(LoadMoreOtherUserPostEvent event, Emitter<PostState> emit) async {
     try {
       emit(state.copyWith(isLoadMoreOtherUserPost: true));
-      final data = await repository.getAllPost(event.body);
+      final data = await postRepository.getAllPost(event.body);
 
       emit(state.copyWith(
         isLoadMoreOtherUserPost: false,
@@ -170,7 +171,7 @@ class PostBloc extends Bloc<PostEvent, PostState> {
   Future<void> _loadMoreMyPost(LoadMoreMyPostEvent event, Emitter<PostState> emit) async {
     try {
       emit(state.copyWith(isLoadMoreMyPost: true));
-      final data = await repository.getAllPost(event.body);
+      final data = await postRepository.getAllPost(event.body);
 
       emit(state.copyWith(
         isLoadMoreMyPost: false,
@@ -187,7 +188,7 @@ class PostBloc extends Bloc<PostEvent, PostState> {
   Future<void> _getMyPost(GetMyPostEvent event, Emitter<PostState> emit) async {
     try {
       emit(state.copyWith(getMyPostApiStatus: ApiStatus.loading));
-      final data = await repository.getAllPost(event.body);
+      final data = await postRepository.getAllPost(event.body);
       emit(state.copyWith(
         getMyPostApiStatus: ApiStatus.success,
         myPostData: data.data,
@@ -203,7 +204,7 @@ class PostBloc extends Bloc<PostEvent, PostState> {
   Future<void> _getOtherUserPost(GetOtherUserPostsEvent event, Emitter<PostState> emit) async {
     try {
       emit(state.copyWith(getOtherUserPostApiStatus: ApiStatus.loading));
-      final data = await repository.getAllPost(event.body);
+      final data = await postRepository.getAllPost(event.body);
       logDebug(message: "Get all post data OTHER:${(data.data ?? []).length} <<<< ${(data.total ?? 0)}");
       emit(state.copyWith(
         getOtherUserPostApiStatus: ApiStatus.success,
@@ -220,7 +221,7 @@ class PostBloc extends Bloc<PostEvent, PostState> {
   Future<void> _getPostComment(GetPostCommentDataEvent event, Emitter<PostState> emit) async {
     try {
       emit(state.copyWith(getPostCommentListApiStatus: ApiStatus.loading));
-      final data = await repository.getPostComment({"postId": event.postId});
+      final data = await postRepository.getPostComment({"postId": event.postId});
 
       emit(state.copyWith(
         getPostCommentListApiStatus: ApiStatus.success,
@@ -237,7 +238,7 @@ class PostBloc extends Bloc<PostEvent, PostState> {
   Future<void> _loadMoreComments(LoadMorePostCommentDataEvent event, Emitter<PostState> emit) async {
     try {
       emit(state.copyWith(isLoadMorePostComments: true));
-      final data = await repository.getPostComment(event.body);
+      final data = await postRepository.getPostComment(event.body);
 
       emit(state.copyWith(
         isLoadMorePostComments: false,
@@ -294,7 +295,7 @@ class PostBloc extends Bloc<PostEvent, PostState> {
         body['parentCommentId'] = event.commentParentId;
       }
 
-      final data = await repository.createComment(body);
+      final data = await postRepository.createComment(body);
       _updateComment(
         commentId: newComment.id ?? '',
         emit: emit,
@@ -326,7 +327,7 @@ class PostBloc extends Bloc<PostEvent, PostState> {
       }
       emit(state.copyWith(showReplies: repliesIdData));
 
-      final data = await repository.getCommentReplies({
+      final data = await postRepository.getCommentReplies({
         "skip": event.skip,
         "take": event.take,
         "commentId": event.commentId,
@@ -358,7 +359,7 @@ class PostBloc extends Bloc<PostEvent, PostState> {
   Future<void> _loadMoreReplies(LoadMoreCommentRepliesEvent event, Emitter<PostState> emit) async {
     try {
       emit(state.copyWith(isLoadMoreReplies: true));
-      final data = await repository.getCommentReplies({
+      final data = await postRepository.getCommentReplies({
         "skip": event.skip,
         "take": event.take,
         "commentId": event.commentId,
@@ -398,7 +399,7 @@ class PostBloc extends Bloc<PostEvent, PostState> {
   Future<void> _toggleCommentLike(ToggleCommentLikeEvent event, Emitter<PostState> emit) async {
     try {
       _updateComment(commentId: event.commentId, emit: emit, isLiked: event.isLike);
-      await repository.toggleCommentLike({
+      await postRepository.toggleCommentLike({
         "commentId": event.commentId,
         "isLike": event.isLike,
       });
@@ -417,7 +418,7 @@ class PostBloc extends Bloc<PostEvent, PostState> {
         apiStatus: PostCommentApiStatus.deleting,
       );
 
-      final data = await repository.deleteComment(event.commentId);
+      final data = await postRepository.deleteComment(event.commentId);
 
       final CommentData comment = (state.commentDataList ?? []).firstWhere((comment) => comment.id == event.commentId, orElse: () => CommentData());
       int repliesCount = 0;
@@ -450,7 +451,7 @@ class PostBloc extends Bloc<PostEvent, PostState> {
   Future<void> _togglePostLike(TogglePostLikeEvent event, Emitter<PostState> emit) async {
     try {
       _updatePostLists(postId: event.postId, emit: emit, isLiked: event.isLike);
-      await repository.togglePostLike({
+      await postRepository.togglePostLike({
         "postId": event.postId,
         "isLike": event.isLike,
       });
@@ -464,7 +465,7 @@ class PostBloc extends Bloc<PostEvent, PostState> {
   Future<void> _togglePostSave(TogglePostSaveEvent event, Emitter<PostState> emit) async {
     try {
       _updatePostLists(postId: event.postId, emit: emit, isSaved: event.isSave);
-      await repository.togglePostSave({
+      await postRepository.togglePostSave({
         "postId": event.postId,
         "isSave": event.isSave,
       });
@@ -479,7 +480,7 @@ class PostBloc extends Bloc<PostEvent, PostState> {
     try {
       emit(state.copyWith(deletePostApiStatus: ApiStatus.loading));
 
-      final data = await repository.deletePost(event.postId);
+      final data = await postRepository.deletePost(event.postId);
       ThemeHelper.showToastMessage(data.message ?? 'Post deleted');
       _updatePostLists(postId: event.postId, emit: emit, isDelete: true);
       emit(state.copyWith(deletePostApiStatus: ApiStatus.success));
@@ -496,7 +497,7 @@ class PostBloc extends Bloc<PostEvent, PostState> {
     try {
       emit(state.copyWith(archivePostApiStatus: ApiStatus.loading));
 
-      final data = await repository.toggleArchivePost({
+      final data = await postRepository.toggleArchivePost({
         "postId": event.postId,
         "isArchive": event.isArchive,
       });
@@ -514,7 +515,7 @@ class PostBloc extends Bloc<PostEvent, PostState> {
   Future<void> _getLikedByUser(GetLikedByUserEvent event, Emitter<PostState> emit) async {
     try {
       emit(state.copyWith(likeByUserApiStatus: ApiStatus.loading));
-      final data = await repository.getLikedByUser(
+      final data = await postRepository.getLikedByUser(
         postId: event.postId,
         body: {
           "skip": 0,
@@ -536,7 +537,7 @@ class PostBloc extends Bloc<PostEvent, PostState> {
   Future<void> _loadMoreLikedByUser(LoadMoreLikedByUserEvent event, Emitter<PostState> emit) async {
     try {
       emit(state.copyWith(isLoadMoreLikedByUser: true));
-      final data = await repository.getLikedByUser(
+      final data = await postRepository.getLikedByUser(
         postId: event.postId,
         body: event.body,
       );

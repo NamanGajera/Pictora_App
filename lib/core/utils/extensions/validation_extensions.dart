@@ -1,8 +1,8 @@
 extension ValidationExtensions on String {
-  // Email validation
-  bool get isEmail {
-    final emailRegExp = RegExp(r'^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$');
-    return emailRegExp.hasMatch(this);
+  // Validate email
+  bool get isValidEmail {
+    final regex = RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$');
+    return regex.hasMatch(this);
   }
 
   // Phone number validation (basic international format)
@@ -74,4 +74,14 @@ extension ValidationExtensions on String {
 
   // Check if string contains at least one special character
   bool get containsSpecialCharacter => contains(RegExp(r'[!@#$%^&*(),.?":{}|<>]'));
+
+  // All common video extensions
+  static final List<String> _videoExtensions = ['.mp4', '.mov', '.avi', '.mkv', '.flv', '.wmv', '.webm', '.mpeg', '.mpg', '.3gp', '.m4v', '.ts'];
+
+  // All common image extensions
+  static final List<String> _imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.tiff', '.webp', '.heic', '.heif', '.svg'];
+
+  bool get isVideoUrl => _videoExtensions.any((ext) => toLowerCase().endsWith(ext));
+
+  bool get isImageUrl => _imageExtensions.any((ext) => toLowerCase().endsWith(ext));
 }

@@ -1,11 +1,16 @@
+// Dart SDK
 import 'dart:io';
-import 'package:path_provider/path_provider.dart';
 
-import 'package:share_plus/share_plus.dart';
-import 'package:dio/dio.dart';
+// Flutter
 import 'package:flutter/foundation.dart';
 
-import 'custom_logger.dart';
+// Third-party
+import 'package:path_provider/path_provider.dart';
+import 'package:share_plus/share_plus.dart';
+import 'package:dio/dio.dart';
+
+// Project
+import 'service.dart';
 
 class MediaSharer {
   static Future<void> shareMedia({

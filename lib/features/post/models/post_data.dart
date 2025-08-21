@@ -1,4 +1,5 @@
-import '../../../data/model/user_model.dart';
+// Project
+import '../../../core/utils/model/user_model.dart';
 
 class PostData {
   String? id;

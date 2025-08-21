@@ -1,4 +1,4 @@
-import '../../../data/model/user_model.dart';
+import '../../../core/utils/model/user_model.dart';
 
 class FollowRequestsModel {
   int? statusCode;

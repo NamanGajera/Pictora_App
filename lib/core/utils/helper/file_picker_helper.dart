@@ -1,11 +1,17 @@
+// Dart SDK
 import 'dart:io';
-import 'package:device_info_plus/device_info_plus.dart';
+
+// Flutter
 import 'package:flutter/material.dart';
+
+// Third-party
+import 'package:device_info_plus/device_info_plus.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
 
-import 'theme_helper.dart';
+// Project
+import 'helper.dart';
 
 class FilePickerHelper {
   static const Map<String, int> _fileSizeLimits = {
@@ -19,8 +25,7 @@ class FilePickerHelper {
   /* ========== Image Picker Methods ========== */
 
   /// Shows a bottom sheet dialog to choose image source (camera or gallery)
-  static Future<File?> showImageSourceDialog(BuildContext context,
-      {String? title}) async {
+  static Future<File?> showImageSourceDialog(BuildContext context, {String? title}) async {
     final source = await showModalBottomSheet<ImageSource>(
       context: context,
       builder: (BuildContext context) {
@@ -79,8 +84,7 @@ class FilePickerHelper {
         final size = await file.length();
 
         if (size > _fileSizeLimits['image']!) {
-          ThemeHelper.showToastMessage(
-              'Image exceeds maximum size limit (2MB)');
+          ThemeHelper.showToastMessage('Image exceeds maximum size limit (2MB)');
           return null;
         }
         return file;
@@ -166,8 +170,7 @@ class FilePickerHelper {
           return file;
         } else {
           String getFileSizeLimitMessage(String category) {
-            final limitInBytes =
-                _fileSizeLimits[category] ?? _fileSizeLimits['other']!;
+            final limitInBytes = _fileSizeLimits[category] ?? _fileSizeLimits['other']!;
             final limitInMB = limitInBytes ~/ (1024 * 1024);
 
             return "Max allowed size for $category is ${limitInMB}MB. Please select a smaller file.";
@@ -234,8 +237,7 @@ class FilePickerHelper {
                 }
               }
 
-              ThemeHelper.showToastMessage(
-                  '${getFileTypeName(category)} too large (max ${_fileSizeLimits[category]! ~/ (1024 * 1024)}MB)');
+              ThemeHelper.showToastMessage('${getFileTypeName(category)} too large (max ${_fileSizeLimits[category]! ~/ (1024 * 1024)}MB)');
             }
           }
         }

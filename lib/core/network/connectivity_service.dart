@@ -1,4 +1,7 @@
+// Dart SDK
 import 'dart:async';
+
+// Third-party
 import 'package:connectivity_plus/connectivity_plus.dart';
 
 class ConnectivityService {

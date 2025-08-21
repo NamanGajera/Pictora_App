@@ -1,4 +1,5 @@
-import '../services/app_env_manager.dart';
+// Project
+import '../services/service.dart';
 
 String baseUrl = "${AppEnvManager.baseUrl}$apiPreFix";
 

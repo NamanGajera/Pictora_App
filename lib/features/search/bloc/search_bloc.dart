@@ -1,23 +1,22 @@
 import 'package:bloc_concurrency/bloc_concurrency.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:pictora/core/utils/constants/enums.dart';
-import 'package:pictora/core/utils/services/custom_logger.dart';
-import 'package:pictora/data/hiveModel/user_hive_model.dart';
-import 'package:pictora/data/hiveModel/user_mapper.dart';
-import 'package:pictora/data/repository/repository.dart';
-import '../../../core/database/hive_boxes.dart';
-import '../../../core/database/hive_service.dart';
-import '../../../core/utils/helper/helper_function.dart';
-import '../../../core/utils/helper/theme_helper.dart';
-import '../../../data/model/user_model.dart';
+import 'package:pictora/core/utils/services/service.dart';
+import 'package:pictora/core/database/hive_model/user_model/user_hive_model.dart';
+import 'package:pictora/core/database/hive_model/user_model/user_mapper.dart';
+import 'package:pictora/features/search/repository/search_repository.dart';
+import '../../../core/database/hive/hive_boxes.dart';
+import '../../../core/database/hive/hive_service.dart';
+import '../../../core/utils/constants/constants.dart';
+import '../../../core/utils/helper/helper.dart';
+import '../../../core/utils/model/user_model.dart';
 
 part 'search_event.dart';
 part 'search_state.dart';
 
 class SearchBloc extends Bloc<SearchEvent, SearchState> {
-  final Repository repository;
-  SearchBloc(this.repository) : super(SearchState()) {
+  final SearchRepository searchRepository;
+  SearchBloc(this.searchRepository) : super(SearchState()) {
     on<SearchUserEvent>(_searchUser, transformer: sequential());
     on<ShowSearchUserList>(_showSearchUser, transformer: sequential());
   }
@@ -34,7 +33,7 @@ class SearchBloc extends Bloc<SearchEvent, SearchState> {
         return;
       }
       emit(state.copyWith(searchUserApiStatus: ApiStatus.loading));
-      final usersData = await repository.searchUsers({
+      final usersData = await searchRepository.searchUsers({
         "query": event.query,
       });
 

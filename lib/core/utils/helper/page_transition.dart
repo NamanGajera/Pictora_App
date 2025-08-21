@@ -1,4 +1,7 @@
+// Flutter
 import 'package:flutter/material.dart';
+
+// Third-party
 import 'package:go_router/go_router.dart';
 
 class SlideTransitionPage extends CustomTransitionPage<void> {

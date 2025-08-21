@@ -1,19 +1,18 @@
 import 'package:bloc_concurrency/bloc_concurrency.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:pictora/data/repository/repository.dart';
-import '../../../../data/model/user_model.dart';
-import '../../../../core/utils/constants/enums.dart';
-import '../../../../core/utils/helper/helper_function.dart';
-import '../../../../core/utils/helper/theme_helper.dart';
+import '../../../../core/utils/model/user_model.dart';
+import '../../../../core/utils/constants/constants.dart';
+import '../../../../core/utils/helper/helper.dart';
+import '../../repository/profile_repository.dart';
 
 part 'profile_event.dart';
 part 'profile_state.dart';
 
 class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
-  final Repository repository;
+  final ProfileRepository profileRepository;
 
-  ProfileBloc(this.repository) : super(ProfileState()) {
+  ProfileBloc(this.profileRepository) : super(ProfileState()) {
     on<GetUserDataEvent>(_getUserData);
     on<ModifyUserCountEvent>(_modifyUserCounts, transformer: sequential());
     on<ModifyUserDataEvent>(_modifyUserData, transformer: sequential());
@@ -25,9 +24,9 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
       User? myData;
       User? otherData;
       if (event.userId != null) {
-        otherData = await repository.getUserData(event.userId);
+        otherData = await profileRepository.getUserData(event.userId);
       } else {
-        myData = await repository.getUserData();
+        myData = await profileRepository.getUserData();
       }
 
       emit(state.copyWith(

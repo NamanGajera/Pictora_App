@@ -1,10 +1,13 @@
-import 'dart:developer';
-
-import 'package:cached_network_image/cached_network_image.dart';
-import 'package:dropdown_textfield/dropdown_textfield.dart';
+// Flutter
 import 'package:flutter/material.dart';
 
-import '../constants/colors.dart';
+// Third-party
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:dropdown_textfield/dropdown_textfield.dart';
+
+// Project
+import '../services/service.dart';
+import '../constants/constants.dart';
 
 class CustomText extends StatelessWidget {
   final String text;
@@ -641,14 +644,14 @@ class _CustomCheckboxDropdownState extends State<CustomCheckboxDropdown> {
 
   void _loadInitialCheck(List<int> listOfInt) {
     setState(() {
-      log("Received listOfInt: $listOfInt  ${widget.items.length}");
+      logInfo(message: "Received listOfInt: $listOfInt  ${widget.items.length}");
       for (var element in listOfInt) {
-        log("Processing element: $element");
+        logInfo(message: "Processing element: $element");
         for (var i = 0; i < widget.items.length; i++) {
-          log("Comparing widget.items[$i].id (${widget.items[i].id}) with $element");
+          logInfo(message: "Comparing widget.items[$i].id (${widget.items[i].id}) with $element");
           if (widget.items[i].id == element) {
             widget.items[i].isSelected = true;
-            log("Item matched: ${widget.items[i]}");
+            logInfo(message: "Item matched: ${widget.items[i]}");
           }
         }
       }
@@ -768,7 +771,7 @@ class _CustomCheckboxDropdownState extends State<CustomCheckboxDropdown> {
     super.initState();
     _updateSelectAllState();
 
-    log('widget.initialValue ${widget.initialValue}');
+    logInfo(message: 'widget.initialValue ${widget.initialValue}');
 
     if (widget.initialValue != null && widget.initialValue!.isNotEmpty) {
       _loadInitialCheck(widget.initialValue!);
@@ -779,7 +782,7 @@ class _CustomCheckboxDropdownState extends State<CustomCheckboxDropdown> {
   void didUpdateWidget(covariant CustomCheckboxDropdown oldWidget) {
     super.didUpdateWidget(oldWidget);
 
-    log('widget.didUpdateWidget ${widget.initialValue}');
+    logInfo(message: 'widget.didUpdateWidget ${widget.initialValue}');
 
     _updateSelectAllState();
     // Check if initialValue has changed

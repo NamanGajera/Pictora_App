@@ -1,4 +1,5 @@
-import 'package:pictora/features/post/models/post_data.dart';
+// Project
+import 'post_data.dart';
 
 class PostCreateModel {
   int? statusCode;

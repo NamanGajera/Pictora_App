@@ -1,25 +1,25 @@
-import 'package:equatable/equatable.dart';
+// Flutter
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:pictora/features/auth/model/auth_model.dart';
-import 'package:pictora/data/repository/repository.dart';
-import 'package:pictora/router/router.dart';
-import 'package:pictora/router/router_name.dart';
-import 'package:pictora/core/utils/constants/constants.dart';
-import 'package:pictora/core/utils/constants/enums.dart';
-import 'package:pictora/core/utils/constants/shared_pref_keys.dart';
-import 'package:pictora/core/utils/helper/shared_prefs_helper.dart';
-import 'package:pictora/core/utils/helper/theme_helper.dart';
 
-import '../../../data/model/user_model.dart';
-import '../../../core/utils/helper/helper_function.dart';
+// Third-party
+import 'package:equatable/equatable.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+
+// Project
+import '../model/auth_model.dart';
+import '../repository/auth_repository.dart';
+import '../../../core/config/router.dart';
+import '../../../core/config/router_name.dart';
+import '../../../core/utils/constants/constants.dart';
+import '../../../core/utils/model/user_model.dart';
+import '../../../core/utils/helper/helper.dart';
 
 part 'auth_event.dart';
 part 'auth_state.dart';
 
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
-  final Repository repository;
-  AuthBloc(this.repository) : super(AuthState()) {
+  final AuthRepository authRepository;
+  AuthBloc(this.authRepository) : super(AuthState()) {
     on<RegisterUserEvent>(_register);
     on<LoginUserEvent>(_login);
   }
@@ -27,7 +27,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     try {
       emit(state.copyWith(registerUserApiStatus: ApiStatus.loading));
 
-      final data = await repository.registerUser(event.body);
+      final data = await authRepository.registerUser(event.body);
       await setUserData(data);
       emit(state.copyWith(registerUserApiStatus: ApiStatus.success));
     } catch (error, stackTrace) {
@@ -41,7 +41,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     try {
       emit(state.copyWith(loginUserApiStatus: ApiStatus.loading));
 
-      final data = await repository.login(event.body);
+      final data = await authRepository.login(event.body);
       await setUserData(data);
       emit(state.copyWith(loginUserApiStatus: ApiStatus.success));
     } catch (error, stackTrace) {

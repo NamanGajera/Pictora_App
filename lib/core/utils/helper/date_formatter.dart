@@ -1,3 +1,4 @@
+// Third-party
 import 'package:intl/intl.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
@@ -95,8 +96,7 @@ class DateFormatter {
     } else if (difference.inDays < 7) {
       return '${difference.inDays} days ago';
     } else {
-      return formatDate(dateInput: dateTime, format: monthDayYear) ??
-          'Invalid date';
+      return formatDate(dateInput: dateTime, format: monthDayYear) ?? 'Invalid date';
     }
   }
 
@@ -106,9 +106,7 @@ class DateFormatter {
     if (dateTime == null) return false;
 
     final now = DateTime.now();
-    return dateTime.year == now.year &&
-        dateTime.month == now.month &&
-        dateTime.day == now.day;
+    return dateTime.year == now.year && dateTime.month == now.month && dateTime.day == now.day;
   }
 
   /// Gets the day name (e.g., "Monday")
@@ -129,8 +127,7 @@ class DateFormatter {
     );
   }
 
-  static String timeAgoShort(dynamic dateInput,
-      {String? inputFormat, String locale = 'en_short_clean'}) {
+  static String timeAgoShort(dynamic dateInput, {String? inputFormat, String locale = 'en_short_clean'}) {
     final dateTime = _parseDate(dateInput, inputFormat);
     if (dateTime == null) return 'Invalid date';
 

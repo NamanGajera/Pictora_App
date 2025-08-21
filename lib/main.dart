@@ -1,20 +1,21 @@
+// Flutter
 import 'package:flutter/material.dart';
+
+// Third-party
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:pictora/core/database/hive_service.dart';
-import 'package:pictora/features/auth/bloc/auth_bloc.dart';
-import 'package:pictora/features/post/bloc/post_bloc.dart';
-import 'package:pictora/features/profile/bloc/profile_bloc/profile_bloc.dart';
-import 'package:pictora/core/utils/services/app_env_manager.dart';
 import 'package:timeago/timeago.dart' as timeago;
-import 'features/profile/bloc/follow_section_bloc/follow_section_bloc.dart';
-import 'features/search/bloc/search_bloc.dart';
-import 'router/router.dart';
-import 'core/utils/constants/colors.dart';
-import 'core/utils/constants/enums.dart';
+
+// Project
+import 'features/profile/profile.dart';
+import 'features/auth/auth.dart';
+import 'features/post/post.dart';
+import 'features/search/search.dart';
+import 'core/database/hive/hive_service.dart';
+import 'core/utils/services/service.dart';
+import 'core/utils/constants/constants.dart';
+import 'core/config/router.dart';
 import 'core/di/dependency_injection.dart';
-import 'core/utils/helper/date_formatter.dart';
-import 'core/utils/helper/shared_prefs_helper.dart';
-import 'core/utils/services/device_info_service.dart';
+import 'core/utils/helper/helper.dart';
 
 void main() async {
   AppEnvManager.currentEnv = AppEnv.local;

@@ -1,12 +1,12 @@
+// Third-party
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:pictora/core/utils/helper/custom_exception.dart';
-import '../../../router/router.dart';
-import '../../../router/router_name.dart';
+
+// Project
+import '../helper/helper.dart';
+import '../../config/router.dart';
+import '../../config/router_name.dart';
 import '../constants/constants.dart';
-import '../constants/shared_pref_keys.dart';
-import '../services/custom_logger.dart';
-import 'shared_prefs_helper.dart';
-import 'theme_helper.dart';
+import '../services/service.dart';
 
 String formattedCount(int number) {
   if (number >= 1000000) {

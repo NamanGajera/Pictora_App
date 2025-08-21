@@ -2,22 +2,19 @@ import 'package:bloc_concurrency/bloc_concurrency.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pictora/features/profile/bloc/profile_bloc/profile_bloc.dart';
-import 'package:pictora/data/repository/repository.dart';
-import 'package:pictora/core/utils/constants/bloc_instances.dart';
-import 'package:pictora/core/utils/services/custom_logger.dart';
-
-import '../../../../data/model/user_model.dart';
-import '../../../../core/utils/constants/enums.dart';
-import '../../../../core/utils/helper/helper_function.dart';
-import '../../../../core/utils/helper/theme_helper.dart';
+import 'package:pictora/core/utils/services/service.dart';
+import '../../../../core/utils/constants/constants.dart';
+import '../../../../core/utils/model/user_model.dart';
+import '../../../../core/utils/helper/helper.dart';
 import '../../model/follow_request_model.dart';
+import '../../repository/profile_repository.dart';
 
 part 'follow_section_event.dart';
 part 'follow_section_state.dart';
 
 class FollowSectionBloc extends Bloc<FollowSectionEvent, FollowSectionState> {
-  final Repository repository;
-  FollowSectionBloc(this.repository) : super(FollowSectionState()) {
+  final ProfileRepository profileRepository;
+  FollowSectionBloc(this.profileRepository) : super(FollowSectionState()) {
     on<GetFollowersEvent>(_getFollowers, transformer: droppable());
     on<LoadMoreFollowersEvent>(_loadMoreFollower, transformer: droppable());
     on<GetFollowingEvent>(_getFollowing, transformer: droppable());
@@ -33,7 +30,7 @@ class FollowSectionBloc extends Bloc<FollowSectionEvent, FollowSectionState> {
   Future<void> _getFollowers(GetFollowersEvent event, Emitter<FollowSectionState> emit) async {
     try {
       emit(state.copyWith(getFollowersApiStatus: ApiStatus.loading));
-      final followers = await repository.getFollowers(body: {'userId': event.userId});
+      final followers = await profileRepository.getFollowers(body: {'userId': event.userId});
       emit(state.copyWith(
         getFollowersApiStatus: ApiStatus.success,
         followers: followers.data ?? [],
@@ -49,7 +46,7 @@ class FollowSectionBloc extends Bloc<FollowSectionEvent, FollowSectionState> {
   Future<void> _loadMoreFollower(LoadMoreFollowersEvent event, Emitter<FollowSectionState> emit) async {
     try {
       emit(state.copyWith(isLoadMoreFollowers: true));
-      final followers = await repository.getFollowers(body: event.body);
+      final followers = await profileRepository.getFollowers(body: event.body);
       emit(state.copyWith(
         isLoadMoreFollowers: false,
         followers: [...(state.followers ?? []), ...(followers.data ?? [])],
@@ -65,7 +62,7 @@ class FollowSectionBloc extends Bloc<FollowSectionEvent, FollowSectionState> {
   Future<void> _getFollowing(GetFollowingEvent event, Emitter<FollowSectionState> emit) async {
     try {
       emit(state.copyWith(getFollowingApiStatus: ApiStatus.loading));
-      final following = await repository.getFollowing(body: {'userId': event.userId});
+      final following = await profileRepository.getFollowing(body: {'userId': event.userId});
       emit(state.copyWith(
         getFollowingApiStatus: ApiStatus.success,
         following: following.data ?? [],
@@ -81,7 +78,7 @@ class FollowSectionBloc extends Bloc<FollowSectionEvent, FollowSectionState> {
   Future<void> _loadMoreFollowing(LoadMoreFollowingEvent event, Emitter<FollowSectionState> emit) async {
     try {
       emit(state.copyWith(isLoadMoreFollowing: true));
-      final following = await repository.getFollowing(body: event.body);
+      final following = await profileRepository.getFollowing(body: event.body);
       emit(state.copyWith(
         isLoadMoreFollowing: false,
         following: [...(state.following ?? []), ...(following.data ?? [])],
@@ -97,7 +94,7 @@ class FollowSectionBloc extends Bloc<FollowSectionEvent, FollowSectionState> {
   Future<void> _getFollowRequests(GetFollowRequestEvent event, Emitter<FollowSectionState> emit) async {
     try {
       emit(state.copyWith(getFollowRequestApiStatus: ApiStatus.loading));
-      final requests = await repository.getFollowRequests();
+      final requests = await profileRepository.getFollowRequests();
       emit(state.copyWith(
         getFollowRequestApiStatus: ApiStatus.success,
         followRequests: requests.data ?? [],
@@ -112,7 +109,7 @@ class FollowSectionBloc extends Bloc<FollowSectionEvent, FollowSectionState> {
   Future<void> _getDiscoverUsers(GetDiscoverUsersEvent event, Emitter<FollowSectionState> emit) async {
     try {
       emit(state.copyWith(getDiscoverUsersApiStatus: ApiStatus.loading));
-      final users = await repository.getDiscoverUsers(body: {
+      final users = await profileRepository.getDiscoverUsers(body: {
         "skip": 0,
         "take": 20,
       });
@@ -131,7 +128,7 @@ class FollowSectionBloc extends Bloc<FollowSectionEvent, FollowSectionState> {
   Future<void> _loadMoreDiscoverUsers(LoadMoreDiscoverUserEvent event, Emitter<FollowSectionState> emit) async {
     try {
       emit(state.copyWith(isLoadMoreDiscover: true));
-      final users = await repository.getDiscoverUsers(body: event.body);
+      final users = await profileRepository.getDiscoverUsers(body: event.body);
       emit(state.copyWith(
         isLoadMoreDiscover: false,
         discoverUsers: [...(state.discoverUsers ?? []), ...(users.data ?? [])],
@@ -169,7 +166,7 @@ class FollowSectionBloc extends Bloc<FollowSectionEvent, FollowSectionState> {
           isInFollowing: !isInFollower,
         ),
       );
-      await repository.toggleUserFollow(body: {
+      await profileRepository.toggleUserFollow(body: {
         "userId": event.userId,
         "shouldFollow": event.isFollowing,
       });
@@ -187,7 +184,7 @@ class FollowSectionBloc extends Bloc<FollowSectionEvent, FollowSectionState> {
   Future<void> _manageFollowRequest(ManageFollowRequestEvent event, Emitter<FollowSectionState> emit) async {
     try {
       emit(state.copyWith(manageFollowRequestApiStatus: ApiStatus.loading));
-      await repository.manageFollowRequest(body: {
+      await profileRepository.manageFollowRequest(body: {
         "id": event.requestId,
         "isAccept": event.isAccept,
       });

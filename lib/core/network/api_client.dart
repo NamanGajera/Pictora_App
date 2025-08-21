@@ -1,10 +1,14 @@
+// Dart SDK
 import 'dart:io';
+
+// Third-party
 import 'package:dio/dio.dart';
 import 'package:http_parser/http_parser.dart';
-import '../utils/constants/api_end_points.dart';
-import '../utils/helper/helper_function.dart';
-import '../utils/services/custom_logger.dart';
-import '../utils/helper/custom_exception.dart';
+
+// Project
+import '../utils/constants/constants.dart';
+import '../utils/services/service.dart';
+import '../utils/helper/helper.dart';
 
 class ApiClient {
   final Dio _dio = Dio();
