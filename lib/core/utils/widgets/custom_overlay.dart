@@ -22,7 +22,7 @@ class OverlayManager {
     bool blockNavigation = false, // New parameter to block all navigation
   }) {
     hide(overlayId);
-
+    final overlayState = _getOverlayState(context);
     // Create a blocking route if needed
     if (blockNavigation) {
       _blockingRoute = ModalRoute.of(context);
@@ -43,7 +43,6 @@ class OverlayManager {
           bottom: position.bottom,
           child: child,
         );
-
         if (position.animation != null) {
           overlayChild = AnimatedBuilder(
             animation: position.animation!,
@@ -57,7 +56,6 @@ class OverlayManager {
           );
         }
 
-        // Wrap with WillPopScope for additional control
         overlayChild = WillPopScope(
           onWillPop: () async {
             if (!dismissible) return false;
@@ -89,7 +87,7 @@ class OverlayManager {
       },
     );
 
-    Overlay.of(context).insert(entry);
+    overlayState.insert(entry);
 
     if (duration != null) {
       Future.delayed(duration, () => hide(overlayId));
@@ -103,13 +101,23 @@ class OverlayManager {
     );
   }
 
+  OverlayState _getOverlayState(BuildContext context) {
+    try {
+      // First try to get overlay from the given context
+      return Overlay.of(context);
+    } catch (e) {
+      // If that fails, try to find the nearest overlay
+      final navigator = Navigator.of(context, rootNavigator: true);
+      return navigator.overlay!;
+    }
+  }
+
   void hide(String overlayId) {
     final wrapper = _overlays[overlayId];
     if (wrapper != null) {
       wrapper.entry.remove();
       _overlays.remove(overlayId);
 
-      // Remove the navigation block if this was the last blocking overlay
       if (wrapper.blockNavigation) {
         bool hasOtherBlockingOverlays = _overlays.values.any((w) => w.blockNavigation);
         if (!hasOtherBlockingOverlays && _blockingRoute != null) {
@@ -134,7 +142,6 @@ class OverlayManager {
   }
 
   void hideAll() {
-    // Remove all navigation blocks
     if (_blockingRoute != null) {
       _blockingRoute?.removeScopedWillPopCallback(() async {
         return false;

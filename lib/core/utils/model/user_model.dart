@@ -83,6 +83,7 @@ class Profile {
   String? gender;
   bool? isPrivate;
   String? location;
+  String? updatedAt;
 
   Profile({
     this.profilePicture,
@@ -91,6 +92,7 @@ class Profile {
     this.gender,
     this.isPrivate,
     this.location,
+    this.updatedAt,
   });
 
   Profile.fromJson(Map<String, dynamic> json) {
@@ -100,6 +102,7 @@ class Profile {
     gender = json['gender'];
     isPrivate = json['isPrivate'];
     location = json['location'];
+    updatedAt = json['updatedAt'];
   }
 
   Map<String, dynamic> toJson() {
@@ -110,6 +113,7 @@ class Profile {
     data['gender'] = gender;
     data['isPrivate'] = isPrivate;
     data['location'] = location;
+    data['updatedAt'] = updatedAt;
     return data;
   }
 

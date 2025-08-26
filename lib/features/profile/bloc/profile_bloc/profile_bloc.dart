@@ -1,9 +1,19 @@
+// Dart SDK
+import 'dart:io';
+
+// Third-party
 import 'package:bloc_concurrency/bloc_concurrency.dart';
 import 'package:equatable/equatable.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+
+// Project
+import '../../../../core/config/router.dart';
 import '../../../../core/utils/model/user_model.dart';
 import '../../../../core/utils/constants/constants.dart';
 import '../../../../core/utils/helper/helper.dart';
+import '../../../../core/utils/widgets/custom_overlay.dart';
+import '../../../../core/utils/widgets/custom_widget.dart';
 import '../../repository/profile_repository.dart';
 
 part 'profile_event.dart';
@@ -16,6 +26,7 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
     on<GetUserDataEvent>(_getUserData);
     on<ModifyUserCountEvent>(_modifyUserCounts, transformer: sequential());
     on<ModifyUserDataEvent>(_modifyUserData, transformer: sequential());
+    on<UpdateProfilePictureEvent>(_updateProfilePicture, transformer: droppable());
   }
 
   Future<void> _getUserData(GetUserDataEvent event, Emitter<ProfileState> emit) async {
@@ -76,6 +87,50 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
         showFollowBack: event.isInFollowing == null ? state.otherUserData?.showFollowBack : !(event.isInFollowing ?? false),
         followRequestStatus: (state.otherUserData?.profile?.isPrivate ?? false) && event.isFollowed == true ? FollowRequest.pending.name : null,
       )));
+    }
+  }
+
+  Future<void> _updateProfilePicture(UpdateProfilePictureEvent event, Emitter<ProfileState> emit) async {
+    try {
+      final userData = await profileRepository.updateUserData(
+        body: <String, dynamic>{},
+        fileField: {"profilePic": event.profilePicture},
+      );
+      userProfilePic = userData.profile?.profilePicture;
+      emit(state.copyWith(
+          userData: state.userData?.copyWith(
+              profile: state.userData?.profile?.copyWith(
+        profilePicture: userData.profile?.profilePicture,
+      ))));
+      await SharedPrefsHelper().setString(SharedPrefKeys.userProfilePic, userProfilePic ?? '');
+
+      OverlayManager().show(
+        context: navigatorKey.currentContext!,
+        overlayId: OverlayIds.updateProfilePic,
+        child: Center(
+          child: Material(
+            color: Colors.transparent,
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.black45,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+              child: CustomText(
+                "Profile picture updated successfully",
+                fontSize: 16,
+                color: Colors.white,
+              ),
+            ),
+          ),
+        ),
+      );
+
+      Future.delayed(Duration(seconds: 2), () {
+        OverlayManager().hideAll();
+      });
+    } catch (error, stackTrace) {
+      handleApiError(error, stackTrace, emit);
     }
   }
 

@@ -1,5 +1,10 @@
+// Flutter
 import 'package:flutter/material.dart';
+
+// Third-party
 import 'package:flutter_bloc/flutter_bloc.dart';
+
+// Project
 import 'package:pictora/core/utils/extensions/extensions.dart';
 import '../../../../core/utils/constants/constants.dart';
 import '../../../../core/utils/widgets/custom_widget.dart';

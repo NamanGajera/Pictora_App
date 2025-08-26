@@ -1,8 +1,11 @@
+// Third-party
 import 'package:bloc_concurrency/bloc_concurrency.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:pictora/features/profile/bloc/profile_bloc/profile_bloc.dart';
-import 'package:pictora/core/utils/services/service.dart';
+
+// Project
+import '../profile_bloc/profile_bloc.dart';
+import '../../../../core/utils/services/service.dart';
 import '../../../../core/utils/constants/constants.dart';
 import '../../../../core/utils/model/user_model.dart';
 import '../../../../core/utils/helper/helper.dart';

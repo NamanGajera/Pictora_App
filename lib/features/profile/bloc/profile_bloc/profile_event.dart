@@ -29,3 +29,8 @@ class ModifyUserDataEvent extends ProfileEvent {
     this.isInFollowing,
   });
 }
+
+class UpdateProfilePictureEvent extends ProfileEvent {
+  final File profilePicture;
+  UpdateProfilePictureEvent({required this.profilePicture});
+}

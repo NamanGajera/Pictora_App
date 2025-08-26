@@ -1,5 +1,5 @@
-import 'package:pictora/core/network/api_client.dart';
-
+// Project
+import '../../../core/network/api_client.dart';
 import '../../../core/utils/constants/constants.dart';
 import '../../../core/utils/helper/helper.dart';
 import '../../../core/utils/model/common_message_model.dart';
@@ -110,6 +110,22 @@ class ProfileRepository {
       );
 
       return CommonMessageModel.fromJson(json);
+    } on CustomException {
+      rethrow;
+    }
+  }
+
+  /// POST: UPDATE USER PROFILE PICTURE
+  Future<User> updateUserData({required dynamic body, required dynamic fileField}) async {
+    try {
+      Map<String, dynamic> json = await apiClient.multipartPutApiCall(
+        endPoint: updateProfilePictureApiEndPoint,
+        fields: body,
+        fileFields: fileField,
+        authorizationToken: accessToken,
+      );
+
+      return User.fromJson(json["data"]);
     } on CustomException {
       rethrow;
     }

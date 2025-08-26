@@ -11,13 +11,15 @@ import 'package:file_picker/file_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 // Project
+import '../../config/router.dart';
+import '../constants/constants.dart';
 import 'helper.dart';
 
 class FilePickerHelper {
   static const Map<String, int> _fileSizeLimits = {
-    'image': 2 * 1024 * 1024,
+    'image': 10 * 1024 * 1024,
     'document': 4 * 1024 * 1024,
-    'video': 50 * 1024 * 1024,
+    'video': 100 * 1024 * 1024,
   };
   static final ImagePicker _imagePicker = ImagePicker();
   static final FilePicker _filePicker = FilePicker.platform;
@@ -29,22 +31,9 @@ class FilePickerHelper {
     final source = await showModalBottomSheet<ImageSource>(
       context: context,
       builder: (BuildContext context) {
-        return SafeArea(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              ListTile(
-                leading: const Icon(Icons.camera_alt),
-                title: const Text('Camera'),
-                onTap: () => Navigator.pop(context, ImageSource.camera),
-              ),
-              ListTile(
-                leading: const Icon(Icons.photo_library),
-                title: const Text('Gallery'),
-                onTap: () => Navigator.pop(context, ImageSource.gallery),
-              ),
-            ],
-          ),
+        return ImagePickerBottomSheet(
+          onCameraTap: () => appRouter.pop(ImageSource.camera),
+          onGalleryTap: () => appRouter.pop(ImageSource.gallery),
         );
       },
     );
@@ -388,5 +377,128 @@ class FilePickerHelper {
       }
     }
     return null;
+  }
+}
+
+class ImagePickerBottomSheet extends StatelessWidget {
+  final Function() onGalleryTap;
+  final Function() onCameraTap;
+
+  const ImagePickerBottomSheet({
+    super.key,
+    required this.onGalleryTap,
+    required this.onCameraTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(20),
+        ),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const SizedBox(height: 12),
+          // Handle bar
+          Container(
+            height: 4,
+            width: 40,
+            decoration: BoxDecoration(
+              color: Colors.grey.shade300,
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+          const SizedBox(height: 20),
+          // Title
+          Text(
+            'Select Image',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: Colors.grey.shade800,
+            ),
+          ),
+          const SizedBox(height: 24),
+          // Options Row
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                _buildOptionButton(
+                  icon: Icons.photo_library_rounded,
+                  label: 'Gallery',
+                  onTap: () {
+                    onGalleryTap();
+                  },
+                ),
+                const SizedBox(width: 32),
+                _buildOptionButton(
+                  icon: Icons.camera_alt_rounded,
+                  label: 'Camera',
+                  onTap: () {
+                    onCameraTap();
+                  },
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 32),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildOptionButton({
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+  }) {
+    return Expanded(
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(16),
+          child: Container(
+            padding: const EdgeInsets.symmetric(vertical: 16),
+            decoration: BoxDecoration(
+              border: Border.all(color: Colors.grey.shade200),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  padding: EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: primaryColor.withValues(alpha: 0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    icon,
+                    size: 32,
+                    color: primaryColor.withValues(alpha: 0.8),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  label,
+                  style: TextStyle(
+                    color: Colors.grey.shade800,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }

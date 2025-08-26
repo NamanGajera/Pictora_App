@@ -1,7 +1,12 @@
+// Flutter
 import 'package:flutter/material.dart';
+
+// Third-party
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:pictora/core/utils/extensions/extensions.dart';
 import 'package:shimmer/shimmer.dart';
+
+// Project
+import '../../../../core/utils/extensions/extensions.dart';
 import '../../../../core/utils/constants/constants.dart';
 import '../../../../core/utils/helper/helper.dart';
 import '../../../../core/utils/widgets/custom_widget.dart';
@@ -129,7 +134,7 @@ class _UserProfileInfoState extends State<UserProfileInfo> {
 
   Widget _buildProfilePicture(User? userData) {
     return Container(
-      key: ValueKey('profile_picture_${userData?.id}'),
+      // key: ValueKey('profile_picture_${userData?.id}'),
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         boxShadow: [

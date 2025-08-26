@@ -1,8 +1,13 @@
-import 'package:cached_network_image/cached_network_image.dart';
+// Flutter
 import 'package:flutter/material.dart';
+
+// Third-party
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:pictora/core/utils/extensions/extensions.dart';
 import 'package:shimmer/shimmer.dart';
+
+// Project
+import '../../../../core/utils/extensions/extensions.dart';
 import '../../../../core/utils/constants/constants.dart';
 import '../../../../core/config/router.dart';
 import '../../../../core/config/router_name.dart';

@@ -18,7 +18,10 @@ import '../../features/profile/profile.dart';
 import '../../features/search/search.dart';
 import 'router_name.dart';
 
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
 final GoRouter appRouter = GoRouter(
+  navigatorKey: navigatorKey,
   initialLocation: RouterName.splash.path,
   routes: [
     /// Splash

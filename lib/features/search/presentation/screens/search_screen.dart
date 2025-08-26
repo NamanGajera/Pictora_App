@@ -1,12 +1,16 @@
-import 'package:cached_network_image/cached_network_image.dart';
+// Flutter
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:pictora/core/utils/extensions/extensions.dart';
-import 'package:pictora/core/utils/widgets/custom_widget.dart';
-import 'package:pictora/core/database/hive_model/user_model/user_mapper.dart';
-import 'package:pictora/features/search/bloc/search_bloc.dart';
+
+// Third-party
 import 'package:rxdart/rxdart.dart';
 import 'package:shimmer/shimmer.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+
+// Project
+import '../../../../core/utils/extensions/extensions.dart';
+import '../../../../core/utils/widgets/custom_widget.dart';
+import '../../../../core/database/hive_model/user_model/user_mapper.dart';
 import '../../../../core/database/hive/hive_boxes.dart';
 import '../../../../core/database/hive/hive_service.dart';
 import '../../../../core/database/hive_model/user_model/user_hive_model.dart';
@@ -18,6 +22,7 @@ import '../../../post/bloc/post_bloc.dart';
 import '../../../post/models/post_data.dart';
 import '../../../post/presentation/screens/post_list_screen.dart';
 import '../../../profile/presentation/screens/profile_screen.dart';
+import '../../bloc/search_bloc.dart';
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({super.key});

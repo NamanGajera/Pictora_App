@@ -1,9 +1,13 @@
+// Flutter
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:pictora/features/profile/bloc/follow_section_bloc/follow_section_bloc.dart';
-import 'package:pictora/core/utils/extensions/extensions.dart';
-import 'package:pictora/core/utils/widgets/custom_widget.dart';
 
+// Third-party
+import 'package:flutter_bloc/flutter_bloc.dart';
+
+// Project
+import '../../bloc/follow_section_bloc/follow_section_bloc.dart';
+import '../../../../core/utils/extensions/extensions.dart';
+import '../../../../core/utils/widgets/custom_widget.dart';
 import '../../../../core/utils/constants/constants.dart';
 import '../../../../core/utils/model/user_model.dart';
 import '../../../../core/config/router.dart';

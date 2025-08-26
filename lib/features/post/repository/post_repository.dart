@@ -1,5 +1,6 @@
-import 'package:pictora/core/network/api_client.dart';
-import 'package:pictora/core/utils/helper/helper.dart';
+// Project
+import '../../../core/network/api_client.dart';
+import '../../../core/utils/helper/helper.dart';
 import '../../../core/utils/constants/constants.dart';
 import '../../../core/utils/model/common_message_model.dart';
 import '../../../core/utils/model/user_list_data_model.dart';

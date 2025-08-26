@@ -6,6 +6,7 @@ class ProfileState extends Equatable {
   final User? otherUserData;
   final int? statusCode;
   final String? errorMessage;
+  final String? updatedUserProfileCacheKey;
 
   const ProfileState({
     this.getUserDataApiStatus = ApiStatus.initial,
@@ -13,6 +14,7 @@ class ProfileState extends Equatable {
     this.otherUserData,
     this.errorMessage,
     this.statusCode,
+    this.updatedUserProfileCacheKey,
   });
 
   ProfileState copyWith({
@@ -21,11 +23,13 @@ class ProfileState extends Equatable {
     User? otherUserData,
     int? statusCode,
     String? errorMessage,
+    String? updatedUserProfileCacheKey,
   }) {
     return ProfileState(
       getUserDataApiStatus: getUserDataApiStatus ?? this.getUserDataApiStatus,
       userData: userData ?? this.userData,
       otherUserData: otherUserData ?? this.otherUserData,
+      updatedUserProfileCacheKey: updatedUserProfileCacheKey ?? this.updatedUserProfileCacheKey,
       statusCode: statusCode,
       errorMessage: errorMessage,
     );
@@ -36,6 +40,7 @@ class ProfileState extends Equatable {
         getUserDataApiStatus,
         userData,
         otherUserData,
+        updatedUserProfileCacheKey,
         errorMessage,
         statusCode,
       ];

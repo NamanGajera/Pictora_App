@@ -1,9 +1,18 @@
-import 'package:dropdown_textfield/dropdown_textfield.dart';
-import 'package:flutter/material.dart';
-import 'package:pictora/core/utils/widgets/custom_widget.dart';
-import 'package:pictora/core/config/router.dart';
+// Dart SDK
+import 'dart:io';
 
+// Flutter
+import 'package:flutter/material.dart';
+
+// Third-party
+import 'package:dropdown_textfield/dropdown_textfield.dart';
+
+// Project
+import '../../../../core/utils/widgets/custom_widget.dart';
+import '../../../../core/config/router.dart';
 import '../../../../core/utils/constants/constants.dart';
+import '../../../../core/utils/helper/helper.dart';
+import '../../bloc/profile_bloc/profile_bloc.dart';
 
 class ProfileEditScreen extends StatefulWidget {
   const ProfileEditScreen({super.key});
@@ -18,8 +27,6 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
   final _fullNameController = TextEditingController();
   final _bioController = TextEditingController();
   final _genderDropdownController = SingleValueDropDownController();
-
-  String? _profileImagePath;
 
   final List<DropDownValueModel> _genderOptions = [
     DropDownValueModel(name: "Male", value: "Male"),
@@ -69,6 +76,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Center(
+                key: ValueKey(userProfilePic),
                 child: Stack(
                   children: [
                     Container(
@@ -87,23 +95,26 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                       ),
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(65),
-                        child: _profileImagePath != null
-                            ? Image.asset(
-                                _profileImagePath!,
-                                fit: BoxFit.cover,
-                              )
-                            : RoundProfileAvatar(
-                                radius: 60,
-                                imageUrl: userProfilePic,
-                                userId: userId ?? '',
-                              ),
+                        child: RoundProfileAvatar(
+                          radius: 60,
+                          imageUrl: userProfilePic,
+                          userId: userId ?? '',
+                          key: ValueKey(userProfilePic),
+                        ),
                       ),
                     ),
                     Positioned(
                       bottom: 5,
                       right: 5,
                       child: GestureDetector(
-                        onTap: () {},
+                        onTap: () async {
+                          final File? selectedImage = await FilePickerHelper.showImageSourceDialog(context);
+
+                          if (selectedImage != null) {
+                            profileBloc.add(UpdateProfilePictureEvent(profilePicture: selectedImage));
+                          }
+                          // logInfo(message: "selectedImage $selectedImage");
+                        },
                         child: Container(
                           width: 40,
                           height: 40,

@@ -993,13 +993,14 @@ class RoundProfileAvatar extends StatelessWidget {
     final hasImage = (imageUrl ?? '').isNotEmpty;
 
     return CircleAvatar(
+      key: ValueKey(imageUrl),
       radius: radius,
       backgroundColor: backgroundColor,
       child: hasImage
           ? ClipOval(
               child: CachedNetworkImage(
                 imageUrl: imageUrl!,
-                cacheKey: userId,
+                cacheKey: imageUrl,
                 width: radius * 2,
                 height: radius * 2,
                 fit: BoxFit.cover,

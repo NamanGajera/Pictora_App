@@ -1,6 +1,9 @@
+// Flutter
 import 'package:flutter/material.dart';
-import 'package:pictora/features/post/bloc/post_bloc.dart';
-import 'package:pictora/features/profile/bloc/profile_bloc/profile_bloc.dart';
+
+// Project
+import '../../../post/bloc/post_bloc.dart';
+import '../../bloc/profile_bloc/profile_bloc.dart';
 import '../../../../core/utils/constants/constants.dart';
 import '../widgets/discover_user_view.dart';
 import '../widgets/user_post_view.dart';

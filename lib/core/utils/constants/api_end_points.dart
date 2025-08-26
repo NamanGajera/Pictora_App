@@ -48,3 +48,5 @@ String getDiscoverUserApiEndPoint = "$userRoute/discover";
 String toggleFollowUserApiEndPoint = "$userRoute/follow";
 
 String searchUserApiEndPoint = "$userRoute/search";
+
+String updateProfilePictureApiEndPoint = "$userRoute/update-profilePic";

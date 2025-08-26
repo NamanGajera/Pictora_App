@@ -3,4 +3,5 @@ class OverlayIds {
   static const blurBg = 'blur_bg';
   static const circularLoading = 'circular_loading';
   static const deletePostLoading = 'delete_post_loading';
+  static const updateProfilePic = 'update_profile_pic';
 }

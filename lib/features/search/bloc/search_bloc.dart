@@ -1,10 +1,13 @@
+// Third-party
 import 'package:bloc_concurrency/bloc_concurrency.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:pictora/core/utils/services/service.dart';
-import 'package:pictora/core/database/hive_model/user_model/user_hive_model.dart';
-import 'package:pictora/core/database/hive_model/user_model/user_mapper.dart';
-import 'package:pictora/features/search/repository/search_repository.dart';
+
+// Project
+import '../../../core/utils/services/service.dart';
+import '../../../core/database/hive_model/user_model/user_hive_model.dart';
+import '../../../core/database/hive_model/user_model/user_mapper.dart';
+import '../repository/search_repository.dart';
 import '../../../core/database/hive/hive_boxes.dart';
 import '../../../core/database/hive/hive_service.dart';
 import '../../../core/utils/constants/constants.dart';

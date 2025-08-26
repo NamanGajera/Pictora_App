@@ -1,6 +1,10 @@
+// Flutter
 import 'package:flutter/material.dart';
+
+// Third-party
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+// Project
 import '../../../../core/utils/model/user_model.dart';
 import '../../bloc/follow_section_bloc/follow_section_bloc.dart';
 import 'discover_user_card.dart';
