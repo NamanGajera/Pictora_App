@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 
 // Third-party
 import 'package:go_router/go_router.dart';
+import 'package:pictora/features/profile/presentation/screens/menu_screen.dart';
 
 // Project
 import '../utils/constants/constants.dart';
@@ -297,6 +298,13 @@ final GoRouter appRouter = GoRouter(
             userData: screenData.userData,
           ),
         );
+      },
+    ),
+    GoRoute(
+      path: RouterName.menu.path,
+      name: RouterName.menu.name,
+      pageBuilder: (context, state) {
+        return SlideTransitionPage(child: MenuScreen());
       },
     ),
   ],

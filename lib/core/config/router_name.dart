@@ -13,7 +13,8 @@ enum RouterName {
   otherUserProfile('/otherUserProfile', "otherUserProfile"),
   postLists('/postLists', "postLists"),
   followSection('/followSection', "followSection"),
-  profileEdit('/profileEdit', "profileEdit");
+  profileEdit('/profileEdit', "profileEdit"),
+  menu('/menu', "menu");
 
   final String path;
   final String name;

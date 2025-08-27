@@ -41,7 +41,7 @@ class _UserProfileInfoState extends State<UserProfileInfo> {
         User? userData = widget.userId == null ? state.userData : state.otherUserData;
         return Container(
           color: Colors.white,
-          padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
+          padding: const EdgeInsets.fromLTRB(20, 5, 20, 24),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [

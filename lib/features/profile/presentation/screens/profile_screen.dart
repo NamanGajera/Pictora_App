@@ -1,9 +1,15 @@
 // Flutter
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:pictora/core/config/router.dart';
+import 'package:pictora/core/config/router_name.dart';
 
 // Project
 import '../../../post/bloc/post_bloc.dart';
 import '../../bloc/profile_bloc/profile_bloc.dart';
+import '../../../../core/utils/extensions/extensions.dart';
+import '../../../../core/utils/widgets/custom_widget.dart';
 import '../../../../core/utils/constants/constants.dart';
 import '../widgets/discover_user_view.dart';
 import '../widgets/user_post_view.dart';
@@ -73,6 +79,33 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
     super.build(context);
     return Scaffold(
       backgroundColor: const Color(0xffF8FAF9),
+      appBar: AppBar(
+        titleSpacing: 10,
+        title: BlocBuilder<ProfileBloc, ProfileState>(
+          buildWhen: (previous, current) => previous.userData?.userName != current.userData?.userName,
+          builder: (context, state) {
+            return CustomText(
+              "@$userName",
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+            );
+          },
+        ),
+        actions: [
+          SvgPicture.asset(
+            AppAssets.addPost,
+            height: 28,
+            width: 28,
+          ).onTap(() {
+            appRouter.go(RouterName.postAssetPicker.path);
+          }),
+          const SizedBox(width: 12),
+          Icon(Icons.menu, size: 28).onTap(() {
+            appRouter.push(RouterName.menu.path);
+          }),
+          const SizedBox(width: 14),
+        ],
+      ),
       body: RefreshIndicator(
         backgroundColor: Colors.white,
         color: primaryColor,

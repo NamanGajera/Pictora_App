@@ -166,13 +166,11 @@ class _HomeScreenState extends State<HomeScreen> {
         child: BlocBuilder<ProfileBloc, ProfileState>(
           buildWhen: (previous, current) => previous.userData?.userName != current.userData?.userName,
           builder: (context, state) {
-            return Text(
+            return CustomText(
               "@$userName",
-              style: TextStyle(
-                color: primaryColor,
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
+              color: primaryColor,
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
             );
           },
         ),
