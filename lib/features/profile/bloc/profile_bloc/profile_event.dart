@@ -34,3 +34,8 @@ class UpdateProfilePictureEvent extends ProfileEvent {
   final File profilePicture;
   UpdateProfilePictureEvent({required this.profilePicture});
 }
+
+class UpdateUserProfileDataEvent extends ProfileEvent {
+  final Map<String, dynamic> body;
+  UpdateUserProfileDataEvent({required this.body});
+}

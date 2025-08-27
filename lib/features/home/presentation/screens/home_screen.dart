@@ -14,6 +14,7 @@ import '../../../../core/config/router.dart';
 import '../../../../core/config/router_name.dart';
 import '../../../../core/utils/widgets/custom_widget.dart';
 import '../../../../core/utils/constants/constants.dart';
+import '../../../profile/profile.dart';
 
 class HomeScreen extends StatefulWidget {
   final File fileImage;
@@ -162,13 +163,18 @@ class _HomeScreenState extends State<HomeScreen> {
         onTap: () {
           appRouter.go(RouterName.profile.path);
         },
-        child: Text(
-          "@$userName",
-          style: TextStyle(
-            color: primaryColor,
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-          ),
+        child: BlocBuilder<ProfileBloc, ProfileState>(
+          buildWhen: (previous, current) => previous.userData?.userName != current.userData?.userName,
+          builder: (context, state) {
+            return Text(
+              "@$userName",
+              style: TextStyle(
+                color: primaryColor,
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
+            );
+          },
         ),
       ),
     );

@@ -27,6 +27,7 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
     on<ModifyUserCountEvent>(_modifyUserCounts, transformer: sequential());
     on<ModifyUserDataEvent>(_modifyUserData, transformer: sequential());
     on<UpdateProfilePictureEvent>(_updateProfilePicture, transformer: droppable());
+    on<UpdateUserProfileDataEvent>(_updateUserProfileData, transformer: droppable());
   }
 
   Future<void> _getUserData(GetUserDataEvent event, Emitter<ProfileState> emit) async {
@@ -130,6 +131,36 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
         OverlayManager().hideAll();
       });
     } catch (error, stackTrace) {
+      ThemeHelper.showToastMessage(error.toString());
+      handleApiError(error, stackTrace, emit);
+    }
+  }
+
+  Future<void> _updateUserProfileData(UpdateUserProfileDataEvent event, Emitter<ProfileState> emit) async {
+    try {
+      emit(state.copyWith(updateUserDataApiStatus: ApiStatus.loading));
+      final userData = await profileRepository.updateUserData(
+        body: event.body,
+        fileField: <String, dynamic>{},
+      );
+
+      userName = userData.userName;
+      userFullName = userData.fullName;
+      await SharedPrefsHelper().setString(SharedPrefKeys.userName, userName ?? '');
+      await SharedPrefsHelper().setString(SharedPrefKeys.userFullName, userFullName ?? '');
+
+      emit(state.copyWith(
+          userData: state.userData?.copyWith(
+              userName: userName,
+              fullName: userFullName,
+              profile: state.userData?.profile?.copyWith(
+                bio: userData.profile?.bio,
+              ))));
+      emit(state.copyWith(updateUserDataApiStatus: ApiStatus.success));
+    } catch (error, stackTrace) {
+      emit(state.copyWith(updateUserDataApiStatus: ApiStatus.failure));
+
+      ThemeHelper.showToastMessage(error.toString());
       handleApiError(error, stackTrace, emit);
     }
   }

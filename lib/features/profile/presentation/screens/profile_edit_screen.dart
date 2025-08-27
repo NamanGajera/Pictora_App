@@ -5,17 +5,20 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 
 // Third-party
-import 'package:dropdown_textfield/dropdown_textfield.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 // Project
+import '../../../../core/utils/model/user_model.dart';
 import '../../../../core/utils/widgets/custom_widget.dart';
 import '../../../../core/config/router.dart';
 import '../../../../core/utils/constants/constants.dart';
 import '../../../../core/utils/helper/helper.dart';
+import '../../../../core/utils/services/service.dart';
 import '../../bloc/profile_bloc/profile_bloc.dart';
 
 class ProfileEditScreen extends StatefulWidget {
-  const ProfileEditScreen({super.key});
+  final User? userData;
+  const ProfileEditScreen({super.key, required this.userData});
 
   @override
   State<ProfileEditScreen> createState() => _ProfileEditScreenState();
@@ -26,17 +29,20 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
   final _userNameController = TextEditingController();
   final _fullNameController = TextEditingController();
   final _bioController = TextEditingController();
-  final _genderDropdownController = SingleValueDropDownController();
+  // final _genderDropdownController = SingleValueDropDownController();
 
-  final List<DropDownValueModel> _genderOptions = [
-    DropDownValueModel(name: "Male", value: "Male"),
-    DropDownValueModel(name: "Female", value: "Female"),
-    DropDownValueModel(name: "Other", value: "Other"),
-  ];
+  // final List<DropDownValueModel> _genderOptions = [
+  //   DropDownValueModel(name: "Male", value: "Male"),
+  //   DropDownValueModel(name: "Female", value: "Female"),
+  //   DropDownValueModel(name: "Other", value: "Other"),
+  // ];
 
   @override
   void initState() {
     super.initState();
+    _userNameController.text = widget.userData?.userName ?? '';
+    _fullNameController.text = widget.userData?.fullName ?? '';
+    _bioController.text = widget.userData?.profile?.bio ?? '';
   }
 
   @override
@@ -93,14 +99,19 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                           ),
                         ],
                       ),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(65),
-                        child: RoundProfileAvatar(
-                          radius: 60,
-                          imageUrl: userProfilePic,
-                          userId: userId ?? '',
-                          key: ValueKey(userProfilePic),
-                        ),
+                      child: BlocBuilder<ProfileBloc, ProfileState>(
+                        buildWhen: (previous, current) => previous.userData != current.userData,
+                        builder: (context, state) {
+                          return ClipRRect(
+                            borderRadius: BorderRadius.circular(65),
+                            child: RoundProfileAvatar(
+                              radius: 60,
+                              imageUrl: userProfilePic,
+                              userId: userId ?? '',
+                              key: ValueKey(userProfilePic),
+                            ),
+                          );
+                        },
                       ),
                     ),
                     Positioned(
@@ -113,7 +124,6 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                           if (selectedImage != null) {
                             profileBloc.add(UpdateProfilePictureEvent(profilePicture: selectedImage));
                           }
-                          // logInfo(message: "selectedImage $selectedImage");
                         },
                         child: Container(
                           width: 40,
@@ -140,6 +150,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
               CustomTextField(
                 labelText: "Username",
                 hintText: "Username",
+                controller: _userNameController,
                 prefixIcon: Icons.person,
                 prefixIconColor: Colors.grey,
                 validator: (value) {
@@ -157,14 +168,12 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
               CustomTextField(
                 labelText: "Full Name",
                 hintText: "Enter full name",
+                controller: _fullNameController,
                 prefixIcon: Icons.person,
                 prefixIconColor: Colors.grey,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Username is required';
-                  }
-                  if (value.length < 3) {
-                    return 'Username must be at least 3 characters';
+                    return 'Full name is required';
                   }
                   return null;
                 },
@@ -175,28 +184,45 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
               CustomTextField(
                 labelText: "Bio",
                 hintText: "Enter bio",
+                controller: _bioController,
                 prefixIconColor: Colors.grey,
-                maxLength: 150,
+                maxLength: 200,
                 maxLines: 4,
               ),
 
               const SizedBox(height: 20),
 
               // Gender Dropdown
-              CustomDropdownButton(
-                hint: "Select gender",
-                dropDownList: _genderOptions,
-                controller: _genderDropdownController,
-                label: "Gender",
-                borderColor: Colors.grey,
-                borderWidth: 1.5,
-                borderRadius: 12,
-              ),
+              // CustomDropdownButton(
+              //   hint: "Select gender",
+              //   dropDownList: _genderOptions,
+              //   controller: _genderDropdownController,
+              //   label: "Gender",
+              //   borderColor: Colors.grey,
+              //   borderWidth: 1.5,
+              //   borderRadius: 12,
+              // ),
 
               const SizedBox(height: 90),
-              CustomButton(
-                text: "Save",
-                onTap: () {},
+              BlocBuilder<ProfileBloc, ProfileState>(
+                builder: (context, state) {
+                  return CustomButton(
+                    text: "Save",
+                    onTap: () {
+                      if (_formKey.currentState!.validate()) {
+                        final data = {
+                          "userName": _userNameController.text.trim(),
+                          "fullName": _fullNameController.text.trim(),
+                          "bio": _bioController.text.trim(),
+                        };
+                        logDebug(message: "$data", tag: "User Data");
+
+                        profileBloc.add(UpdateUserProfileDataEvent(body: data));
+                      }
+                    },
+                    showLoader: state.updateUserDataApiStatus == ApiStatus.loading,
+                  );
+                },
               ),
             ],
           ),
@@ -204,4 +230,9 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
       ),
     );
   }
+}
+
+class ProfileEditScreenDataModel {
+  final User? userData;
+  const ProfileEditScreenDataModel({required this.userData});
 }

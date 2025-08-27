@@ -13,9 +13,7 @@ import '../../../../core/utils/widgets/custom_widget.dart';
 import '../../../../core/utils/model/user_model.dart';
 import '../../../../core/config/router.dart';
 import '../../../../core/config/router_name.dart';
-import '../../bloc/follow_section_bloc/follow_section_bloc.dart';
-import '../../bloc/profile_bloc/profile_bloc.dart';
-import '../screens/follow_section_screen.dart';
+import '../../profile.dart';
 
 class UserProfileInfo extends StatefulWidget {
   final String? userId;
@@ -119,7 +117,6 @@ class _UserProfileInfoState extends State<UserProfileInfo> {
                     color: Color(0xff6B7280),
                     height: 1.5,
                   ),
-                  maxLines: 3,
                   overflow: TextOverflow.ellipsis,
                 ),
               ],
@@ -192,7 +189,7 @@ class _UserProfileInfoState extends State<UserProfileInfo> {
               backgroundColor: const Color(0xffF3F4F6),
               textColor: const Color(0xff374151),
               onTap: () {
-                appRouter.push(RouterName.profileEdit.path);
+                appRouter.push(RouterName.profileEdit.path, extra: ProfileEditScreenDataModel(userData: userData));
               },
             ),
           ),

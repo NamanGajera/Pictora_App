@@ -2,6 +2,7 @@ part of 'profile_bloc.dart';
 
 class ProfileState extends Equatable {
   final ApiStatus getUserDataApiStatus;
+  final ApiStatus updateUserDataApiStatus;
   final User? userData;
   final User? otherUserData;
   final int? statusCode;
@@ -10,6 +11,7 @@ class ProfileState extends Equatable {
 
   const ProfileState({
     this.getUserDataApiStatus = ApiStatus.initial,
+    this.updateUserDataApiStatus = ApiStatus.initial,
     this.userData,
     this.otherUserData,
     this.errorMessage,
@@ -19,6 +21,7 @@ class ProfileState extends Equatable {
 
   ProfileState copyWith({
     ApiStatus? getUserDataApiStatus,
+    ApiStatus? updateUserDataApiStatus,
     User? userData,
     User? otherUserData,
     int? statusCode,
@@ -27,6 +30,7 @@ class ProfileState extends Equatable {
   }) {
     return ProfileState(
       getUserDataApiStatus: getUserDataApiStatus ?? this.getUserDataApiStatus,
+      updateUserDataApiStatus: updateUserDataApiStatus ?? this.updateUserDataApiStatus,
       userData: userData ?? this.userData,
       otherUserData: otherUserData ?? this.otherUserData,
       updatedUserProfileCacheKey: updatedUserProfileCacheKey ?? this.updatedUserProfileCacheKey,
@@ -38,6 +42,7 @@ class ProfileState extends Equatable {
   @override
   List<Object?> get props => [
         getUserDataApiStatus,
+        updateUserDataApiStatus,
         userData,
         otherUserData,
         updatedUserProfileCacheKey,

@@ -237,9 +237,9 @@ class ApiClient {
   }
 
   MediaType? _determineContentType(String fileExtension) {
-    const imageTypes = ['jpg', 'jpeg', 'png', 'gif', 'bmp'];
-    const videoTypes = ['mp4', 'mov', 'avi', 'mkv', 'flv'];
-    const audioTypes = ['aac', 'mp3', 'wav', 'ogg', 'm4a'];
+    const imageTypes = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'heic', 'heif', 'tiff', 'svg'];
+    const videoTypes = ['mp4', 'mov', 'avi', 'mkv', 'flv', 'wmv', 'webm', '3gp', 'm4v', 'ts'];
+    const audioTypes = ['aac', 'mp3', 'wav', 'ogg', 'm4a', 'flac', 'wma', 'amr', 'aiff', 'opus', 'mid', 'midi'];
 
     if (imageTypes.contains(fileExtension)) {
       return MediaType('image', fileExtension);

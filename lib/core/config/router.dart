@@ -291,8 +291,11 @@ final GoRouter appRouter = GoRouter(
         return true;
       },
       pageBuilder: (context, state) {
+        final ProfileEditScreenDataModel screenData = state.extra as ProfileEditScreenDataModel;
         return SlideTransitionPage(
-          child: ProfileEditScreen(),
+          child: ProfileEditScreen(
+            userData: screenData.userData,
+          ),
         );
       },
     ),
