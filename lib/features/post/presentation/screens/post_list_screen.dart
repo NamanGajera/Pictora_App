@@ -43,11 +43,7 @@ class _PostListScreenState extends State<PostListScreen> {
       ),
       body: BlocBuilder<PostBloc, PostState>(
         builder: (context, state) {
-          List<PostData> postsData = widget.postListNavigation == PostListNavigation.myProfile
-              ? state.myPostData ?? []
-              : widget.postListNavigation == PostListNavigation.otherProfile
-                  ? state.otherUserPostData ?? []
-                  : state.allPostData ?? [];
+          List<PostData> postsData = _getPostsData(widget.postListNavigation, state);
           return ScrollablePositionedList.builder(
             itemPositionsListener: _itemPositionsListener,
             initialScrollIndex: widget.index ?? 0,
@@ -64,6 +60,19 @@ class _PostListScreenState extends State<PostListScreen> {
         },
       ),
     );
+  }
+
+  List<PostData> _getPostsData(PostListNavigation navigation, PostState state) {
+    switch (navigation) {
+      case PostListNavigation.myProfile:
+        return state.myPostData ?? [];
+      case PostListNavigation.otherProfile:
+        return state.otherUserPostData ?? [];
+      case PostListNavigation.search:
+        return state.allPostData ?? [];
+      case PostListNavigation.like:
+        return state.likedPostData ?? [];
+    }
   }
 }
 

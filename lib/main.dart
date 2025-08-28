@@ -19,7 +19,7 @@ import 'core/utils/helper/helper.dart';
 
 void main() async {
   AppEnvManager.currentEnv = AppEnv.local;
-  AppEnvManager.setLocalBaseUrl("http://192.168.1.34:5000");
+  AppEnvManager.setLocalBaseUrl("http://192.168.1.110:5000");
 
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -71,7 +71,15 @@ class MyApp extends StatelessWidget {
             textSelectionTheme: const TextSelectionThemeData(cursorColor: primaryColor, selectionHandleColor: primaryColor),
           ),
           builder: (context, child) {
-            return SafeArea(child: child ?? Container());
+            return SafeArea(
+                child: MediaQuery.removePadding(
+              context: context,
+              removeTop: true,
+              child: ScrollConfiguration(
+                behavior: const ScrollBehavior().copyWith(overscroll: false),
+                child: child ?? Container(),
+              ),
+            ));
           },
           debugShowCheckedModeBanner: false,
           routerConfig: appRouter,

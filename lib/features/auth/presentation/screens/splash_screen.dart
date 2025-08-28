@@ -23,7 +23,7 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    Timer(Duration(seconds: 2), () {
+    Timer(const Duration(seconds: 2), () {
       checkAuthentication();
     });
   }
@@ -41,8 +41,8 @@ class _SplashScreenState extends State<SplashScreen> {
 
   Future<void> setUserData() async {
     userId = SharedPrefsHelper().getString(SharedPrefKeys.userId);
-    userFullName = SharedPrefsHelper().getString(SharedPrefKeys.userEmail);
-    userEmail = SharedPrefsHelper().getString(SharedPrefKeys.userFullName);
+    userFullName = SharedPrefsHelper().getString(SharedPrefKeys.userFullName);
+    userEmail = SharedPrefsHelper().getString(SharedPrefKeys.userEmail);
     userName = SharedPrefsHelper().getString(SharedPrefKeys.userName);
     userProfilePic = SharedPrefsHelper().getString(SharedPrefKeys.userProfilePic);
   }

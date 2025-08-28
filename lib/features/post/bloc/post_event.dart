@@ -36,6 +36,16 @@ class LoadMoreMyPostEvent extends PostEvent {
   LoadMoreMyPostEvent({required this.body});
 }
 
+class GetLikedPostEvent extends PostEvent {
+  final Map<String, dynamic> body;
+  GetLikedPostEvent({required this.body});
+}
+
+class LoadMoreLikedPostEvent extends PostEvent {
+  final Map<String, dynamic> body;
+  LoadMoreLikedPostEvent({required this.body});
+}
+
 class GetOtherUserPostsEvent extends PostEvent {
   final Map<String, dynamic> body;
   GetOtherUserPostsEvent({required this.body});

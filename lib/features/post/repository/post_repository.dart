@@ -188,4 +188,19 @@ class PostRepository {
       rethrow;
     }
   }
+
+  /// POST: GET ALL POST
+  Future<PostDataModel> getLikedPost(dynamic body) async {
+    try {
+      Map<String, dynamic> json = await apiClient.postApiCall(
+        endPoint: getLikedPostByUserApiEndPoint,
+        isAccessToken: accessToken,
+        postBody: body,
+      );
+
+      return PostDataModel.fromJson(json);
+    } on CustomException {
+      rethrow;
+    }
+  }
 }

@@ -9,6 +9,7 @@ import 'package:visibility_detector/visibility_detector.dart';
 
 // Project
 import 'heart_animation.dart';
+import 'package:pictora/core/utils/services/service.dart';
 import '../../../../core/utils/extensions/extensions.dart';
 import '../../../../core/utils/constants/constants.dart';
 import '../../post.dart';
@@ -36,6 +37,7 @@ class _PostMediaDisplayState extends State<PostMediaDisplay> with AutomaticKeepA
   final PageController _pageController = PageController();
   Map<String, ValueNotifier<bool>> isLikedNotifierAnimation = {};
   final Map<String, bool> _isPlaying = {};
+  final ValueNotifier<Offset?> _tapPosition = ValueNotifier(null);
 
   @override
   void initState() {
@@ -91,10 +93,12 @@ class _PostMediaDisplayState extends State<PostMediaDisplay> with AutomaticKeepA
 
   void _handleDoubleTap() {
     isLikedNotifierAnimation[widget.postId]?.value = true;
-    postBloc.add(TogglePostLikeEvent(
-      postId: widget.postId,
-      isLike: !(widget.isLike),
-    ));
+    if (!widget.isLike) {
+      postBloc.add(TogglePostLikeEvent(
+        postId: widget.postId,
+        isLike: !(widget.isLike),
+      ));
+    }
   }
 
   @override
@@ -128,6 +132,12 @@ class _PostMediaDisplayState extends State<PostMediaDisplay> with AutomaticKeepA
       },
       child: GestureDetector(
         onDoubleTap: _handleDoubleTap,
+        onDoubleTapDown: (details) {
+          final localPosition = details.localPosition;
+
+          logDebug(message: "Local Tap Position: $localPosition");
+          _tapPosition.value = localPosition;
+        },
         onTap: () {
           final currentMedia = mediaItems[_currentPage.value];
           if (currentMedia['type'] == 'video') {
@@ -193,31 +203,38 @@ class _PostMediaDisplayState extends State<PostMediaDisplay> with AutomaticKeepA
                 },
               ),
 
-              Positioned.fill(
-                child: Center(
-                  child: ValueListenableBuilder(
-                    valueListenable: isLikedNotifierAnimation[widget.postId] ?? ValueNotifier(false),
-                    builder: (BuildContext context, bool value, Widget? child) {
-                      return Opacity(
-                        opacity: value ? 1 : 0,
-                        child: HeartAnimationWidget(
-                          isAnimating: value,
-                          duration: const Duration(milliseconds: 400),
-                          onEnd: () {
-                            if (isLikedNotifierAnimation.containsKey(widget.postId)) {
-                              isLikedNotifierAnimation[widget.postId]!.value = false;
-                            }
-                          },
-                          child: const Icon(
-                            Icons.favorite,
-                            color: Colors.white,
-                            size: 90,
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                ),
+              ValueListenableBuilder(
+                valueListenable: _tapPosition,
+                builder: (context, value, child) {
+                  return Positioned(
+                    left: (_tapPosition.value?.dx ?? 0) - 50,
+                    top: (_tapPosition.value?.dy ?? 0) < 140 ? (_tapPosition.value?.dy ?? 0) - 20 : (_tapPosition.value?.dy ?? 0) - 100,
+                    child: Center(
+                      child: ValueListenableBuilder(
+                        valueListenable: isLikedNotifierAnimation[widget.postId] ?? ValueNotifier(false),
+                        builder: (BuildContext context, bool value, Widget? child) {
+                          return Opacity(
+                            opacity: value ? 1 : 0,
+                            child: HeartAnimationWidget(
+                              isAnimating: value,
+                              duration: const Duration(milliseconds: 400),
+                              onEnd: () {
+                                if (isLikedNotifierAnimation.containsKey(widget.postId)) {
+                                  isLikedNotifierAnimation[widget.postId]!.value = false;
+                                }
+                              },
+                              child: const Icon(
+                                Icons.favorite,
+                                color: Colors.white,
+                                size: 90,
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  );
+                },
               ),
 
               // Page indicators

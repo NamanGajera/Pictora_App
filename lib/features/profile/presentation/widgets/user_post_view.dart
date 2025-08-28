@@ -2,19 +2,17 @@
 import 'package:flutter/material.dart';
 
 // Third-party
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shimmer/shimmer.dart';
 
 // Project
-import '../../../../core/utils/extensions/extensions.dart';
 import '../../../../core/utils/constants/constants.dart';
 import '../../../../core/config/router.dart';
 import '../../../../core/config/router_name.dart';
 import '../../../post/bloc/post_bloc.dart';
-import '../../../post/models/post_data.dart';
 import '../../../post/presentation/screens/post_list_screen.dart';
 import '../../bloc/profile_bloc/profile_bloc.dart';
+import 'post_preview.dart';
 
 class UserPostView extends StatefulWidget {
   final String? userId;
@@ -148,79 +146,4 @@ class _UserPostViewState extends State<UserPostView> {
       },
     );
   }
-}
-
-class PostPreview extends StatefulWidget {
-  final PostData? post;
-  const PostPreview({
-    super.key,
-    required this.post,
-  });
-
-  @override
-  State<PostPreview> createState() => _PostPreviewState();
-}
-
-class _PostPreviewState extends State<PostPreview> with AutomaticKeepAliveClientMixin {
-  @override
-  Widget build(BuildContext context) {
-    super.build(context);
-    String? firstMediaUrl = widget.post?.mediaData?[0].mediaUrl;
-    String? thumbnailUrl = widget.post?.mediaData?[0].thumbnail;
-
-    String displayUrl = (firstMediaUrl != null && firstMediaUrl.isVideoUrl) ? (thumbnailUrl ?? firstMediaUrl) : (firstMediaUrl ?? '');
-    return Stack(
-      fit: StackFit.expand,
-      children: [
-        CachedNetworkImage(
-          imageUrl: displayUrl,
-          cacheKey: widget.post?.mediaData?[0].id,
-          key: ValueKey(widget.post?.mediaData?[0].id),
-          fit: BoxFit.cover,
-          placeholder: (context, url) => Container(
-            color: Colors.grey[100],
-            child: const Center(
-              child: SizedBox(
-                width: 20,
-                height: 20,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  valueColor: AlwaysStoppedAnimation<Color>(Color(0xff9CA3AF)),
-                ),
-              ),
-            ),
-          ),
-          errorWidget: (context, url, error) => Container(
-            color: const Color(0xffF3F4F6),
-            child: const Icon(
-              Icons.image_outlined,
-              color: Color(0xff9CA3AF),
-              size: 32,
-            ),
-          ),
-          imageBuilder: (context, imageProvider) => Container(
-            decoration: BoxDecoration(
-              image: DecorationImage(
-                image: imageProvider,
-                fit: BoxFit.cover,
-              ),
-            ),
-          ),
-        ),
-        if ((widget.post?.mediaData?.length ?? 0) > 1)
-          const Positioned(
-            top: 8,
-            right: 8,
-            child: Icon(
-              Icons.copy_outlined,
-              color: Colors.white,
-              size: 18,
-            ),
-          ),
-      ],
-    );
-  }
-
-  @override
-  bool get wantKeepAlive => true;
 }

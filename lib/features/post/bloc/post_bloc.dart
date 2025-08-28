@@ -39,6 +39,8 @@ class PostBloc extends Bloc<PostEvent, PostState> {
     on<LoadMorePostEvent>(_loadMorePost, transformer: droppable());
     on<LoadMoreMyPostEvent>(_loadMoreMyPost, transformer: droppable());
     on<LoadMoreOtherUserPostEvent>(_loadMoreOtherUserPost, transformer: droppable());
+    on<GetLikedPostEvent>(_getLikedPost, transformer: droppable());
+    on<LoadMoreLikedPostEvent>(_loadMoreLikedPost, transformer: droppable());
     on<GetPostCommentDataEvent>(_getPostComment, transformer: droppable());
     on<LoadMorePostCommentDataEvent>(_loadMoreComments, transformer: droppable());
     on<CreateCommentEvent>(_createComment, transformer: droppable());
@@ -146,6 +148,40 @@ class PostBloc extends Bloc<PostEvent, PostState> {
       ));
     } catch (error, stackTrace) {
       emit(state.copyWith(isLoadMorePost: false));
+      ThemeHelper.showToastMessage("$error");
+      handleApiError(error, stackTrace, emit);
+    }
+  }
+
+  Future<void> _getLikedPost(GetLikedPostEvent event, Emitter<PostState> emit) async {
+    try {
+      emit(state.copyWith(getLikedPostApiStatus: ApiStatus.loading));
+      final data = await postRepository.getLikedPost(event.body);
+
+      emit(state.copyWith(
+        getLikedPostApiStatus: ApiStatus.success,
+        likedPostData: data.data ?? [],
+        hasMoreLikedPost: [...?state.likedPostData, ...?data.data].length < (data.total ?? 0),
+      ));
+    } catch (error, stackTrace) {
+      emit(state.copyWith(getLikedPostApiStatus: ApiStatus.failure));
+      ThemeHelper.showToastMessage("$error");
+      handleApiError(error, stackTrace, emit);
+    }
+  }
+
+  Future<void> _loadMoreLikedPost(LoadMoreLikedPostEvent event, Emitter<PostState> emit) async {
+    try {
+      emit(state.copyWith(isLoadMoreLikedPost: true));
+      final data = await postRepository.getLikedPost(event.body);
+
+      emit(state.copyWith(
+        isLoadMoreLikedPost: false,
+        likedPostData: [...?state.likedPostData, ...?data.data],
+        hasMoreLikedPost: [...?state.likedPostData, ...?data.data].length < (data.total ?? 0),
+      ));
+    } catch (error, stackTrace) {
+      emit(state.copyWith(isLoadMoreLikedPost: false));
       ThemeHelper.showToastMessage("$error");
       handleApiError(error, stackTrace, emit);
     }
@@ -643,6 +679,15 @@ class PostBloc extends Bloc<PostEvent, PostState> {
       ),
       otherUserPostData: _updatePostData(
         postList: state.otherUserPostData ?? [],
+        postId: postId,
+        updateCommentCount: updateCommentCount,
+        repliesCount: repliesCount,
+        isLiked: isLiked,
+        isSaved: isSaved,
+        isDelete: isDelete,
+      ),
+      likedPostData: _updatePostData(
+        postList: state.likedPostData ?? [],
         postId: postId,
         updateCommentCount: updateCommentCount,
         repliesCount: repliesCount,

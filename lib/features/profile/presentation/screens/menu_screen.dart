@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 // Project
 import 'package:pictora/core/config/router.dart';
+import 'package:pictora/core/config/router_name.dart';
 import 'package:pictora/core/utils/constants/colors.dart';
 import 'package:pictora/core/utils/widgets/custom_widget.dart';
 
@@ -89,7 +90,7 @@ class _MenuScreenState extends State<MenuScreen> {
                     title: 'Liked Posts',
                     subtitle: 'Posts you\'ve liked',
                     onTap: () {
-                      // Navigate to liked posts
+                      appRouter.push(RouterName.likedPost.path);
                     },
                   ),
                   _buildDivider(),
@@ -141,15 +142,6 @@ class _MenuScreenState extends State<MenuScreen> {
                     subtitle: 'Choose who can see your profile',
                     onTap: () {
                       // Navigate to settings
-                    },
-                  ),
-                  _buildDivider(),
-                  _buildMenuItem(
-                    icon: Icons.help_outline,
-                    title: 'Help & Support',
-                    subtitle: 'Get help and contact support',
-                    onTap: () {
-                      // Navigate to help
                     },
                   ),
                   _buildDivider(),

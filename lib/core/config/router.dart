@@ -6,7 +6,6 @@ import 'package:flutter/material.dart';
 
 // Third-party
 import 'package:go_router/go_router.dart';
-import 'package:pictora/features/profile/presentation/screens/menu_screen.dart';
 
 // Project
 import '../utils/constants/constants.dart';
@@ -300,11 +299,22 @@ final GoRouter appRouter = GoRouter(
         );
       },
     ),
+
+    /// Menu
     GoRoute(
       path: RouterName.menu.path,
       name: RouterName.menu.name,
       pageBuilder: (context, state) {
         return SlideTransitionPage(child: MenuScreen());
+      },
+    ),
+
+    /// Liked Post
+    GoRoute(
+      path: RouterName.likedPost.path,
+      name: RouterName.likedPost.name,
+      pageBuilder: (context, state) {
+        return SlideTransitionPage(child: LikedPostScreen());
       },
     ),
   ],

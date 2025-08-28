@@ -14,7 +14,8 @@ enum RouterName {
   postLists('/postLists', "postLists"),
   followSection('/followSection', "followSection"),
   profileEdit('/profileEdit', "profileEdit"),
-  menu('/menu', "menu");
+  menu('/menu', "menu"),
+  likedPost('/likedPost', "likedPost");
 
   final String path;
   final String name;

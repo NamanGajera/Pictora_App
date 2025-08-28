@@ -23,6 +23,8 @@ String togglePostArchiveApiEndPoint = "$postRoute/archive";
 
 String getLikedByUserApiEndPoint = "$postRoute/liked-by";
 
+String getLikedPostByUserApiEndPoint = "$postRoute/liked-post";
+
 /// Comment Api Route
 String commentRoute = '/comment';
 

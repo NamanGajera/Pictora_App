@@ -47,6 +47,7 @@ enum PostListNavigation {
   search,
   myProfile,
   otherProfile,
+  like,
 }
 
 enum Gender {
