@@ -11,11 +11,15 @@ class PostState extends Equatable {
   final ApiStatus getOtherUserPostApiStatus;
   final ApiStatus getMyPostApiStatus;
   final ApiStatus getLikedPostApiStatus;
+  final ApiStatus getSavedPostApiStatus;
+  final ApiStatus getArchivedPostApiStatus;
   final Map<String, bool>? showReplies;
   final List<PostData>? allPostData;
   final List<PostData>? otherUserPostData;
   final List<PostData>? myPostData;
   final List<PostData>? likedPostData;
+  final List<PostData>? savedPostData;
+  final List<PostData>? archivedPostData;
   final List<User>? likedByUserData;
   final List<CommentData>? commentDataList;
   final bool isBlockScroll;
@@ -33,6 +37,10 @@ class PostState extends Equatable {
   final bool isLoadMoreLikedByUser;
   final bool isLoadMoreLikedPost;
   final bool hasMoreLikedPost;
+  final bool isLoadMoreSavedPost;
+  final bool hasMoreSavedPost;
+  final bool isLoadMoreArchivedPost;
+  final bool hasMoreArchivedPost;
   final int? statusCode;
   final String? errorMessage;
 
@@ -47,6 +55,8 @@ class PostState extends Equatable {
     this.getOtherUserPostApiStatus = ApiStatus.initial,
     this.getMyPostApiStatus = ApiStatus.initial,
     this.getLikedPostApiStatus = ApiStatus.initial,
+    this.getSavedPostApiStatus = ApiStatus.initial,
+    this.getArchivedPostApiStatus = ApiStatus.initial,
     this.isBlockScroll = false,
     this.isLoadMorePost = false,
     this.hasMorePost = true,
@@ -62,6 +72,12 @@ class PostState extends Equatable {
     this.isLoadMoreLikedByUser = false,
     this.isLoadMoreLikedPost = false,
     this.hasMoreLikedPost = true,
+    this.isLoadMoreSavedPost = false,
+    this.hasMoreSavedPost = true,
+    this.isLoadMoreArchivedPost = false,
+    this.hasMoreArchivedPost = true,
+    this.savedPostData,
+    this.archivedPostData,
     this.likedByUserData,
     this.myPostData,
     this.otherUserPostData,
@@ -84,10 +100,14 @@ class PostState extends Equatable {
     ApiStatus? getMyPostApiStatus,
     ApiStatus? getOtherUserPostApiStatus,
     ApiStatus? getLikedPostApiStatus,
+    ApiStatus? getSavedPostApiStatus,
+    ApiStatus? getArchivedPostApiStatus,
     List<PostData>? allPostData,
     List<PostData>? otherUserPostData,
     List<PostData>? myPostData,
     List<PostData>? likedPostData,
+    List<PostData>? savedPostData,
+    List<PostData>? archivedPostData,
     List<User>? likedByUserData,
     Map<String, bool>? showReplies,
     List<CommentData>? commentDataList,
@@ -106,6 +126,10 @@ class PostState extends Equatable {
     bool? isLoadMoreLikedByUser,
     bool? isLoadMoreLikedPost,
     bool? hasMoreLikedPost,
+    bool? isLoadMoreSavedPost,
+    bool? hasMoreSavedPost,
+    bool? isLoadMoreArchivedPost,
+    bool? hasMoreArchivedPost,
     int? statusCode,
     String? errorMessage,
   }) {
@@ -120,12 +144,14 @@ class PostState extends Equatable {
       getMyPostApiStatus: getMyPostApiStatus ?? this.getMyPostApiStatus,
       getOtherUserPostApiStatus: getOtherUserPostApiStatus ?? this.getOtherUserPostApiStatus,
       getLikedPostApiStatus: getLikedPostApiStatus ?? this.getLikedPostApiStatus,
+      getSavedPostApiStatus: getSavedPostApiStatus ?? this.getSavedPostApiStatus,
       likedByUserData: likedByUserData ?? this.likedByUserData,
       myPostData: myPostData ?? this.myPostData,
       otherUserPostData: otherUserPostData ?? this.otherUserPostData,
       likedPostData: likedPostData ?? this.likedPostData,
       showReplies: showReplies ?? this.showReplies,
       allPostData: allPostData ?? this.allPostData,
+      savedPostData: savedPostData ?? this.savedPostData,
       commentDataList: commentDataList ?? this.commentDataList,
       isBlockScroll: isBlockScroll ?? this.isBlockScroll,
       isLoadMorePost: isLoadMorePost ?? this.isLoadMorePost,
@@ -142,6 +168,12 @@ class PostState extends Equatable {
       hasMoreLikedByUser: hasMoreLikedByUser ?? this.hasMoreLikedByUser,
       isLoadMoreLikedPost: isLoadMoreLikedPost ?? this.isLoadMoreLikedPost,
       hasMoreLikedPost: hasMoreLikedPost ?? this.hasMoreLikedPost,
+      isLoadMoreSavedPost: isLoadMoreSavedPost ?? this.isLoadMoreSavedPost,
+      hasMoreSavedPost: hasMoreSavedPost ?? this.hasMoreSavedPost,
+      getArchivedPostApiStatus: getArchivedPostApiStatus ?? this.getArchivedPostApiStatus,
+      archivedPostData: archivedPostData ?? this.archivedPostData,
+      isLoadMoreArchivedPost: isLoadMoreArchivedPost ?? this.isLoadMoreArchivedPost,
+      hasMoreArchivedPost: hasMoreArchivedPost ?? this.hasMoreArchivedPost,
       errorMessage: errorMessage,
       statusCode: statusCode,
     );
@@ -181,6 +213,14 @@ class PostState extends Equatable {
         hasMoreCommentReplies,
         isLoadMoreReplies,
         hasMoreLikedByUser,
+        getSavedPostApiStatus,
+        savedPostData,
+        isLoadMoreSavedPost,
+        hasMoreSavedPost,
+        getArchivedPostApiStatus,
+        archivedPostData,
+        isLoadMoreArchivedPost,
+        hasMoreArchivedPost,
         isLoadMoreLikedByUser,
         statusCode,
       ];

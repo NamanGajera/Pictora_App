@@ -14,6 +14,7 @@ class PostData {
   String? updatedAt;
   bool? isLiked;
   bool? isSaved;
+  bool? isArchived;
   List<MediaData>? mediaData;
   User? userData;
   PostData({
@@ -29,6 +30,7 @@ class PostData {
     this.updatedAt,
     this.isLiked,
     this.isSaved,
+    this.isArchived,
     this.mediaData,
     this.userData,
   });
@@ -46,6 +48,7 @@ class PostData {
     updatedAt = json['updatedAt'];
     isLiked = json['isLiked'];
     isSaved = json['isSaved'];
+    isArchived = json['isArchived'];
     if (json['mediaData'] != null) {
       mediaData = <MediaData>[];
       json['mediaData'].forEach((v) {
@@ -69,6 +72,7 @@ class PostData {
     data['updatedAt'] = updatedAt;
     data['isLiked'] = isLiked;
     data['isSaved'] = isSaved;
+    data['isArchived'] = isArchived;
     if (mediaData != null) {
       data['mediaData'] = mediaData!.map((v) => v.toJson()).toList();
     }
@@ -91,6 +95,7 @@ class PostData {
     String? updatedAt,
     bool? isLiked,
     bool? isSaved,
+    bool? isArchived,
     List<MediaData>? mediaData,
     User? userData,
   }) {
@@ -107,6 +112,7 @@ class PostData {
       updatedAt: updatedAt ?? this.updatedAt,
       isLiked: isLiked ?? this.isLiked,
       isSaved: isSaved ?? this.isSaved,
+      isArchived: isArchived ?? this.isArchived,
       mediaData: mediaData ?? this.mediaData,
       userData: userData ?? this.userData,
     );

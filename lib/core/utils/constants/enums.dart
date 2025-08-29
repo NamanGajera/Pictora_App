@@ -48,6 +48,8 @@ enum PostListNavigation {
   myProfile,
   otherProfile,
   like,
+  save,
+  archive,
 }
 
 enum Gender {

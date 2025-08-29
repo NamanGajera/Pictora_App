@@ -317,5 +317,23 @@ final GoRouter appRouter = GoRouter(
         return SlideTransitionPage(child: LikedPostScreen());
       },
     ),
+
+    /// Saved Post
+    GoRoute(
+      path: RouterName.savedPost.path,
+      name: RouterName.savedPost.name,
+      pageBuilder: (context, state) {
+        return SlideTransitionPage(child: SavedPostScreen());
+      },
+    ),
+
+    /// Archived Post
+    GoRoute(
+      path: RouterName.archivedPost.path,
+      name: RouterName.archivedPost.name,
+      pageBuilder: (context, state) {
+        return SlideTransitionPage(child: ArchivedPostScreen());
+      },
+    ),
   ],
 );

@@ -8,3 +8,5 @@ export 'presentation/screens/profile_edit_screen.dart';
 export 'presentation/screens/profile_screen.dart';
 export 'presentation/screens/liked_post_screen.dart';
 export 'presentation/screens/menu_screen.dart';
+export 'presentation/screens/saved_post_screen.dart';
+export 'presentation/screens/archived_post_screen.dart';

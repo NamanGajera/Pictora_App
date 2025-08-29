@@ -72,7 +72,7 @@ class _MenuScreenState extends State<MenuScreen> {
                     title: 'Saved Posts',
                     subtitle: 'View your saved posts',
                     onTap: () {
-                      // Navigate to saved posts
+                      appRouter.push(RouterName.savedPost.path);
                     },
                   ),
                   _buildDivider(),
@@ -81,7 +81,7 @@ class _MenuScreenState extends State<MenuScreen> {
                     title: 'Archived Posts',
                     subtitle: 'Posts you\'ve archived',
                     onTap: () {
-                      // Navigate to archived posts
+                      appRouter.push(RouterName.archivedPost.path);
                     },
                   ),
                   _buildDivider(),

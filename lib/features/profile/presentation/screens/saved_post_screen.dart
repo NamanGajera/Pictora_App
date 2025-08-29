@@ -9,17 +9,17 @@ import '../../../../core/utils/widgets/custom_widget.dart';
 import '../../../post/post.dart';
 import '../widgets/post_preview.dart';
 
-class LikedPostScreen extends StatefulWidget {
-  const LikedPostScreen({super.key});
+class SavedPostScreen extends StatefulWidget {
+  const SavedPostScreen({super.key});
 
   @override
-  State<LikedPostScreen> createState() => _LikedPostScreenState();
+  State<SavedPostScreen> createState() => _SavedPostScreenState();
 }
 
-class _LikedPostScreenState extends State<LikedPostScreen> {
+class _SavedPostScreenState extends State<SavedPostScreen> {
   @override
   void initState() {
-    postBloc.add(GetLikedPostEvent(body: {"skip": 0, "take": 27}));
+    postBloc.add(GetSavedPostEvent(body: {"skip": 0, "take": 27}));
     _scrollController.addListener(_scrollListener);
     super.initState();
   }
@@ -35,9 +35,9 @@ class _LikedPostScreenState extends State<LikedPostScreen> {
 
   Future<void> _loadMoreData() async {
     final currentState = postBloc.state;
-    if (currentState.hasMoreLikedPost) {
-      postBody["skip"] = (currentState.likedPostData?.length ?? 0);
-      postBloc.add(LoadMoreLikedPostEvent(body: postBody));
+    if (currentState.hasMoreSavedPost) {
+      postBody["skip"] = (currentState.savedPostData?.length ?? 0);
+      postBloc.add(LoadMoreSavedPostEvent(body: postBody));
     }
   }
 
@@ -48,7 +48,7 @@ class _LikedPostScreenState extends State<LikedPostScreen> {
       appBar: AppBar(
         titleSpacing: 10,
         title: const CustomText(
-          'Likes',
+          'Saved',
           fontWeight: FontWeight.w500,
           color: Colors.black87,
           fontSize: 18,
@@ -62,9 +62,9 @@ class _LikedPostScreenState extends State<LikedPostScreen> {
       ),
       body: BlocBuilder<PostBloc, PostState>(
         buildWhen: (previous, current) =>
-            previous.likedPostData != current.likedPostData || previous.getLikedPostApiStatus != current.getLikedPostApiStatus,
+            previous.savedPostData != current.savedPostData || previous.getSavedPostApiStatus != current.getSavedPostApiStatus,
         builder: (context, state) {
-          if (state.getLikedPostApiStatus == ApiStatus.loading) {
+          if (state.getSavedPostApiStatus == ApiStatus.loading) {
             return GridView.builder(
               padding: const EdgeInsets.all(1),
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
@@ -85,7 +85,7 @@ class _LikedPostScreenState extends State<LikedPostScreen> {
             );
           }
 
-          final postData = state.likedPostData;
+          final postData = state.savedPostData;
 
           if (postData?.isEmpty == true || postData == null) {
             return Center(
@@ -109,7 +109,7 @@ class _LikedPostScreenState extends State<LikedPostScreen> {
                   ),
                   InkWell(
                     onTap: () {
-                      postBloc.add(GetLikedPostEvent(body: {"skip": 0, "take": 27}));
+                      postBloc.add(GetSavedPostEvent(body: {"skip": 0, "take": 27}));
                     },
                     child: Padding(
                       padding: EdgeInsets.all(12.0),
@@ -153,7 +153,7 @@ class _LikedPostScreenState extends State<LikedPostScreen> {
                   appRouter.push(
                     RouterName.postLists.path,
                     extra: PostListScreenDataModel(
-                      postListNavigation: PostListNavigation.like,
+                      postListNavigation: PostListNavigation.save,
                       index: index,
                     ),
                   );

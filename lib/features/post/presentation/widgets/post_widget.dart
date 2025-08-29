@@ -409,12 +409,12 @@ class _PostWidgetState extends State<PostWidget> with AutomaticKeepAliveClientMi
                           return _buildModernBottomSheetOption(
                             context: context,
                             icon: Icons.archive_outlined,
-                            title: 'Archive',
-                            subtitle: 'Move to your archive',
+                            title: (widget.post?.isArchived ?? false) ? "Unarchive" : 'Archive',
+                            subtitle: (widget.post?.isArchived ?? false) ? "Move back from archive" : 'Move to your archive',
                             onTap: () {
                               postBloc.add(ArchivePostEvent(
                                 postId: widget.post?.id ?? '',
-                                isArchive: true,
+                                isArchive: !(widget.post?.isArchived ?? false),
                               ));
                             },
                             showLoader: state.archivePostApiStatus == ApiStatus.loading,

@@ -72,6 +72,10 @@ class _PostListScreenState extends State<PostListScreen> {
         return state.allPostData ?? [];
       case PostListNavigation.like:
         return state.likedPostData ?? [];
+      case PostListNavigation.save:
+        return state.savedPostData ?? [];
+      case PostListNavigation.archive:
+        return state.archivedPostData ?? [];
     }
   }
 }

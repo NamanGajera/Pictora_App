@@ -25,6 +25,10 @@ String getLikedByUserApiEndPoint = "$postRoute/liked-by";
 
 String getLikedPostByUserApiEndPoint = "$postRoute/liked-post";
 
+String getSavedPostByUserApiEndPoint = "$postRoute/saved-post";
+
+String getArchivedPostByUserApiEndPoint = "$postRoute/archived-post";
+
 /// Comment Api Route
 String commentRoute = '/comment';
 

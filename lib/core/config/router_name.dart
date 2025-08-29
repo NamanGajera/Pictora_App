@@ -15,7 +15,9 @@ enum RouterName {
   followSection('/followSection', "followSection"),
   profileEdit('/profileEdit', "profileEdit"),
   menu('/menu', "menu"),
-  likedPost('/likedPost', "likedPost");
+  likedPost('/likedPost', "likedPost"),
+  savedPost('/savedPost', "savedPost"),
+  archivedPost('/archivedPost', "archivedPost");
 
   final String path;
   final String name;

@@ -189,11 +189,41 @@ class PostRepository {
     }
   }
 
-  /// POST: GET ALL POST
+  /// POST: GET ALL LIKED POST
   Future<PostDataModel> getLikedPost(dynamic body) async {
     try {
       Map<String, dynamic> json = await apiClient.postApiCall(
         endPoint: getLikedPostByUserApiEndPoint,
+        isAccessToken: accessToken,
+        postBody: body,
+      );
+
+      return PostDataModel.fromJson(json);
+    } on CustomException {
+      rethrow;
+    }
+  }
+
+  /// POST: GET ALL SAVED POST
+  Future<PostDataModel> getSavedPost(dynamic body) async {
+    try {
+      Map<String, dynamic> json = await apiClient.postApiCall(
+        endPoint: getSavedPostByUserApiEndPoint,
+        isAccessToken: accessToken,
+        postBody: body,
+      );
+
+      return PostDataModel.fromJson(json);
+    } on CustomException {
+      rethrow;
+    }
+  }
+
+  /// POST: GET ALL SAVED POST
+  Future<PostDataModel> getArchivedPost(dynamic body) async {
+    try {
+      Map<String, dynamic> json = await apiClient.postApiCall(
+        endPoint: getArchivedPostByUserApiEndPoint,
         isAccessToken: accessToken,
         postBody: body,
       );

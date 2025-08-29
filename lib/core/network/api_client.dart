@@ -22,7 +22,7 @@ class ApiClient {
     _dio.interceptors.add(InterceptorsWrapper(
       onRequest: (options, handler) {
         logDebug(
-          message: 'URL: ${options.uri}, headers: ${options.headers}',
+          message: 'URL: ${options.uri}, headers: ${options.headers}, body: ${options.data}',
           tag: "${options.method} API CALL",
         );
         return handler.next(options);
