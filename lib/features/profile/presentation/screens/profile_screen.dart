@@ -88,7 +88,7 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
           buildWhen: (previous, current) => previous.userData?.userName != current.userData?.userName,
           builder: (context, state) {
             return CustomText(
-              widget.userId == null ? "@$userName" : "@${widget.userName ?? ''}",
+              widget.userId == userId ? "@$userName" : "@${widget.userName ?? ''}",
               fontSize: 20,
               fontWeight: FontWeight.bold,
             );

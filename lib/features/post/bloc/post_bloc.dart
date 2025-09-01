@@ -63,6 +63,7 @@ class PostBloc extends Bloc<PostEvent, PostState> {
     on<GetOtherUserPostsEvent>(_getOtherUserPost);
     on<GetUserCommentsEvent>(_getUserComments);
     on<LoadMoreUserCommentsEvent>(_loadMoreUserComments, transformer: droppable());
+    on<GetAllReelsEvent>(_getReels, transformer: droppable());
     on<BlockScrollEvent>(_blockScroll);
     on<PostEvent>((event, emit) {
       if (event is DeleteCommentEvent) {}
@@ -692,6 +693,25 @@ class PostBloc extends Bloc<PostEvent, PostState> {
       ));
     } catch (error, stackTrace) {
       emit(state.copyWith(isLoadMoreUserComments: false));
+      ThemeHelper.showToastMessage("$error");
+      handleApiError(error, stackTrace, emit);
+    }
+  }
+
+  Future<void> _getReels(GetAllReelsEvent event, Emitter<PostState> emit) async {
+    try {
+      emit(state.copyWith(getReelApiStatus: ApiStatus.loading));
+      final data = await postRepository.getAllReel({
+        "skip": 0,
+        "take": 20,
+      });
+      emit(state.copyWith(
+        getReelApiStatus: ApiStatus.success,
+        reelsData: data.data,
+        // hasMoreUserComments: (data.data ?? []).length < (data.total ?? 0),
+      ));
+    } catch (error, stackTrace) {
+      emit(state.copyWith(getReelApiStatus: ApiStatus.failure));
       ThemeHelper.showToastMessage("$error");
       handleApiError(error, stackTrace, emit);
     }

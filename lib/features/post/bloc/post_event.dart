@@ -187,3 +187,5 @@ class LoadMoreUserCommentsEvent extends PostEvent {
   final Map<String, dynamic> body;
   LoadMoreUserCommentsEvent({required this.body});
 }
+
+class GetAllReelsEvent extends PostEvent {}

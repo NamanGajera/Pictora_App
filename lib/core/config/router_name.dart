@@ -19,7 +19,8 @@ enum RouterName {
   savedPost('/savedPost', "savedPost"),
   archivedPost('/archivedPost', "archivedPost"),
   userComments('/userComments', "userComments"),
-  accountPrivacy('/accountPrivacy', "accountPrivacy");
+  accountPrivacy('/accountPrivacy', "accountPrivacy"),
+  reels('/reels', "reels");
 
   final String path;
   final String name;

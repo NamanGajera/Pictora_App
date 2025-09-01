@@ -29,6 +29,8 @@ String getSavedPostByUserApiEndPoint = "$postRoute/saved-post";
 
 String getArchivedPostByUserApiEndPoint = "$postRoute/archived-post";
 
+String getAllReelsApiEndPoint = "$postRoute/reels";
+
 /// Comment Api Route
 String commentRoute = '/comment';
 

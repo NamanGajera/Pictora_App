@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 
 // Third-party
 import 'package:go_router/go_router.dart';
+import 'package:pictora/features/post/presentation/screens/reels_screen.dart';
 
 // Project
 import '../utils/constants/constants.dart';
@@ -143,7 +144,9 @@ final GoRouter appRouter = GoRouter(
               },
               pageBuilder: (BuildContext context, GoRouterState state) => NoTransitionPage<void>(
                 key: state.pageKey,
-                child: const ProfileScreen(),
+                child: ProfileScreen(
+                  userId: userId,
+                ),
               ),
             ),
           ],
@@ -352,6 +355,15 @@ final GoRouter appRouter = GoRouter(
       name: RouterName.accountPrivacy.name,
       pageBuilder: (context, state) {
         return SlideTransitionPage(child: AccountPrivacyScreen());
+      },
+    ),
+
+    /// Account Privacy
+    GoRoute(
+      path: RouterName.reels.path,
+      name: RouterName.reels.name,
+      pageBuilder: (context, state) {
+        return SlideTransitionPage(child: ReelsScreen());
       },
     ),
   ],

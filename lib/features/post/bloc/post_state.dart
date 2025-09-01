@@ -14,6 +14,7 @@ class PostState extends Equatable {
   final ApiStatus getSavedPostApiStatus;
   final ApiStatus getArchivedPostApiStatus;
   final ApiStatus getUserCommentApiStatus;
+  final ApiStatus getReelApiStatus;
   final Map<String, bool>? showReplies;
   final List<PostData>? allPostData;
   final List<PostData>? otherUserPostData;
@@ -21,6 +22,7 @@ class PostState extends Equatable {
   final List<PostData>? likedPostData;
   final List<PostData>? savedPostData;
   final List<PostData>? archivedPostData;
+  final List<PostData>? reelsData;
   final List<User>? likedByUserData;
   final List<CommentData>? commentDataList;
   final List<CommentData>? userCommentsData;
@@ -62,6 +64,7 @@ class PostState extends Equatable {
     this.getSavedPostApiStatus = ApiStatus.initial,
     this.getArchivedPostApiStatus = ApiStatus.initial,
     this.getUserCommentApiStatus = ApiStatus.initial,
+    this.getReelApiStatus = ApiStatus.initial,
     this.isBlockScroll = false,
     this.isLoadMorePost = false,
     this.hasMorePost = true,
@@ -93,6 +96,7 @@ class PostState extends Equatable {
     this.likedPostData,
     this.commentDataList,
     this.allPostData,
+    this.reelsData,
     this.errorMessage,
     this.statusCode,
   });
@@ -111,12 +115,14 @@ class PostState extends Equatable {
     ApiStatus? getSavedPostApiStatus,
     ApiStatus? getArchivedPostApiStatus,
     ApiStatus? getUserCommentApiStatus,
+    ApiStatus? getReelApiStatus,
     List<PostData>? allPostData,
     List<PostData>? otherUserPostData,
     List<PostData>? myPostData,
     List<PostData>? likedPostData,
     List<PostData>? savedPostData,
     List<PostData>? archivedPostData,
+    List<PostData>? reelsData,
     List<User>? likedByUserData,
     Map<String, bool>? showReplies,
     List<CommentData>? commentDataList,
@@ -190,6 +196,8 @@ class PostState extends Equatable {
       hasMoreUserComments: hasMoreUserComments ?? this.hasMoreUserComments,
       isLoadMoreUserComments: isLoadMoreUserComments ?? this.isLoadMoreUserComments,
       userCommentsData: userCommentsData ?? this.userCommentsData,
+      getReelApiStatus: getReelApiStatus ?? this.getReelApiStatus,
+      reelsData: reelsData ?? this.reelsData,
       errorMessage: errorMessage,
       statusCode: statusCode,
     );
@@ -243,5 +251,7 @@ class PostState extends Equatable {
         isLoadMoreUserComments,
         userCommentsData,
         statusCode,
+        reelsData,
+        getReelApiStatus,
       ];
 }

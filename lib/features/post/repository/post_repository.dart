@@ -248,4 +248,19 @@ class PostRepository {
       rethrow;
     }
   }
+
+  /// POST: GET ALL REEL
+  Future<PostDataModel> getAllReel(dynamic body) async {
+    try {
+      Map<String, dynamic> json = await apiClient.postApiCall(
+        endPoint: getAllReelsApiEndPoint,
+        isAccessToken: accessToken,
+        postBody: body,
+      );
+
+      return PostDataModel.fromJson(json);
+    } on CustomException {
+      rethrow;
+    }
+  }
 }
