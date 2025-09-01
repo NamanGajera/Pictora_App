@@ -39,12 +39,26 @@ class _ReelsScreenState extends State<ReelsScreen> {
             );
           }
 
+          // for (int i = 0; i < 5; i++) {
+          //   final nextUrl = reelData[i + 1].mediaData?[0].mediaUrl;
+          //   if (nextUrl != null) {
+          //     VideoControllerManager.getController(nextUrl);
+          //   }
+          // }
+
           return PageView.builder(
             controller: _pageController,
             scrollDirection: Axis.vertical,
             itemCount: reelData.length,
             physics: const ClampingScrollPhysics(),
-            onPageChanged: (index) {},
+            onPageChanged: (index) {
+              if (index + 1 < reelData.length) {
+                final nextUrl = reelData[index + 1].mediaData?[0].mediaUrl;
+                if (nextUrl != null) {
+                  VideoControllerManager.getController(nextUrl);
+                }
+              }
+            },
             itemBuilder: (context, index) {
               final reel = reelData[index];
               return SizedBox(
@@ -52,11 +66,13 @@ class _ReelsScreenState extends State<ReelsScreen> {
                 width: context.screenWidth,
                 child: Stack(
                   children: [
-                    ReelsMediaDisplay(
-                      mediaData: reel.mediaData,
-                      postId: reel.id ?? '',
-                      isLike: reel.isLiked ?? false,
-                      key: PageStorageKey(reel.id),
+                    Positioned.fill(
+                      child: ReelsMediaDisplay(
+                        mediaData: reel.mediaData,
+                        postId: reel.id ?? '',
+                        isLike: reel.isLiked ?? false,
+                        key: PageStorageKey(reel.id),
+                      ),
                     ),
                   ],
                 ),

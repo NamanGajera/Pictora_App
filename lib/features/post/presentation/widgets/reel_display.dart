@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:pictora/core/utils/services/custom_logger.dart';
 import 'package:video_player/video_player.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 import 'package:pictora/core/utils/extensions/extensions.dart';
-
 import '../../models/post_data.dart';
 
 class ReelsMediaDisplay extends StatefulWidget {
@@ -23,10 +23,7 @@ class ReelsMediaDisplay extends StatefulWidget {
 }
 
 class _ReelsMediaDisplayState extends State<ReelsMediaDisplay> with AutomaticKeepAliveClientMixin {
-  VideoPlayerController? _videoController;
-  final ValueNotifier<bool> _isInitialized = ValueNotifier(false);
-  final ValueNotifier<bool> _isPlaying = ValueNotifier(false);
-  final ValueNotifier<Duration> _position = ValueNotifier(Duration.zero);
+  final ValueNotifier<VideoPlayerController?> _controllerNotifier = ValueNotifier(null);
 
   bool _isDisposed = false;
   bool _isVisible = false;
@@ -37,125 +34,53 @@ class _ReelsMediaDisplayState extends State<ReelsMediaDisplay> with AutomaticKee
     _initializeVideo();
   }
 
-  @override
-  void didUpdateWidget(ReelsMediaDisplay oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.mediaData != widget.mediaData) {
-      _initializeVideo();
-    }
-  }
-
-  void _initializeVideo() async {
+  Future<void> _initializeVideo() async {
     final videoUrl = widget.mediaData
         ?.firstWhere(
-          (media) => (media.mediaUrl ?? '').isVideoUrl,
+          (m) => (m.mediaUrl ?? '').isVideoUrl,
           orElse: () => MediaData(),
         )
         .mediaUrl;
 
-    if (videoUrl == null || videoUrl.isEmpty) {
-      _isInitialized.value = false;
-      return;
-    }
+    if (videoUrl == null || videoUrl.isEmpty) return;
 
-    if (_videoController != null && _videoController!.dataSource == videoUrl) {
-      return;
-    }
+    final controller = await VideoControllerManager.getController(videoUrl);
 
-    await _videoController?.dispose();
-    _videoController = null;
+    if (_isDisposed) return;
 
-    _isInitialized.value = false;
-    _isPlaying.value = false;
-    _position.value = Duration.zero;
-
-    _videoController = VideoPlayerController.networkUrl(Uri.parse(videoUrl));
-
-    try {
-      await _videoController!.initialize();
-      if (_isDisposed) return;
-
-      _videoController!.setLooping(true);
-      _videoController!.removeListener(_updateVideoState);
-      _videoController!.addListener(_updateVideoState);
-
-      _isInitialized.value = true;
-
-      if (_isVisible) {
-        _playVideo();
+    controller.addListener(() {
+      if (controller.value.isInitialized) {
+        // Even if duration == 0, force update to trigger rebuild
+        _controllerNotifier.value = controller;
       }
-    } catch (e) {
-      if (!_isDisposed) {
-        _isInitialized.value = false;
-        _position.value = Duration.zero;
-        _isPlaying.value = false;
-      }
-    }
-  }
+    });
 
-  void _updateVideoState() {
-    if (_isDisposed || !_videoController!.value.isInitialized) return;
-
-    final value = _videoController!.value;
-
-    if (_position.value != value.position) {
-      _position.value = value.position;
-    }
-    if (_isPlaying.value != value.isPlaying) {
-      _isPlaying.value = value.isPlaying;
-    }
-  }
-
-  void _playVideo() {
-    if (_isInitialized.value && _videoController != null && !_videoController!.value.isPlaying) {
-      final pos = _videoController!.value.position;
-      final dur = _videoController!.value.duration;
-
-      if (pos >= dur && dur != Duration.zero) {
-        _videoController!.seekTo(Duration.zero);
-        _position.value = Duration.zero;
-      } else if (_position.value != pos) {
-        _videoController!.seekTo(_position.value);
-      }
-
-      _videoController!.play();
-      _isPlaying.value = true;
-    }
-  }
-
-  void _pauseVideo() {
-    if (_isInitialized.value && _videoController != null && _videoController!.value.isPlaying) {
-      final currentPosition = _videoController!.value.position;
-      _position.value = currentPosition;
-      _videoController!.pause();
-      _isPlaying.value = false;
+    if (controller.value.isInitialized) {
+      _controllerNotifier.value = controller;
     }
   }
 
   void _handleVisibilityChanged(VisibilityInfo info) {
     final visible = info.visibleFraction > 0.8;
-
     if (visible != _isVisible) {
       _isVisible = visible;
-      Future.delayed(const Duration(milliseconds: 100), () {
-        if (_isDisposed) return;
-        if (visible && _isInitialized.value) {
-          _playVideo();
+      final controller = _controllerNotifier.value;
+      if (controller != null && controller.value.isInitialized) {
+        if (_isVisible) {
+          controller.play();
         } else {
-          _pauseVideo();
+          controller.pause();
         }
-      });
+      }
     }
   }
 
   @override
   void dispose() {
     _isDisposed = true;
-    _videoController?.removeListener(_updateVideoState);
-    _videoController?.dispose();
-    _isInitialized.dispose();
-    _isPlaying.dispose();
-    _position.dispose();
+    _controllerNotifier.value?.dispose();
+    _controllerNotifier.dispose();
+    VideoControllerManager.clearAll();
     super.dispose();
   }
 
@@ -163,107 +88,64 @@ class _ReelsMediaDisplayState extends State<ReelsMediaDisplay> with AutomaticKee
   Widget build(BuildContext context) {
     super.build(context);
 
-    final hasVideo = widget.mediaData?.any((m) => (m.mediaUrl ?? '').isVideoUrl) ?? false;
-    final thumbnailUrl = widget.mediaData?.first.thumbnail;
+    return ValueListenableBuilder<VideoPlayerController?>(
+      valueListenable: _controllerNotifier,
+      builder: (context, controller, _) {
+        if (controller == null) {
+          return _buildFallbackImage();
+        }
 
-    if (!hasVideo) {
-      return _buildFallbackImage();
-    }
-
-    return VisibilityDetector(
-      key: Key(widget.postId),
-      onVisibilityChanged: _handleVisibilityChanged,
-      child: GestureDetector(
-        onTap: () {
-          if (_videoController != null && _isInitialized.value) {
-            if (_videoController!.value.isPlaying) {
-              _pauseVideo();
-            } else {
-              _playVideo();
-            }
-          }
-        },
-        child: Stack(
+        return Stack(
           children: [
-            ValueListenableBuilder<bool>(
-              valueListenable: _isInitialized,
-              builder: (context, initialized, child) {
-                if (!initialized) {
-                  return CachedNetworkImage(
-                    imageUrl: thumbnailUrl,
-                    cacheKey: thumbnailUrl,
-                    key: ValueKey(thumbnailUrl),
-                    fit: BoxFit.cover,
-                    placeholder: (context, url) => Container(
-                      color: Colors.grey[100],
-                      child: const Center(
-                        child: SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation<Color>(Color(0xff9CA3AF)),
-                          ),
-                        ),
-                      ),
-                    ),
-                    errorWidget: (context, url, error) => Container(
-                      color: const Color(0xffF3F4F6),
-                      height: double.infinity,
-                      child: const Icon(
-                        Icons.image_outlined,
-                        color: Color(0xff9CA3AF),
-                        size: 32,
-                      ),
-                    ),
-                    imageBuilder: (context, imageProvider) => Container(
-                      decoration: BoxDecoration(
-                        image: DecorationImage(
-                          image: imageProvider,
-                          fit: BoxFit.cover,
-                        ),
-                      ),
-                    ),
-                  );
-                }
-
-                return Center(
-                  child: AspectRatio(
-                    aspectRatio: _videoController!.value.aspectRatio,
-                    child: VideoPlayer(_videoController!),
-                  ),
-                );
+            GestureDetector(
+              onTap: () {
+                logDebug(message: "controller ==>>> $controller");
               },
-            ),
-            if (_videoController != null)
-              Positioned(
-                bottom: 0,
-                left: 0,
-                right: 0,
-                child: VideoProgressIndicator(
-                  _videoController!,
-                  allowScrubbing: true,
-                  colors: VideoProgressColors(
-                    backgroundColor: Colors.grey,
-                    playedColor: Colors.white,
-                    bufferedColor: Colors.grey,
+              child: VisibilityDetector(
+                key: Key(widget.postId),
+                onVisibilityChanged: _handleVisibilityChanged,
+                child: Center(
+                  child: AspectRatio(
+                    aspectRatio: controller.value.aspectRatio == 0 ? 16 / 9 : controller.value.aspectRatio,
+                    child: VideoPlayer(controller),
                   ),
                 ),
               ),
+            ),
+            if (controller.value.isInitialized && controller.value.duration > Duration.zero)
+              VideoProgressIndicator(
+                controller,
+                allowScrubbing: true,
+                colors: VideoProgressColors(
+                  playedColor: Colors.white,
+                  backgroundColor: Colors.grey,
+                  bufferedColor: Colors.grey,
+                ),
+              )
+            else
+              const LinearProgressIndicator(
+                backgroundColor: Colors.grey,
+                valueColor: AlwaysStoppedAnimation(Colors.white),
+              ),
           ],
-        ),
-      ),
+        );
+      },
     );
   }
 
   Widget _buildFallbackImage() {
-    return Container(
-      color: Colors.black,
-      child: const Center(
-        child: Icon(
-          Icons.error_outline,
-          color: Colors.white54,
-          size: 40,
+    final thumbnailUrl = widget.mediaData?.first.thumbnail;
+    return Center(
+      child: CachedNetworkImage(
+        imageUrl: thumbnailUrl ?? '',
+        fit: BoxFit.cover,
+        placeholder: (context, url) => Container(
+          color: Colors.grey[100],
+          child: const Center(child: CircularProgressIndicator(strokeWidth: 2)),
+        ),
+        errorWidget: (context, url, error) => Container(
+          color: Colors.black,
+          child: const Icon(Icons.image, color: Colors.white54, size: 40),
         ),
       ),
     );
@@ -271,4 +153,29 @@ class _ReelsMediaDisplayState extends State<ReelsMediaDisplay> with AutomaticKee
 
   @override
   bool get wantKeepAlive => true;
+}
+
+class VideoControllerManager {
+  static final Map<String, VideoPlayerController> _controllers = {};
+
+  static Future<VideoPlayerController> getController(String url) async {
+    if (_controllers.containsKey(url)) {
+      return _controllers[url]!;
+    }
+    final controller = VideoPlayerController.networkUrl(Uri.parse(url));
+    await controller.initialize();
+    controller.setLooping(true);
+    _controllers[url] = controller;
+    return controller;
+  }
+
+  static void disposeController(String url) {
+    _controllers[url]?.dispose();
+    _controllers.remove(url);
+  }
+
+  static void clearAll() {
+    _controllers.forEach((_, c) => c.dispose());
+    _controllers.clear();
+  }
 }
