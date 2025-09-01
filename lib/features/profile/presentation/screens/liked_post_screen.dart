@@ -1,10 +1,15 @@
+// Flutter
 import 'package:flutter/material.dart';
+
+// Third-party
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shimmer/shimmer.dart';
 
+// Project
 import '../../../../core/config/router.dart';
 import '../../../../core/config/router_name.dart';
 import '../../../../core/utils/constants/constants.dart';
+import '../../../../core/utils/helper/helper.dart';
 import '../../../../core/utils/widgets/custom_widget.dart';
 import '../../../post/post.dart';
 import '../widgets/post_preview.dart';
@@ -85,9 +90,9 @@ class _LikedPostScreenState extends State<LikedPostScreen> {
             );
           }
 
-          final postData = state.likedPostData;
+          final postData = excludeArchivedPosts(state.likedPostData);
 
-          if (postData?.isEmpty == true || postData == null) {
+          if (postData.isEmpty) {
             return Center(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,

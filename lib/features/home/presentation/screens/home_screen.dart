@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 // Project
+import '../../../../core/utils/helper/helper.dart';
 import '../../../post/post.dart';
 import '../../../../core/utils/extensions/extensions.dart';
 import '../../../../core/config/router.dart';
@@ -126,14 +127,16 @@ class _HomeScreenState extends State<HomeScreen> {
                   ));
                 }
 
+                final postData = excludeArchivedPosts(state.allPostData);
+
                 return Expanded(
                   child: ListView.builder(
                     controller: _scrollController,
-                    itemCount: (state.allPostData?.length ?? 0) + (state.isLoadMorePost && state.hasMorePost ? 1 : 0),
+                    itemCount: (postData.length) + (state.isLoadMorePost && state.hasMorePost ? 1 : 0),
                     physics: state.isBlockScroll ? NeverScrollableScrollPhysics() : ClampingScrollPhysics(),
                     padding: EdgeInsets.symmetric(horizontal: 6),
                     itemBuilder: (context, index) {
-                      if (index == state.allPostData?.length) {
+                      if (index == postData.length) {
                         return const Center(
                             child: Padding(
                           padding: EdgeInsets.all(8.0),
@@ -142,7 +145,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       }
                       return PostWidget(
                         key: ValueKey("post_$index"),
-                        post: state.allPostData?[index],
+                        post: postData[index],
                       );
                     },
                   ),

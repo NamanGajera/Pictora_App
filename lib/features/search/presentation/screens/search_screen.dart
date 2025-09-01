@@ -9,6 +9,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 // Project
 import '../../../../core/utils/extensions/extensions.dart';
+import '../../../../core/utils/helper/helper.dart';
 import '../../../../core/utils/widgets/custom_widget.dart';
 import '../../../../core/database/hive_model/user_model/user_mapper.dart';
 import '../../../../core/database/hive/hive_boxes.dart';
@@ -132,9 +133,9 @@ class _SearchScreenState extends State<SearchScreen> {
           );
         }
 
-        final postData = state.allPostData;
+        final postData = excludeArchivedPosts(state.allPostData);
 
-        if (postData?.isEmpty == true || postData == null) {
+        if (postData.isEmpty) {
           return const Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,

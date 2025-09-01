@@ -17,7 +17,8 @@ enum RouterName {
   menu('/menu', "menu"),
   likedPost('/likedPost', "likedPost"),
   savedPost('/savedPost', "savedPost"),
-  archivedPost('/archivedPost', "archivedPost");
+  archivedPost('/archivedPost', "archivedPost"),
+  userComments('/userComments', "userComments");
 
   final String path;
   final String name;

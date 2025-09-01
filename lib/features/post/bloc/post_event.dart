@@ -180,3 +180,10 @@ class BlockScrollEvent extends PostEvent {
 }
 
 class GetAllExplorePostsEvent extends PostEvent {}
+
+class GetUserCommentsEvent extends PostEvent {}
+
+class LoadMoreUserCommentsEvent extends PostEvent {
+  final Map<String, dynamic> body;
+  LoadMoreUserCommentsEvent({required this.body});
+}

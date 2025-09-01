@@ -335,5 +335,14 @@ final GoRouter appRouter = GoRouter(
         return SlideTransitionPage(child: ArchivedPostScreen());
       },
     ),
+
+    /// User Comments
+    GoRoute(
+      path: RouterName.userComments.path,
+      name: RouterName.userComments.name,
+      pageBuilder: (context, state) {
+        return SlideTransitionPage(child: UserCommentScreen());
+      },
+    ),
   ],
 );

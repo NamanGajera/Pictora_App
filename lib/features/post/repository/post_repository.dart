@@ -233,4 +233,19 @@ class PostRepository {
       rethrow;
     }
   }
+
+  /// POST: GET ALL USER COMMENTS
+  Future<PostCommentDataModel> getUserComments(dynamic body) async {
+    try {
+      Map<String, dynamic> json = await apiClient.postApiCall(
+        endPoint: getUserCommentApiEndPoint,
+        isAccessToken: accessToken,
+        postBody: body,
+      );
+
+      return PostCommentDataModel.fromJson(json);
+    } on CustomException {
+      rethrow;
+    }
+  }
 }

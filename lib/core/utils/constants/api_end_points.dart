@@ -40,6 +40,8 @@ String commentToggleLikeApiEndPoint = '$commentRoute/like';
 
 String pinCommentApiEndPoint = '$commentRoute/pin';
 
+String getUserCommentApiEndPoint = '$commentRoute/user-comment';
+
 /// User Api Route
 String userRoute = "/users";
 

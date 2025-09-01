@@ -10,3 +10,4 @@ export 'presentation/screens/liked_post_screen.dart';
 export 'presentation/screens/menu_screen.dart';
 export 'presentation/screens/saved_post_screen.dart';
 export 'presentation/screens/archived_post_screen.dart';
+export 'presentation/screens/user_comment_screen.dart';

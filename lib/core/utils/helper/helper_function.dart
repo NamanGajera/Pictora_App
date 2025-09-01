@@ -2,6 +2,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 // Project
+import '../../../features/post/post.dart';
 import '../helper/helper.dart';
 import '../../config/router.dart';
 import '../../config/router_name.dart';
@@ -61,4 +62,12 @@ Future<void> getUserData() async {
   userEmail = SharedPrefsHelper().getString(SharedPrefKeys.userEmail);
   userFullName = SharedPrefsHelper().getString(SharedPrefKeys.userFullName);
   userName = SharedPrefsHelper().getString(SharedPrefKeys.userName);
+}
+
+List<PostData> excludeArchivedPosts(List<PostData>? postList) {
+  return (postList ?? []).where((post) => post.isArchived != true).toList();
+}
+
+List<PostData> onlyArchivedPosts(List<PostData>? postList) {
+  return (postList ?? []).where((post) => post.isArchived == true).toList();
 }

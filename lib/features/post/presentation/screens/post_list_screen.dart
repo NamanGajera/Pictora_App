@@ -6,6 +6,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
 // Flutter
+import '../../../../core/utils/helper/helper.dart';
 import '../../post.dart';
 import '../../../../core/utils/constants/constants.dart';
 
@@ -65,17 +66,17 @@ class _PostListScreenState extends State<PostListScreen> {
   List<PostData> _getPostsData(PostListNavigation navigation, PostState state) {
     switch (navigation) {
       case PostListNavigation.myProfile:
-        return state.myPostData ?? [];
+        return excludeArchivedPosts(state.myPostData);
       case PostListNavigation.otherProfile:
-        return state.otherUserPostData ?? [];
+        return excludeArchivedPosts(state.otherUserPostData);
       case PostListNavigation.search:
-        return state.allPostData ?? [];
+        return excludeArchivedPosts(state.allPostData);
       case PostListNavigation.like:
-        return state.likedPostData ?? [];
+        return excludeArchivedPosts(state.likedPostData);
       case PostListNavigation.save:
-        return state.savedPostData ?? [];
+        return excludeArchivedPosts(state.savedPostData);
       case PostListNavigation.archive:
-        return state.archivedPostData ?? [];
+        return onlyArchivedPosts(state.archivedPostData);
     }
   }
 }

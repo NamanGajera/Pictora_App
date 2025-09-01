@@ -9,6 +9,7 @@ import 'package:shimmer/shimmer.dart';
 import '../../../../core/utils/constants/constants.dart';
 import '../../../../core/config/router.dart';
 import '../../../../core/config/router_name.dart';
+import '../../../../core/utils/helper/helper.dart';
 import '../../../post/bloc/post_bloc.dart';
 import '../../../post/presentation/screens/post_list_screen.dart';
 import '../../bloc/profile_bloc/profile_bloc.dart';
@@ -55,9 +56,9 @@ class _UserPostViewState extends State<UserPostView> {
           );
         }
 
-        final postData = widget.userId == null ? state.myPostData : state.otherUserPostData;
+        final postData = excludeArchivedPosts(widget.userId == null ? state.myPostData : state.otherUserPostData);
 
-        if (postData?.isEmpty == true || postData == null) {
+        if (postData.isEmpty == true) {
           return Column(
             children: [
               const SizedBox(height: 180),

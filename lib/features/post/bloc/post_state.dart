@@ -13,6 +13,7 @@ class PostState extends Equatable {
   final ApiStatus getLikedPostApiStatus;
   final ApiStatus getSavedPostApiStatus;
   final ApiStatus getArchivedPostApiStatus;
+  final ApiStatus getUserCommentApiStatus;
   final Map<String, bool>? showReplies;
   final List<PostData>? allPostData;
   final List<PostData>? otherUserPostData;
@@ -22,6 +23,7 @@ class PostState extends Equatable {
   final List<PostData>? archivedPostData;
   final List<User>? likedByUserData;
   final List<CommentData>? commentDataList;
+  final List<CommentData>? userCommentsData;
   final bool isBlockScroll;
   final bool isLoadMorePost;
   final bool hasMorePost;
@@ -41,6 +43,8 @@ class PostState extends Equatable {
   final bool hasMoreSavedPost;
   final bool isLoadMoreArchivedPost;
   final bool hasMoreArchivedPost;
+  final bool isLoadMoreUserComments;
+  final bool hasMoreUserComments;
   final int? statusCode;
   final String? errorMessage;
 
@@ -57,6 +61,7 @@ class PostState extends Equatable {
     this.getLikedPostApiStatus = ApiStatus.initial,
     this.getSavedPostApiStatus = ApiStatus.initial,
     this.getArchivedPostApiStatus = ApiStatus.initial,
+    this.getUserCommentApiStatus = ApiStatus.initial,
     this.isBlockScroll = false,
     this.isLoadMorePost = false,
     this.hasMorePost = true,
@@ -76,7 +81,10 @@ class PostState extends Equatable {
     this.hasMoreSavedPost = true,
     this.isLoadMoreArchivedPost = false,
     this.hasMoreArchivedPost = true,
+    this.isLoadMoreUserComments = false,
+    this.hasMoreUserComments = true,
     this.savedPostData,
+    this.userCommentsData,
     this.archivedPostData,
     this.likedByUserData,
     this.myPostData,
@@ -102,6 +110,7 @@ class PostState extends Equatable {
     ApiStatus? getLikedPostApiStatus,
     ApiStatus? getSavedPostApiStatus,
     ApiStatus? getArchivedPostApiStatus,
+    ApiStatus? getUserCommentApiStatus,
     List<PostData>? allPostData,
     List<PostData>? otherUserPostData,
     List<PostData>? myPostData,
@@ -111,6 +120,7 @@ class PostState extends Equatable {
     List<User>? likedByUserData,
     Map<String, bool>? showReplies,
     List<CommentData>? commentDataList,
+    List<CommentData>? userCommentsData,
     bool? isBlockScroll,
     bool? hasMorePost,
     bool? isLoadMorePost,
@@ -130,6 +140,8 @@ class PostState extends Equatable {
     bool? hasMoreSavedPost,
     bool? isLoadMoreArchivedPost,
     bool? hasMoreArchivedPost,
+    bool? isLoadMoreUserComments,
+    bool? hasMoreUserComments,
     int? statusCode,
     String? errorMessage,
   }) {
@@ -174,6 +186,10 @@ class PostState extends Equatable {
       archivedPostData: archivedPostData ?? this.archivedPostData,
       isLoadMoreArchivedPost: isLoadMoreArchivedPost ?? this.isLoadMoreArchivedPost,
       hasMoreArchivedPost: hasMoreArchivedPost ?? this.hasMoreArchivedPost,
+      getUserCommentApiStatus: getUserCommentApiStatus ?? this.getUserCommentApiStatus,
+      hasMoreUserComments: hasMoreUserComments ?? this.hasMoreUserComments,
+      isLoadMoreUserComments: isLoadMoreUserComments ?? this.isLoadMoreUserComments,
+      userCommentsData: userCommentsData ?? this.userCommentsData,
       errorMessage: errorMessage,
       statusCode: statusCode,
     );
@@ -222,6 +238,10 @@ class PostState extends Equatable {
         isLoadMoreArchivedPost,
         hasMoreArchivedPost,
         isLoadMoreLikedByUser,
+        getUserCommentApiStatus,
+        hasMoreUserComments,
+        isLoadMoreUserComments,
+        userCommentsData,
         statusCode,
       ];
 }

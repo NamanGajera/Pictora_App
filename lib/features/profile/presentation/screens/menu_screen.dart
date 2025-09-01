@@ -99,7 +99,7 @@ class _MenuScreenState extends State<MenuScreen> {
                     title: 'Comments',
                     subtitle: 'Your comments and replies',
                     onTap: () {
-                      // Navigate to comments
+                      appRouter.push(RouterName.userComments.path);
                     },
                   ),
                 ],

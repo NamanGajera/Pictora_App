@@ -1,6 +1,7 @@
 // Project
 import '../../../core/utils/model/user_model.dart';
 import '../../../core/utils/constants/constants.dart';
+import 'post_data.dart';
 
 class PostCommentDataModel {
   int? statusCode;
@@ -47,6 +48,7 @@ class CommentData {
   int? repliesCount;
   User? user;
   bool? isLiked;
+  PostData? post;
   PostCommentApiStatus? apiStatus;
   List<CommentData>? repliesData;
 
@@ -65,6 +67,7 @@ class CommentData {
     this.isLiked,
     this.apiStatus = PostCommentApiStatus.success,
     this.repliesData,
+    this.post,
   });
 
   CommentData.fromJson(Map<String, dynamic> json) {
@@ -80,6 +83,7 @@ class CommentData {
     repliesCount = json['repliesCount'];
     user = json['user'] != null ? User.fromJson(json['user']) : null;
     isLiked = json['isLiked'];
+    post = json['post'] != null ? PostData.fromJson(json['post']) : null;
   }
 
   Map<String, dynamic> toJson() {
@@ -96,6 +100,9 @@ class CommentData {
     data['repliesCount'] = repliesCount;
     if (user != null) {
       data['user'] = user!.toJson();
+    }
+    if (post != null) {
+      data['post'] = post!.toJson();
     }
     data['isLiked'] = isLiked;
     return data;

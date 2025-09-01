@@ -61,6 +61,8 @@ class PostBloc extends Bloc<PostEvent, PostState> {
     on<LoadMoreLikedByUserEvent>(_loadMoreLikedByUser, transformer: droppable());
     on<GetMyPostEvent>(_getMyPost);
     on<GetOtherUserPostsEvent>(_getOtherUserPost);
+    on<GetUserCommentsEvent>(_getUserComments);
+    on<LoadMoreUserCommentsEvent>(_loadMoreUserComments, transformer: droppable());
     on<BlockScrollEvent>(_blockScroll);
     on<PostEvent>((event, emit) {
       if (event is DeleteCommentEvent) {}
@@ -110,19 +112,17 @@ class PostBloc extends Bloc<PostEvent, PostState> {
     emit(state.copyWith(getAllPostApiStatus: ApiStatus.loading));
     final cachedPost = await getCachedPosts();
     List<PostData> postData = cachedPost.map((h) => h.toEntity()).toList();
-    // if (!isOnline) {
+
     emit(state.copyWith(
       getAllPostApiStatus: ApiStatus.success,
-      allPostData: _removeArchivedPost(postData),
+      allPostData: postData,
     ));
-    // }
     try {
-      // emit(state.copyWith(getAllPostApiStatus: ApiStatus.loading));
       final data = await postRepository.getAllPost(event.body);
 
       emit(state.copyWith(
         getAllPostApiStatus: ApiStatus.success,
-        allPostData: _removeArchivedPost(data.data ?? []),
+        allPostData: data.data ?? [],
         hasMorePost: (data.data ?? []).length < (data.total ?? 0),
       ));
       if (isOnline) {
@@ -133,7 +133,7 @@ class PostBloc extends Bloc<PostEvent, PostState> {
     } catch (error, stackTrace) {
       emit(state.copyWith(
         getAllPostApiStatus: ApiStatus.failure,
-        allPostData: _removeArchivedPost(postData),
+        allPostData: postData,
       ));
       ThemeHelper.showToastMessage("$error");
       handleApiError(error, stackTrace, emit);
@@ -147,7 +147,7 @@ class PostBloc extends Bloc<PostEvent, PostState> {
 
       emit(state.copyWith(
         isLoadMorePost: false,
-        allPostData: _removeArchivedPost([...?state.allPostData, ...?data.data]),
+        allPostData: [...?state.allPostData, ...?data.data],
         hasMorePost: [...?state.allPostData, ...?data.data].length < (data.total ?? 0),
       ));
     } catch (error, stackTrace) {
@@ -164,7 +164,7 @@ class PostBloc extends Bloc<PostEvent, PostState> {
 
       emit(state.copyWith(
         getLikedPostApiStatus: ApiStatus.success,
-        likedPostData: _removeArchivedPost(data.data ?? []),
+        likedPostData: data.data ?? [],
         hasMoreLikedPost: (data.data ?? []).length < (data.total ?? 0),
       ));
     } catch (error, stackTrace) {
@@ -181,7 +181,7 @@ class PostBloc extends Bloc<PostEvent, PostState> {
 
       emit(state.copyWith(
         isLoadMoreLikedPost: false,
-        likedPostData: _removeArchivedPost([...?state.likedPostData, ...?data.data]),
+        likedPostData: [...?state.likedPostData, ...?data.data],
         hasMoreLikedPost: [...?state.likedPostData, ...?data.data].length < (data.total ?? 0),
       ));
     } catch (error, stackTrace) {
@@ -198,7 +198,7 @@ class PostBloc extends Bloc<PostEvent, PostState> {
 
       emit(state.copyWith(
         getSavedPostApiStatus: ApiStatus.success,
-        savedPostData: _removeArchivedPost(data.data ?? []),
+        savedPostData: data.data ?? [],
         hasMoreSavedPost: (data.data ?? []).length < (data.total ?? 0),
       ));
     } catch (error, stackTrace) {
@@ -215,7 +215,7 @@ class PostBloc extends Bloc<PostEvent, PostState> {
 
       emit(state.copyWith(
         isLoadMoreSavedPost: false,
-        savedPostData: _removeArchivedPost([...?state.savedPostData, ...?data.data]),
+        savedPostData: [...?state.savedPostData, ...?data.data],
         hasMoreSavedPost: [...?state.savedPostData, ...?data.data].length < (data.total ?? 0),
       ));
     } catch (error, stackTrace) {
@@ -266,7 +266,7 @@ class PostBloc extends Bloc<PostEvent, PostState> {
 
       emit(state.copyWith(
         isLoadMoreOtherUserPost: false,
-        otherUserPostData: _removeArchivedPost([...?state.otherUserPostData, ...?data.data]),
+        otherUserPostData: [...?state.otherUserPostData, ...?data.data],
         hasMoreOtherUserPost: [...?state.otherUserPostData, ...?data.data].length < (data.total ?? 0),
       ));
     } catch (error, stackTrace) {
@@ -283,7 +283,7 @@ class PostBloc extends Bloc<PostEvent, PostState> {
 
       emit(state.copyWith(
         isLoadMoreMyPost: false,
-        myPostData: _removeArchivedPost([...?state.myPostData, ...?data.data]),
+        myPostData: [...?state.myPostData, ...?data.data],
         hasMoreMyPost: [...?state.myPostData, ...?data.data].length < (data.total ?? 0),
       ));
     } catch (error, stackTrace) {
@@ -299,7 +299,7 @@ class PostBloc extends Bloc<PostEvent, PostState> {
       final data = await postRepository.getAllPost(event.body);
       emit(state.copyWith(
         getMyPostApiStatus: ApiStatus.success,
-        myPostData: _removeArchivedPost(data.data ?? []),
+        myPostData: data.data ?? [],
         hasMoreMyPost: (data.data ?? []).length < (data.total ?? 0),
       ));
     } catch (error, stackTrace) {
@@ -316,7 +316,7 @@ class PostBloc extends Bloc<PostEvent, PostState> {
       logDebug(message: "Get all post data OTHER:${(data.data ?? []).length} <<<< ${(data.total ?? 0)}");
       emit(state.copyWith(
         getOtherUserPostApiStatus: ApiStatus.success,
-        otherUserPostData: _removeArchivedPost(data.data ?? []),
+        otherUserPostData: data.data ?? [],
         hasMoreOtherUserPost: (data.data ?? []).length < (data.total ?? 0),
       ));
     } catch (error, stackTrace) {
@@ -662,6 +662,41 @@ class PostBloc extends Bloc<PostEvent, PostState> {
     }
   }
 
+  Future<void> _getUserComments(GetUserCommentsEvent event, Emitter<PostState> emit) async {
+    try {
+      emit(state.copyWith(getUserCommentApiStatus: ApiStatus.loading));
+      final data = await postRepository.getUserComments({
+        "skip": 0,
+        "take": 12,
+      });
+      emit(state.copyWith(
+        getUserCommentApiStatus: ApiStatus.success,
+        userCommentsData: data.data,
+        hasMoreUserComments: (data.data ?? []).length < (data.total ?? 0),
+      ));
+    } catch (error, stackTrace) {
+      emit(state.copyWith(getUserCommentApiStatus: ApiStatus.failure));
+      ThemeHelper.showToastMessage("$error");
+      handleApiError(error, stackTrace, emit);
+    }
+  }
+
+  Future<void> _loadMoreUserComments(LoadMoreUserCommentsEvent event, Emitter<PostState> emit) async {
+    try {
+      emit(state.copyWith(isLoadMoreUserComments: true));
+      final data = await postRepository.getUserComments(event.body);
+      emit(state.copyWith(
+        isLoadMoreUserComments: false,
+        userCommentsData: [...(state.userCommentsData ?? []), ...(data.data ?? [])],
+        hasMoreUserComments: [...(state.userCommentsData ?? []), ...(data.data ?? [])].length < (data.total ?? 0),
+      ));
+    } catch (error, stackTrace) {
+      emit(state.copyWith(isLoadMoreUserComments: false));
+      ThemeHelper.showToastMessage("$error");
+      handleApiError(error, stackTrace, emit);
+    }
+  }
+
   void _blockScroll(BlockScrollEvent event, Emitter<PostState> emit) {
     emit(state.copyWith(isBlockScroll: event.isBlockScroll));
     logDebug(message: "Block scroll status: ${event.isBlockScroll}");
@@ -815,7 +850,6 @@ class PostBloc extends Bloc<PostEvent, PostState> {
       return true;
     }).map((post) {
       if (post.id == postId) {
-        logInfo(message: "isArchivedisArchivedisArchived==$isArchived");
         int commentCount = post.commentCount ?? 0;
         int likeCount = post.likeCount ?? 0;
         int saveCount = post.saveCount ?? 0;
@@ -840,13 +874,7 @@ class PostBloc extends Bloc<PostEvent, PostState> {
       }
       return post;
     }).toList();
-    return (isArchivedPostList ?? false)
-        ? updatedList.where((post) => post.isArchived == true).toList()
-        : updatedList.where((post) => post.isArchived != true).toList();
-  }
-
-  List<PostData> _removeArchivedPost(List<PostData> postList) {
-    return postList.where((post) => post.isArchived != true).toList();
+    return updatedList;
   }
 
   void handleApiError(dynamic error, dynamic stackTrace, Emitter<PostState> emit) {
