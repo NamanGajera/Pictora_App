@@ -238,6 +238,7 @@ final GoRouter appRouter = GoRouter(
         return SlideTransitionPage(
           child: ProfileScreen(
             userId: screenData.userId,
+            userName: screenData.userName,
           ),
         );
       },
@@ -342,6 +343,15 @@ final GoRouter appRouter = GoRouter(
       name: RouterName.userComments.name,
       pageBuilder: (context, state) {
         return SlideTransitionPage(child: UserCommentScreen());
+      },
+    ),
+
+    /// Account Privacy
+    GoRoute(
+      path: RouterName.accountPrivacy.path,
+      name: RouterName.accountPrivacy.name,
+      pageBuilder: (context, state) {
+        return SlideTransitionPage(child: AccountPrivacyScreen());
       },
     ),
   ],

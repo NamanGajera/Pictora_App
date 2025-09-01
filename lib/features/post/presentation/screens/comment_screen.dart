@@ -425,7 +425,8 @@ class _CommentItemState extends State<CommentItem> {
                 InkWell(
                   onTap: () {
                     if (widget.comment?.user?.id == userId) return;
-                    appRouter.push(RouterName.otherUserProfile.path, extra: ProfileScreenDataModel(userId: widget.comment?.user?.id ?? ''));
+                    appRouter.push(RouterName.otherUserProfile.path,
+                        extra: ProfileScreenDataModel(userId: widget.comment?.user?.id ?? '', userName: widget.comment?.user?.userName));
                   },
                   child: RoundProfileAvatar(
                     imageUrl: widget.comment?.user?.profile?.profilePicture ?? '',
@@ -479,7 +480,11 @@ class _CommentItemState extends State<CommentItem> {
                       InkWell(
                         onTap: () {
                           if (widget.comment?.user?.id == userId) return;
-                          appRouter.push(RouterName.otherUserProfile.path, extra: ProfileScreenDataModel(userId: widget.comment?.user?.id ?? ''));
+                          appRouter.push(RouterName.otherUserProfile.path,
+                              extra: ProfileScreenDataModel(
+                                userId: widget.comment?.user?.id ?? '',
+                                userName: widget.comment?.user?.userName ?? '',
+                              ));
                         },
                         child: Row(
                           children: [
@@ -884,7 +889,11 @@ class _ChildCommentItemState extends State<ChildCommentItem> {
                 InkWell(
                   onTap: () {
                     if (widget.childComment?.user?.id == userId) return;
-                    appRouter.push(RouterName.otherUserProfile.path, extra: ProfileScreenDataModel(userId: widget.childComment?.user?.id ?? ''));
+                    appRouter.push(RouterName.otherUserProfile.path,
+                        extra: ProfileScreenDataModel(
+                          userId: widget.childComment?.user?.id ?? '',
+                          userName: widget.childComment?.user?.userName ?? '',
+                        ));
                   },
                   child: RoundProfileAvatar(
                     imageUrl: widget.childComment?.user?.profile?.profilePicture ?? '',
@@ -941,7 +950,10 @@ class _ChildCommentItemState extends State<ChildCommentItem> {
                             onTap: () {
                               if (widget.childComment?.user?.id == userId) return;
                               appRouter.push(RouterName.otherUserProfile.path,
-                                  extra: ProfileScreenDataModel(userId: widget.childComment?.user?.id ?? ''));
+                                  extra: ProfileScreenDataModel(
+                                    userId: widget.childComment?.user?.id ?? '',
+                                    userName: widget.childComment?.user?.userName ?? '',
+                                  ));
                             },
                             child: Text(
                               widget.childComment?.user?.userName ?? '',

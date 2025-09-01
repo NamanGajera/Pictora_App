@@ -39,3 +39,8 @@ class UpdateUserProfileDataEvent extends ProfileEvent {
   final Map<String, dynamic> body;
   UpdateUserProfileDataEvent({required this.body});
 }
+
+class ChangeAccountPrivacyEvent extends ProfileEvent {
+  final bool isPrivate;
+  ChangeAccountPrivacyEvent({required this.isPrivate});
+}

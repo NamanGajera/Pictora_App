@@ -194,7 +194,11 @@ class _SearchScreenState extends State<SearchScreen> {
               final User? user = state.cachedUserList?[index];
               return InkWell(
                 onTap: () async {
-                  appRouter.push(RouterName.otherUserProfile.path, extra: ProfileScreenDataModel(userId: user?.id ?? ''));
+                  appRouter.push(RouterName.otherUserProfile.path,
+                      extra: ProfileScreenDataModel(
+                        userId: user?.id ?? '',
+                        userName: user?.userName ?? '',
+                      ));
                 },
                 child: _buildUserTile(user, FollowSectionTab.discover, true),
               );
@@ -213,7 +217,11 @@ class _SearchScreenState extends State<SearchScreen> {
               onTap: () async {
                 final hiveUser = user?.toHiveModel();
                 await cacheUser(hiveUser);
-                appRouter.push(RouterName.otherUserProfile.path, extra: ProfileScreenDataModel(userId: user?.id ?? ''));
+                appRouter.push(RouterName.otherUserProfile.path,
+                    extra: ProfileScreenDataModel(
+                      userId: user?.id ?? '',
+                      userName: user?.userName ?? '',
+                    ));
               },
               child: _buildUserTile(user, FollowSectionTab.discover),
             );

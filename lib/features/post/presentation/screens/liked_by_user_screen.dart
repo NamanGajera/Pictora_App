@@ -130,7 +130,11 @@ class _LikedByUserScreenState extends State<LikedByUserScreen> {
                 key: ValueKey("user_${user?.id}"),
                 onTap: () {
                   if (user?.id == userId) return;
-                  appRouter.push(RouterName.otherUserProfile.path, extra: ProfileScreenDataModel(userId: user?.id ?? ''));
+                  appRouter.push(RouterName.otherUserProfile.path,
+                      extra: ProfileScreenDataModel(
+                        userId: user?.id ?? '',
+                        userName: user?.userName ?? '',
+                      ));
                 },
                 child: _buildUserTile(user),
               );

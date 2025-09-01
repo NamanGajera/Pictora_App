@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:pictora/core/config/router.dart';
 import 'package:pictora/core/config/router_name.dart';
+import 'package:pictora/core/utils/services/custom_logger.dart';
 
 // Project
 import '../../../post/bloc/post_bloc.dart';
@@ -17,7 +18,8 @@ import '../widgets/user_profile_info.dart';
 
 class ProfileScreen extends StatefulWidget {
   final String? userId;
-  const ProfileScreen({super.key, this.userId});
+  final String? userName;
+  const ProfileScreen({super.key, this.userId, this.userName});
 
   @override
   State<ProfileScreen> createState() => _ProfileScreenState();
@@ -27,6 +29,7 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
   @override
   void initState() {
     super.initState();
+    logDebug(message: "widget.ssssjdhfblakshfb ==>>. ${widget.userName}");
     profileBloc.add(GetUserDataEvent(userId: widget.userId));
     if (widget.userId == null) {
       postBloc.add(GetMyPostEvent(body: {
@@ -85,24 +88,26 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
           buildWhen: (previous, current) => previous.userData?.userName != current.userData?.userName,
           builder: (context, state) {
             return CustomText(
-              "@$userName",
+              widget.userId == null ? "@$userName" : "@${widget.userName ?? ''}",
               fontSize: 20,
               fontWeight: FontWeight.bold,
             );
           },
         ),
         actions: [
-          SvgPicture.asset(
-            AppAssets.addPost,
-            height: 28,
-            width: 28,
-          ).onTap(() {
-            appRouter.go(RouterName.postAssetPicker.path);
-          }),
+          if (widget.userId == userId)
+            SvgPicture.asset(
+              AppAssets.addPost,
+              height: 28,
+              width: 28,
+            ).onTap(() {
+              appRouter.go(RouterName.postAssetPicker.path);
+            }),
           const SizedBox(width: 12),
-          Icon(Icons.menu, size: 28).onTap(() {
-            appRouter.push(RouterName.menu.path);
-          }),
+          if (widget.userId == userId)
+            Icon(Icons.menu, size: 28).onTap(() {
+              appRouter.push(RouterName.menu.path);
+            }),
           const SizedBox(width: 14),
         ],
       ),
@@ -148,5 +153,6 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
 
 class ProfileScreenDataModel {
   final String? userId;
-  ProfileScreenDataModel({this.userId});
+  final String? userName;
+  ProfileScreenDataModel({this.userId, this.userName});
 }

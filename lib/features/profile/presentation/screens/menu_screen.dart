@@ -141,7 +141,7 @@ class _MenuScreenState extends State<MenuScreen> {
                     title: 'Account Privacy',
                     subtitle: 'Choose who can see your profile',
                     onTap: () {
-                      // Navigate to settings
+                      appRouter.push(RouterName.accountPrivacy.path);
                     },
                   ),
                   _buildDivider(),

@@ -76,7 +76,11 @@ class _PostWidgetState extends State<PostWidget> with AutomaticKeepAliveClientMi
           InkWell(
             onTap: () {
               if (widget.post?.userData?.id == userId) return;
-              appRouter.push(RouterName.otherUserProfile.path, extra: ProfileScreenDataModel(userId: widget.post?.userData?.id ?? ''));
+              appRouter.push(RouterName.otherUserProfile.path,
+                  extra: ProfileScreenDataModel(
+                    userId: widget.post?.userData?.id ?? '',
+                    userName: widget.post?.userData?.userName ?? '',
+                  ));
             },
             child: Container(
               padding: const EdgeInsets.all(1.5),
@@ -98,7 +102,11 @@ class _PostWidgetState extends State<PostWidget> with AutomaticKeepAliveClientMi
             child: InkWell(
               onTap: () {
                 if (widget.post?.userData?.id == userId) return;
-                appRouter.push(RouterName.otherUserProfile.path, extra: ProfileScreenDataModel(userId: widget.post?.userData?.id ?? ''));
+                appRouter.push(RouterName.otherUserProfile.path,
+                    extra: ProfileScreenDataModel(
+                      userId: widget.post?.userData?.id ?? '',
+                      userName: widget.post?.userData?.userName ?? '',
+                    ));
               },
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -313,7 +321,11 @@ class _PostWidgetState extends State<PostWidget> with AutomaticKeepAliveClientMi
                 recognizer: TapGestureRecognizer()
                   ..onTap = () {
                     if (widget.post?.userData?.id == userId) return;
-                    appRouter.push(RouterName.otherUserProfile.path, extra: ProfileScreenDataModel(userId: widget.post?.userData?.id ?? ''));
+                    appRouter.push(RouterName.otherUserProfile.path,
+                        extra: ProfileScreenDataModel(
+                          userId: widget.post?.userData?.id ?? '',
+                          userName: widget.post?.userData?.userName ?? '',
+                        ));
                   }),
             TextSpan(
               text: widget.post?.caption ?? '',

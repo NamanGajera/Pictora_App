@@ -200,7 +200,8 @@ class _FollowSectionScreenState extends State<FollowSectionScreen> with SingleTi
                     final User? user = state.followers?[index];
                     return InkWell(
                       onTap: () {
-                        appRouter.push(RouterName.otherUserProfile.path, extra: ProfileScreenDataModel(userId: user?.id ?? ''));
+                        appRouter.push(RouterName.otherUserProfile.path,
+                            extra: ProfileScreenDataModel(userId: user?.id ?? '', userName: user?.userName ?? ''));
                       },
                       child: _buildUserTile(
                         user,
@@ -260,7 +261,11 @@ class _FollowSectionScreenState extends State<FollowSectionScreen> with SingleTi
                     final User? user = state.following?[index];
                     return InkWell(
                       onTap: () {
-                        appRouter.push(RouterName.otherUserProfile.path, extra: ProfileScreenDataModel(userId: user?.id ?? ''));
+                        appRouter.push(RouterName.otherUserProfile.path,
+                            extra: ProfileScreenDataModel(
+                              userId: user?.id ?? '',
+                              userName: user?.userName ?? '',
+                            ));
                       },
                       child: _buildUserTile(
                         user,
@@ -312,7 +317,11 @@ class _FollowSectionScreenState extends State<FollowSectionScreen> with SingleTi
               final User? user = state.followRequests?[index].requester;
               return InkWell(
                 onTap: () {
-                  appRouter.push(RouterName.otherUserProfile.path, extra: ProfileScreenDataModel(userId: user?.id ?? ''));
+                  appRouter.push(RouterName.otherUserProfile.path,
+                      extra: ProfileScreenDataModel(
+                        userId: user?.id ?? '',
+                        userName: user?.userName ?? '',
+                      ));
                 },
                 child: _buildUserTile(
                   user,
@@ -361,7 +370,11 @@ class _FollowSectionScreenState extends State<FollowSectionScreen> with SingleTi
                     final User? user = state.discoverUsers?[index];
                     return InkWell(
                       onTap: () {
-                        appRouter.push(RouterName.otherUserProfile.path, extra: ProfileScreenDataModel(userId: user?.id ?? ''));
+                        appRouter.push(RouterName.otherUserProfile.path,
+                            extra: ProfileScreenDataModel(
+                              userId: user?.id ?? '',
+                              userName: user?.userName ?? '',
+                            ));
                       },
                       child: _buildUserTile(user, FollowSectionTab.discover),
                     );

@@ -60,6 +60,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     userEmail = userData?.email;
     userName = userData?.userName;
     userProfilePic = userData?.profile?.profilePicture ?? '';
+    isPrivateAccount = userData?.profile?.isPrivate;
 
     SharedPrefsHelper().setString(SharedPrefKeys.accessToken, accessToken ?? '');
     SharedPrefsHelper().setString(SharedPrefKeys.userId, userId ?? '');
@@ -67,6 +68,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     SharedPrefsHelper().setString(SharedPrefKeys.userFullName, userFullName ?? '');
     SharedPrefsHelper().setString(SharedPrefKeys.userName, userName ?? '');
     SharedPrefsHelper().setString(SharedPrefKeys.userProfilePic, userProfilePic ?? '');
+    SharedPrefsHelper().setBool(SharedPrefKeys.isPrivateAccount, isPrivateAccount ?? false);
 
     appRouter.go(RouterName.home.path);
   }

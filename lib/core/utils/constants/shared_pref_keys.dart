@@ -6,4 +6,5 @@ class SharedPrefKeys {
   static const String userProfilePic = 'userProfilePic';
   static const String userProfileCacheKey = 'userProfileCacheKey';
   static const String userFullName = 'userFullName';
+  static const String isPrivateAccount = 'isPrivateAccount';
 }

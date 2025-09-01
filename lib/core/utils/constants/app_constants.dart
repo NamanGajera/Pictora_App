@@ -15,4 +15,6 @@ bool hasLogout = false;
 
 String? userProfilePic;
 
+bool? isPrivateAccount;
+
 BuildContext? bottomBarContext;

@@ -28,6 +28,7 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
     on<ModifyUserDataEvent>(_modifyUserData, transformer: sequential());
     on<UpdateProfilePictureEvent>(_updateProfilePicture, transformer: droppable());
     on<UpdateUserProfileDataEvent>(_updateUserProfileData, transformer: droppable());
+    on<ChangeAccountPrivacyEvent>(_changeAccountPrivacy, transformer: droppable());
   }
 
   Future<void> _getUserData(GetUserDataEvent event, Emitter<ProfileState> emit) async {
@@ -146,20 +147,41 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
 
       userName = userData.userName;
       userFullName = userData.fullName;
+      isPrivateAccount = userData.profile?.isPrivate;
       await SharedPrefsHelper().setString(SharedPrefKeys.userName, userName ?? '');
       await SharedPrefsHelper().setString(SharedPrefKeys.userFullName, userFullName ?? '');
+      await SharedPrefsHelper().setBool(SharedPrefKeys.isPrivateAccount, isPrivateAccount ?? false);
 
       emit(state.copyWith(
-          userData: state.userData?.copyWith(
-              userName: userName,
-              fullName: userFullName,
-              profile: state.userData?.profile?.copyWith(
-                bio: userData.profile?.bio,
-              ))));
-      emit(state.copyWith(updateUserDataApiStatus: ApiStatus.success));
+        userData: state.userData?.copyWith(
+          userName: userName,
+          fullName: userFullName,
+          profile: state.userData?.profile?.copyWith(
+            bio: userData.profile?.bio,
+            isPrivate: userData.profile?.isPrivate,
+          ),
+        ),
+      ));
+      emit(state.copyWith(
+        updateUserDataApiStatus: ApiStatus.success,
+        changeAccountPrivacyApiStatus: ApiStatus.success,
+      ));
+      ThemeHelper.showToastMessage("Profile updated");
     } catch (error, stackTrace) {
       emit(state.copyWith(updateUserDataApiStatus: ApiStatus.failure));
 
+      ThemeHelper.showToastMessage(error.toString());
+      handleApiError(error, stackTrace, emit);
+    }
+  }
+
+  Future<void> _changeAccountPrivacy(ChangeAccountPrivacyEvent event, Emitter<ProfileState> emit) async {
+    try {
+      emit(state.copyWith(changeAccountPrivacyApiStatus: ApiStatus.loading));
+      add(UpdateUserProfileDataEvent(body: {
+        "isPrivate": event.isPrivate,
+      }));
+    } catch (error, stackTrace) {
       ThemeHelper.showToastMessage(error.toString());
       handleApiError(error, stackTrace, emit);
     }
