@@ -5,3 +5,7 @@ import 'package:flutter/material.dart';
 import '../../../features/post/post.dart';
 
 final GlobalKey<PostAssetPickerScreenState> assetPickerScreenKey = GlobalKey();
+
+final GlobalKey<ReelsScreenState> reelScreenKey = GlobalKey();
+
+final GlobalKey<RefreshIndicatorState> reelRefreshKey = GlobalKey<RefreshIndicatorState>();

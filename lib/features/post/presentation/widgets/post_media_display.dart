@@ -67,6 +67,36 @@ class _PostMediaDisplayState extends State<PostMediaDisplay> with AutomaticKeepA
     }
   }
 
+  @override
+  void didUpdateWidget(PostMediaDisplay oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    if (oldWidget.postId != widget.postId || !_areMediaListsEqual(oldWidget.mediaData, widget.mediaData)) {
+      _disposeVideoControllers();
+      _initializeMedia();
+    }
+  }
+
+  bool _areMediaListsEqual(List<MediaData>? list1, List<MediaData>? list2) {
+    if (list1 == null && list2 == null) return true;
+    if (list1 == null || list2 == null) return false;
+    if (list1.length != list2.length) return false;
+
+    for (int i = 0; i < list1.length; i++) {
+      if (list1[i].mediaUrl != list2[i].mediaUrl) return false;
+    }
+    return true;
+  }
+
+  void _disposeVideoControllers() {
+    _videoControllers.value.forEach((key, controller) {
+      controller.dispose();
+    });
+    _videoControllers.value.clear();
+    _isInitialized.value.clear();
+    _isPlaying.clear();
+  }
+
   void _togglePlay(String videoKey) {
     if (_videoControllers.value[videoKey]?.value.isInitialized ?? false) {
       if (_isPlaying[videoKey] == true) {
@@ -119,16 +149,31 @@ class _PostMediaDisplayState extends State<PostMediaDisplay> with AutomaticKeepA
     return VisibilityDetector(
       key: Key(widget.postId),
       onVisibilityChanged: (info) {
-        final currentMedia = mediaItems[_currentPage.value];
-        if (currentMedia['type'] == 'video') {
-          final videoKey = '${widget.postId}_${_currentPage.value}';
-          if (info.visibleFraction > 0.9) {
-            _togglePlay(videoKey);
-          } else {
-            _videoControllers.value[videoKey]?.pause();
-            _isPlaying[videoKey] = false;
+        // Cancel any previous delayed call
+        Future.delayed(Duration(milliseconds: 100), () {
+          if (!mounted) return;
+
+          final currentMedia = mediaItems[_currentPage.value];
+          if (currentMedia['type'] == 'video') {
+            final videoKey = '${widget.postId}_${_currentPage.value}';
+
+            // Only handle visibility changes if the video controller exists and is initialized
+            if (_videoControllers.value.containsKey(videoKey) && (_isInitialized.value[videoKey] ?? false)) {
+              if (info.visibleFraction > 0.8) {
+                // Lower the threshold slightly
+                if (!(_isPlaying[videoKey] ?? false)) {
+                  _togglePlay(videoKey);
+                }
+              } else {
+                if (_isPlaying[videoKey] ?? false) {
+                  _videoControllers.value[videoKey]?.pause();
+                  _isPlaying[videoKey] = false;
+                  _updateState();
+                }
+              }
+            }
           }
-        }
+        });
       },
       child: GestureDetector(
         onDoubleTap: _handleDoubleTap,

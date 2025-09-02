@@ -64,7 +64,9 @@ class PostBloc extends Bloc<PostEvent, PostState> {
     on<GetUserCommentsEvent>(_getUserComments);
     on<LoadMoreUserCommentsEvent>(_loadMoreUserComments, transformer: droppable());
     on<GetAllReelsEvent>(_getReels, transformer: droppable());
+    on<LoadMoreReelsEvent>(_loadMoreReels, transformer: droppable());
     on<BlockScrollEvent>(_blockScroll);
+    on<UpdatePostUserDataEvent>(_updatePostUserData);
     on<PostEvent>((event, emit) {
       if (event is DeleteCommentEvent) {}
     });
@@ -93,7 +95,7 @@ class PostBloc extends Bloc<PostEvent, PostState> {
       emit(state.copyWith(
         createPostApiStatus: ApiStatus.success,
         allPostData: [(data.data ?? PostData()), ...(state.allPostData ?? [])],
-        myPostData: [(data.data ?? PostData()), ...(state.allPostData ?? [])],
+        myPostData: [(data.data ?? PostData()), ...(state.myPostData ?? [])],
       ));
       profileBloc.add(ModifyUserCountEvent(postsCount: 1));
       ThemeHelper.showToastMessage(data.message ?? 'Post created');
@@ -708,7 +710,7 @@ class PostBloc extends Bloc<PostEvent, PostState> {
       emit(state.copyWith(
         getReelApiStatus: ApiStatus.success,
         reelsData: data.data,
-        // hasMoreUserComments: (data.data ?? []).length < (data.total ?? 0),
+        hasMoreReel: (data.data ?? []).length < (data.total ?? 0),
       ));
     } catch (error, stackTrace) {
       emit(state.copyWith(getReelApiStatus: ApiStatus.failure));
@@ -717,9 +719,62 @@ class PostBloc extends Bloc<PostEvent, PostState> {
     }
   }
 
+  Future<void> _loadMoreReels(LoadMoreReelsEvent event, Emitter<PostState> emit) async {
+    try {
+      emit(state.copyWith(isLoadMoreReel: true));
+      final data = await postRepository.getAllReel(event.body);
+      emit(state.copyWith(
+        isLoadMoreReel: false,
+        reelsData: [...(state.reelsData ?? []), ...(data.data ?? [])],
+        hasMoreReel: [...(state.reelsData ?? []), ...(data.data ?? [])].length < (data.total ?? 0),
+      ));
+    } catch (error, stackTrace) {
+      emit(state.copyWith(isLoadMoreReel: false));
+      ThemeHelper.showToastMessage("$error");
+      handleApiError(error, stackTrace, emit);
+    }
+  }
+
   void _blockScroll(BlockScrollEvent event, Emitter<PostState> emit) {
     emit(state.copyWith(isBlockScroll: event.isBlockScroll));
     logDebug(message: "Block scroll status: ${event.isBlockScroll}");
+  }
+
+  void _updatePostUserData(UpdatePostUserDataEvent event, Emitter<PostState> emit) {
+    emit(
+      state.copyWith(
+        reelsData: (state.reelsData ?? []).map((reel) {
+          if (reel.id == event.postId) {
+            return reel.copyWith(
+                userData: _updateUserData(
+              user: reel.userData,
+              userId: reel.userId ?? '',
+              isFollowed: event.isFollowed,
+              isInFollowing: event.isInFollowing,
+            ));
+          }
+          return reel;
+        }).toList(),
+      ),
+    );
+  }
+
+  User? _updateUserData({
+    required User? user,
+    required String userId,
+    bool? isFollowed,
+    bool? isInFollowing,
+  }) {
+    logDebug(message: "Data-->>>> userId--> $userId,, isFollowed--> $isFollowed,, isInFollowing--> $isInFollowing");
+
+    if (user?.id == userId) {
+      return user?.copyWith(
+        isFollowed: isFollowed ?? user.isFollowed,
+        showFollowBack: isInFollowing == null ? user.showFollowBack : !isInFollowing,
+        followRequestStatus: (user.profile?.isPrivate ?? false) && isFollowed == true ? FollowRequest.pending.name : null,
+      );
+    }
+    return user;
   }
 
   void _updateComment({
@@ -848,6 +903,16 @@ class PostBloc extends Bloc<PostEvent, PostState> {
         isDelete: isDelete,
         isArchived: isArchived,
         isArchivedPostList: true,
+      ),
+      reelsData: _updatePostData(
+        postList: state.reelsData ?? [],
+        postId: postId,
+        updateCommentCount: updateCommentCount,
+        repliesCount: repliesCount,
+        isLiked: isLiked,
+        isSaved: isSaved,
+        isDelete: isDelete,
+        isArchived: isArchived,
       ),
     ));
   }

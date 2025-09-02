@@ -5,5 +5,5 @@ export 'bloc_instances.dart';
 export 'colors.dart';
 export 'enums.dart';
 export 'overlay_ids.dart';
-export 'screens_keys.dart';
+export 'global_keys.dart';
 export 'shared_pref_keys.dart';

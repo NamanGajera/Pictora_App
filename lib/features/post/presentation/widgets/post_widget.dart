@@ -250,7 +250,7 @@ class _PostWidgetState extends State<PostWidget> with AutomaticKeepAliveClientMi
                 SizedBox(width: widget.post?.commentCount != 0 ? 3 : 5),
                 if (widget.post?.commentCount != 0)
                   CustomText(
-                    _formatNumber(widget.post?.commentCount ?? 0),
+                    formattedCount(widget.post?.commentCount ?? 0),
                     fontWeight: FontWeight.w600,
                     fontSize: 14,
                     color: Colors.black87,
@@ -296,7 +296,7 @@ class _PostWidgetState extends State<PostWidget> with AutomaticKeepAliveClientMi
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16),
         child: CustomText(
-          '${_formatNumber(widget.post?.likeCount ?? 0)} likes',
+          '${formattedCount(widget.post?.likeCount ?? 0)} likes',
           fontWeight: FontWeight.w600,
           fontSize: 14,
           color: Colors.black87,
@@ -672,14 +672,6 @@ class _PostWidgetState extends State<PostWidget> with AutomaticKeepAliveClientMi
     );
   }
 
-  String _formatNumber(int number) {
-    if (number >= 1000000) {
-      return '${(number / 1000000).toStringAsFixed(1)}M';
-    } else if (number >= 1000) {
-      return '${(number / 1000).toStringAsFixed(1)}K';
-    }
-    return number.toString();
-  }
 
   @override
   bool get wantKeepAlive => true;

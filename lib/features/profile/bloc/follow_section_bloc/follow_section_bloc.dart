@@ -2,6 +2,7 @@
 import 'package:bloc_concurrency/bloc_concurrency.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:pictora/features/post/bloc/post_bloc.dart';
 
 // Project
 import '../profile_bloc/profile_bloc.dart';
@@ -155,6 +156,15 @@ class FollowSectionBloc extends Bloc<FollowSectionEvent, FollowSectionState> {
         isInFollowing: !isInFollower,
       );
 
+      if (event.postId != null) {
+        postBloc.add(UpdatePostUserDataEvent(
+          userId: event.userId,
+          postId: event.postId ?? '',
+          isFollowed: event.isFollowing,
+          isInFollowing: !isInFollower,
+        ));
+      }
+      logDebug(message: "IsPrivate ==>>>> ${event.isPrivate}");
       if (!(event.isPrivate ?? false)) {
         profileBloc.add(
           ModifyUserCountEvent(

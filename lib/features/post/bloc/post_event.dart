@@ -189,3 +189,21 @@ class LoadMoreUserCommentsEvent extends PostEvent {
 }
 
 class GetAllReelsEvent extends PostEvent {}
+
+class LoadMoreReelsEvent extends PostEvent {
+  final Map<String, dynamic> body;
+  LoadMoreReelsEvent({required this.body});
+}
+
+class UpdatePostUserDataEvent extends PostEvent {
+  final String postId;
+  final String userId;
+  bool? isFollowed;
+  bool? isInFollowing;
+  UpdatePostUserDataEvent({
+    this.isFollowed,
+    this.isInFollowing,
+    required this.userId,
+    required this.postId,
+  });
+}

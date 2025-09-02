@@ -500,6 +500,7 @@ class _FollowSectionScreenState extends State<FollowSectionScreen> with SingleTi
                   followSectionBloc.add(ToggleFollowUserEvent(
                     userId: user?.id ?? '',
                     isFollowing: false,
+                    isPrivate: user?.profile?.isPrivate,
                   ));
                 },
               ),

@@ -44,6 +44,12 @@ class _AppBottomNavigationBarState extends State<AppBottomNavigationBar> {
       iconPath: AppAssets.addPost,
     ),
     BottomBarItem(
+      path: RouterName.reels.path,
+      name: RouterName.reels.name,
+      label: 'Reels',
+      iconPath: AppAssets.reelFill,
+    ),
+    BottomBarItem(
       path: RouterName.profile.path,
       name: RouterName.profile.name,
       label: 'Profile',
@@ -68,57 +74,65 @@ class _AppBottomNavigationBarState extends State<AppBottomNavigationBar> {
       },
       child: Scaffold(
         body: widget.navigationShell,
-        bottomNavigationBar: Container(
-          color: scaffoldBgColor,
-          child: ClipRRect(
-            borderRadius: const BorderRadius.only(
-              topLeft: Radius.circular(24),
-              topRight: Radius.circular(24),
-            ),
-            child: BottomNavigationBar(
-              currentIndex: widget.navigationShell.currentIndex,
-              onTap: (index) {
-                if (widget.navigationShell.currentIndex != index) {
-                  assetPickerScreenKey.currentState?.pauseVideo();
-                  assetPickerScreenKey.currentState?.clearSelections();
-                  widget.navigationShell.goBranch(
-                    index,
-                    initialLocation: index == widget.navigationShell.currentIndex,
-                  );
-                }
-              },
-              selectedItemColor: primaryColor,
-              unselectedItemColor: Colors.grey.shade500,
-              backgroundColor: Colors.white,
-              type: BottomNavigationBarType.fixed,
-              items: screenList.asMap().entries.map((entry) {
-                final index = entry.key;
-                final item = entry.value;
-                final isSelected = index == widget.navigationShell.currentIndex;
-                if (index == 3 && (userProfilePic ?? '').isNotEmpty) {
-                  return BottomNavigationBarItem(
-                    icon: RoundProfileAvatar(
-                      imageUrl: userProfilePic,
-                      radius: 14,
-                      userId: userId ?? '',
-                    ),
-                    label: item.label,
-                  );
-                }
-                return BottomNavigationBarItem(
-                  icon: SvgPicture.asset(
-                    item.iconPath,
-                    height: 26,
-                    width: 26,
-                    colorFilter: ColorFilter.mode(
-                      isSelected ? primaryColor : Colors.grey.shade500,
-                      BlendMode.srcIn,
-                    ),
-                  ),
-                  label: item.label,
+        backgroundColor: widget.navigationShell.currentIndex == 3 ? Colors.black : Colors.white,
+        bottomNavigationBar: SizedBox(
+          height: 60, // enough height for 28px icons
+          child: BottomNavigationBar(
+            currentIndex: widget.navigationShell.currentIndex,
+            onTap: (index) {
+              if (widget.navigationShell.currentIndex != index) {
+                assetPickerScreenKey.currentState?.pauseVideo();
+                assetPickerScreenKey.currentState?.clearSelections();
+                widget.navigationShell.goBranch(
+                  index,
+                  initialLocation: index == widget.navigationShell.currentIndex,
                 );
-              }).toList(),
-            ),
+              }
+              if (index == 3 && widget.navigationShell.currentIndex == 3) {
+                reelScreenKey.currentState?.scrollToTop();
+              }
+            },
+            selectedItemColor: widget.navigationShell.currentIndex == 3 ? Colors.white : primaryColor,
+            unselectedItemColor: Colors.grey.shade500,
+            showSelectedLabels: false,
+            showUnselectedLabels: false,
+            backgroundColor: widget.navigationShell.currentIndex == 3 ? Colors.black : Colors.white,
+            type: BottomNavigationBarType.fixed,
+            selectedLabelStyle: const TextStyle(fontSize: 0),
+            unselectedLabelStyle: const TextStyle(fontSize: 0),
+            items: screenList.asMap().entries.map((entry) {
+              final index = entry.key;
+              final item = entry.value;
+              final isSelected = index == widget.navigationShell.currentIndex;
+
+              if (index == 4 && (userProfilePic ?? '').isNotEmpty) {
+                return BottomNavigationBarItem(
+                  icon: RoundProfileAvatar(
+                    imageUrl: userProfilePic,
+                    radius: 14,
+                    userId: userId ?? '',
+                  ),
+                  label: "",
+                );
+              }
+
+              return BottomNavigationBarItem(
+                icon: SvgPicture.asset(
+                  item.iconPath,
+                  height: 28,
+                  width: 28,
+                  colorFilter: ColorFilter.mode(
+                    isSelected
+                        ? widget.navigationShell.currentIndex == 3
+                            ? Colors.white
+                            : primaryColor
+                        : Colors.grey.shade500,
+                    BlendMode.srcIn,
+                  ),
+                ),
+                label: "",
+              );
+            }).toList(),
           ),
         ),
       ),

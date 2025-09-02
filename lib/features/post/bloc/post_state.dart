@@ -47,6 +47,8 @@ class PostState extends Equatable {
   final bool hasMoreArchivedPost;
   final bool isLoadMoreUserComments;
   final bool hasMoreUserComments;
+  final bool isLoadMoreReel;
+  final bool hasMoreReel;
   final int? statusCode;
   final String? errorMessage;
 
@@ -86,6 +88,8 @@ class PostState extends Equatable {
     this.hasMoreArchivedPost = true,
     this.isLoadMoreUserComments = false,
     this.hasMoreUserComments = true,
+    this.isLoadMoreReel = false,
+    this.hasMoreReel = true,
     this.savedPostData,
     this.userCommentsData,
     this.archivedPostData,
@@ -148,6 +152,8 @@ class PostState extends Equatable {
     bool? hasMoreArchivedPost,
     bool? isLoadMoreUserComments,
     bool? hasMoreUserComments,
+    bool? hasMoreReel,
+    bool? isLoadMoreReel,
     int? statusCode,
     String? errorMessage,
   }) {
@@ -198,6 +204,8 @@ class PostState extends Equatable {
       userCommentsData: userCommentsData ?? this.userCommentsData,
       getReelApiStatus: getReelApiStatus ?? this.getReelApiStatus,
       reelsData: reelsData ?? this.reelsData,
+      isLoadMoreReel: isLoadMoreReel ?? this.isLoadMoreReel,
+      hasMoreReel: hasMoreReel ?? this.hasMoreReel,
       errorMessage: errorMessage,
       statusCode: statusCode,
     );
@@ -253,5 +261,7 @@ class PostState extends Equatable {
         statusCode,
         reelsData,
         getReelApiStatus,
+        hasMoreReel,
+        isLoadMoreReel,
       ];
 }

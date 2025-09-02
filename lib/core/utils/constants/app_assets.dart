@@ -19,4 +19,6 @@ class AppAssets {
   static const String comment = '${svgFolderPath}comment.svg';
   static const String multi = '${svgFolderPath}multi.svg';
   static const String multiFill = '${svgFolderPath}multi_fill.svg';
+  static const String reel = '${svgFolderPath}reel.svg';
+  static const String reelFill = '${svgFolderPath}reel_fill.svg';
 }

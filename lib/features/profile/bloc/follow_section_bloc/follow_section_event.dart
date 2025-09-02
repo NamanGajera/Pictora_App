@@ -37,6 +37,7 @@ class LoadMoreDiscoverUserEvent extends FollowSectionEvent {
 
 class ToggleFollowUserEvent extends FollowSectionEvent {
   final String userId;
+  final String? postId;
   final bool isFollowing;
   final bool? isPrivate;
 
@@ -44,6 +45,7 @@ class ToggleFollowUserEvent extends FollowSectionEvent {
     required this.userId,
     required this.isFollowing,
     this.isPrivate,
+    this.postId,
   });
 }
 

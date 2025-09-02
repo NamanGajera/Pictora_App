@@ -8,6 +8,7 @@ export 'presentation/screens/post_list_screen.dart';
 export 'presentation/screens/video_cover_selector_screen.dart';
 export 'presentation/screens/comment_screen.dart';
 export 'presentation/screens/liked_by_user_screen.dart';
+export 'presentation/screens/reels_screen.dart';
 
 // Widgets
 export 'presentation/widgets/post_widget.dart';

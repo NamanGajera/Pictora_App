@@ -6,6 +6,7 @@ import 'package:bloc_concurrency/bloc_concurrency.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:pictora/core/utils/services/custom_logger.dart';
 
 // Project
 import '../../../../core/config/router.dart';
@@ -64,6 +65,7 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
       }
 
       if (event.followingCount != null) {
+        logDebug(message: "followingCount ==> ${event.followingCount}");
         emit(state.copyWith(
           userData: state.userData?.copyWith(
               counts: state.userData?.counts?.copyWith(followingCount: (state.userData?.counts?.followingCount ?? 0) + (event.followingCount ?? 0))),

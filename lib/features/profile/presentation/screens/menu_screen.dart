@@ -150,7 +150,7 @@ class _MenuScreenState extends State<MenuScreen> {
                     title: 'Help & Support',
                     subtitle: 'Get help and contact support',
                     onTap: () {
-                      appRouter.push(RouterName.reels.path);
+
                     },
                   ),
                   _buildDivider(),

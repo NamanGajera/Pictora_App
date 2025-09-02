@@ -88,14 +88,14 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
           buildWhen: (previous, current) => previous.userData?.userName != current.userData?.userName,
           builder: (context, state) {
             return CustomText(
-              widget.userId == userId ? "@$userName" : "@${widget.userName ?? ''}",
+              widget.userId == null ? "@$userName" : "@${widget.userName ?? ''}",
               fontSize: 20,
               fontWeight: FontWeight.bold,
             );
           },
         ),
         actions: [
-          if (widget.userId == userId)
+          if (widget.userId == null)
             SvgPicture.asset(
               AppAssets.addPost,
               height: 28,
@@ -104,7 +104,7 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
               appRouter.go(RouterName.postAssetPicker.path);
             }),
           const SizedBox(width: 12),
-          if (widget.userId == userId)
+          if (widget.userId == null)
             Icon(Icons.menu, size: 28).onTap(() {
               appRouter.push(RouterName.menu.path);
             }),

@@ -28,11 +28,9 @@ class _UserProfileInfoState extends State<UserProfileInfo> {
   Widget build(BuildContext context) {
     return BlocBuilder<ProfileBloc, ProfileState>(
       buildWhen: (previous, current) {
-        if (widget.userId == null) {
-          return previous.userData != current.userData || previous.getUserDataApiStatus != current.getUserDataApiStatus;
-        } else {
-          return previous.otherUserData != current.otherUserData || previous.getUserDataApiStatus != current.getUserDataApiStatus;
-        }
+        return previous.userData != current.userData ||
+            previous.getUserDataApiStatus != current.getUserDataApiStatus ||
+            previous.otherUserData != current.otherUserData;
       },
       builder: (context, state) {
         if (state.getUserDataApiStatus == ApiStatus.loading) {

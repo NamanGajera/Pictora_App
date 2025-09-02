@@ -144,7 +144,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         ));
                       }
                       return PostWidget(
-                        key: ValueKey("post_$index"),
+                        key: ValueKey("post_${postData[index].id}"),
                         post: postData[index],
                       );
                     },

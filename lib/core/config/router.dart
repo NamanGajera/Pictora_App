@@ -132,6 +132,26 @@ final GoRouter appRouter = GoRouter(
           ],
         ),
 
+        /// Reel
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              path: RouterName.reels.path,
+              name: RouterName.reels.name,
+              onExit: (context, state) {
+                FocusManager.instance.primaryFocus?.unfocus();
+                return true;
+              },
+              pageBuilder: (BuildContext context, GoRouterState state) => NoTransitionPage<void>(
+                key: state.pageKey,
+                child: ReelsScreen(
+                  key: reelScreenKey,
+                ),
+              ),
+            ),
+          ],
+        ),
+
         /// Profile
         StatefulShellBranch(
           routes: [
@@ -144,9 +164,7 @@ final GoRouter appRouter = GoRouter(
               },
               pageBuilder: (BuildContext context, GoRouterState state) => NoTransitionPage<void>(
                 key: state.pageKey,
-                child: ProfileScreen(
-                  userId: userId,
-                ),
+                child: ProfileScreen(),
               ),
             ),
           ],
@@ -355,15 +373,6 @@ final GoRouter appRouter = GoRouter(
       name: RouterName.accountPrivacy.name,
       pageBuilder: (context, state) {
         return SlideTransitionPage(child: AccountPrivacyScreen());
-      },
-    ),
-
-    /// Account Privacy
-    GoRoute(
-      path: RouterName.reels.path,
-      name: RouterName.reels.name,
-      pageBuilder: (context, state) {
-        return SlideTransitionPage(child: ReelsScreen());
       },
     ),
   ],
