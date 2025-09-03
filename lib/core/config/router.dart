@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 
 // Third-party
 import 'package:go_router/go_router.dart';
-import 'package:pictora/features/post/presentation/screens/reels_screen.dart';
+import 'package:pictora/core/utils/services/service.dart';
 
 // Project
 import '../utils/constants/constants.dart';
@@ -139,6 +139,7 @@ final GoRouter appRouter = GoRouter(
               path: RouterName.reels.path,
               name: RouterName.reels.name,
               onExit: (context, state) {
+                reelScreenKey.currentState?.stopAllVideo();
                 FocusManager.instance.primaryFocus?.unfocus();
                 return true;
               },

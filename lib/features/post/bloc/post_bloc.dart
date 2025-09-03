@@ -703,13 +703,17 @@ class PostBloc extends Bloc<PostEvent, PostState> {
   Future<void> _getReels(GetAllReelsEvent event, Emitter<PostState> emit) async {
     try {
       emit(state.copyWith(getReelApiStatus: ApiStatus.loading));
-      final data = await postRepository.getAllReel({
+      final Map<String, dynamic> body = {
         "skip": 0,
-        "take": 20,
-      });
+        "take": 10,
+      };
+
+      final data = await postRepository.getAllReel(body);
+
       emit(state.copyWith(
         getReelApiStatus: ApiStatus.success,
         reelsData: data.data,
+        seedForReel: data.seed,
         hasMoreReel: (data.data ?? []).length < (data.total ?? 0),
       ));
     } catch (error, stackTrace) {
@@ -726,6 +730,7 @@ class PostBloc extends Bloc<PostEvent, PostState> {
       emit(state.copyWith(
         isLoadMoreReel: false,
         reelsData: [...(state.reelsData ?? []), ...(data.data ?? [])],
+        seedForReel: state.seedForReel,
         hasMoreReel: [...(state.reelsData ?? []), ...(data.data ?? [])].length < (data.total ?? 0),
       ));
     } catch (error, stackTrace) {

@@ -6,8 +6,15 @@ class PostDataModel {
   String? message;
   List<PostData>? data;
   int? total;
+  int? seed;
 
-  PostDataModel({this.statusCode, this.message, this.data, this.total});
+  PostDataModel({
+    this.statusCode,
+    this.message,
+    this.data,
+    this.total,
+    this.seed,
+  });
 
   PostDataModel.fromJson(Map<String, dynamic> json) {
     statusCode = json['statusCode'];
@@ -19,6 +26,7 @@ class PostDataModel {
       });
     }
     total = json['total'];
+    seed = json['seed'];
   }
 
   Map<String, dynamic> toJson() {
@@ -29,6 +37,7 @@ class PostDataModel {
       data['data'] = this.data!.map((v) => v.toJson()).toList();
     }
     data['total'] = total;
+    data['seed'] = seed;
     return data;
   }
 }
