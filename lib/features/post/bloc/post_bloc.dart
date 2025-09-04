@@ -126,6 +126,7 @@ class PostBloc extends Bloc<PostEvent, PostState> {
       emit(state.copyWith(
         getAllPostApiStatus: ApiStatus.success,
         allPostData: data.data ?? [],
+        seedForGetAllPost: data.seed,
         hasMorePost: (data.data ?? []).length < (data.total ?? 0),
       ));
       if (isOnline) {
@@ -151,6 +152,7 @@ class PostBloc extends Bloc<PostEvent, PostState> {
       emit(state.copyWith(
         isLoadMorePost: false,
         allPostData: [...?state.allPostData, ...?data.data],
+        seedForGetAllPost: data.seed,
         hasMorePost: [...?state.allPostData, ...?data.data].length < (data.total ?? 0),
       ));
     } catch (error, stackTrace) {

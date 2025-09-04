@@ -33,7 +33,7 @@ class _HomeScreenState extends State<HomeScreen> {
     _scrollController.addListener(_scrollListener);
   }
 
-  final postBody = {"skip": 0, "take": 24};
+  final postBody = {"skip": 0, "take": 4};
   final ScrollController _scrollController = ScrollController();
 
   void _scrollListener() {
@@ -45,8 +45,12 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _loadMoreData() async {
     final currentState = postBloc.state;
     if (currentState.hasMorePost) {
-      postBody["skip"] = (currentState.allPostData?.length ?? 0);
-      postBloc.add(LoadMorePostEvent(body: postBody));
+      final body = {
+        "skip": currentState.allPostData?.length,
+        "take": 4,
+        "seed": currentState.seedForGetAllPost,
+      };
+      postBloc.add(LoadMorePostEvent(body: body));
     }
   }
 
@@ -59,7 +63,7 @@ class _HomeScreenState extends State<HomeScreen> {
         backgroundColor: Colors.white,
         color: primaryColor,
         onRefresh: () async {
-          postBloc.add(GetAllPostEvent(body: {"skip": 0, "take": 24}));
+          postBloc.add(GetAllPostEvent(body: {"skip": 0, "take": 4}));
         },
         child: Column(
           children: [

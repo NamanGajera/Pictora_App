@@ -50,6 +50,7 @@ class PostState extends Equatable {
   final bool isLoadMoreReel;
   final bool hasMoreReel;
   final int? seedForReel;
+  final int? seedForGetAllPost;
   final int? statusCode;
   final String? errorMessage;
 
@@ -103,6 +104,7 @@ class PostState extends Equatable {
     this.allPostData,
     this.reelsData,
     this.seedForReel,
+    this.seedForGetAllPost,
     this.errorMessage,
     this.statusCode,
   });
@@ -157,6 +159,7 @@ class PostState extends Equatable {
     bool? hasMoreReel,
     bool? isLoadMoreReel,
     int? seedForReel,
+    int? seedForGetAllPost,
     int? statusCode,
     String? errorMessage,
   }) {
@@ -210,6 +213,7 @@ class PostState extends Equatable {
       isLoadMoreReel: isLoadMoreReel ?? this.isLoadMoreReel,
       hasMoreReel: hasMoreReel ?? this.hasMoreReel,
       seedForReel: seedForReel,
+      seedForGetAllPost: seedForGetAllPost,
       errorMessage: errorMessage,
       statusCode: statusCode,
     );
@@ -266,6 +270,7 @@ class PostState extends Equatable {
         reelsData,
         getReelApiStatus,
         seedForReel,
+        seedForGetAllPost,
         hasMoreReel,
         isLoadMoreReel,
       ];
