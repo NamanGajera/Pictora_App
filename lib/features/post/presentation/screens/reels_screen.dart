@@ -41,10 +41,17 @@ class ReelsScreenState extends State<ReelsScreen> {
   }
 
   void _handlePageChanged(int index) {
-    final currentController = _controllerManager.getControllerForIndex(_currentIndex);
-    if (currentController != null && currentController.value.isPlaying) {
-      currentController.pause();
+    if (_currentIndex >= 0 && _currentIndex < (_controllerManager.playableItems.length)) {
+      final previousController = _controllerManager.getControllerForIndex(_currentIndex);
+      if (previousController != null && previousController.value.isPlaying) {
+        previousController.pause();
+      }
+
+      if ((_currentIndex - index).abs() > 2) {
+        _controllerManager.disposeControllerAt(_currentIndex);
+      }
     }
+
     _currentIndex = index;
     _controllerManager.handlePageChanged(index);
 
@@ -86,6 +93,23 @@ class ReelsScreenState extends State<ReelsScreen> {
     }
 
     controller.addListener(checkInitialization);
+  }
+
+  @override
+  void didUpdateWidget(ReelsScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (_reelData.length > 50) {
+      _cleanupDistantControllers();
+    }
+  }
+
+  void _cleanupDistantControllers() {
+    final safeRange = 5;
+    for (int i = 0; i < (_controllerManager.playableItems.length); i++) {
+      if ((i < _currentIndex - safeRange) || (i > _currentIndex + safeRange)) {
+        _controllerManager.disposeControllerAt(i);
+      }
+    }
   }
 
   void _handleVisibilityChanged(VisibilityInfo info, int index) {

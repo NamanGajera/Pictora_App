@@ -44,6 +44,19 @@ class _SingleReelViewState extends State<SingleReelView> with AutomaticKeepAlive
     isLikedNotifierAnimation[widget.reel.id ?? ''] = ValueNotifier(false);
   }
 
+  @override
+  void dispose() {
+    final reelId = widget.reel.id ?? '';
+    if (isLikedNotifierAnimation.containsKey(reelId)) {
+      isLikedNotifierAnimation[reelId]?.dispose();
+      isLikedNotifierAnimation.remove(reelId);
+    }
+    _tapPosition.dispose();
+    _showMuteIconNotifier.dispose();
+
+    super.dispose();
+  }
+
   final ValueNotifier<Offset?> _tapPosition = ValueNotifier(null);
   Map<String, ValueNotifier<bool>> isLikedNotifierAnimation = {};
   final ValueNotifier<bool> _showMuteIconNotifier = ValueNotifier(false);
@@ -98,7 +111,7 @@ class _SingleReelViewState extends State<SingleReelView> with AutomaticKeepAlive
                           widget.controller,
                         ),
                       ),
-                    ).withAutomaticKeepAlive()
+                    )
                   : _buildLoadingPlaceholder(widget.reel),
             ),
             ValueListenableBuilder<bool>(
@@ -211,13 +224,14 @@ class _SingleReelViewState extends State<SingleReelView> with AutomaticKeepAlive
 
 class ReelControllerManager {
   final List<PlayableItem> _playableItems;
-
-  static const int _preloadRange = 2;
+  static const int _preloadRange = 1;
   final ValueNotifier<bool> isMuted = ValueNotifier(false);
+  int _currentCenterIndex = 0;
 
   ReelControllerManager(List<String> videoUrls) : _playableItems = videoUrls.map((url) => PlayableItem(videoUrl: url)).toList();
 
   void handlePageChanged(int newIndex) {
+    _currentCenterIndex = newIndex;
     _disposeControllersOutsideRange(newIndex);
     _preloadControllersInRange(newIndex);
   }
@@ -226,17 +240,21 @@ class ReelControllerManager {
     for (int i = 0; i < _playableItems.length; i++) {
       final item = _playableItems[i];
       if ((i < centerIndex - _preloadRange) || (i > centerIndex + _preloadRange)) {
-        if (item.controller != null) {
-          if (item.listener != null) {
-            item.controller!.removeListener(item.listener!);
-          }
-          item.controller!.dispose();
-          item.controller = null;
-          item.isInitialized = false;
-          item.initializeFuture = null;
-          item.removeListener();
-        }
+        _disposeController(item);
       }
+    }
+  }
+
+  void _disposeController(PlayableItem item) {
+    if (item.controller != null) {
+      if (item.listener != null) {
+        item.controller!.removeListener(item.listener!);
+      }
+      item.controller!.dispose();
+      item.controller = null;
+      item.isInitialized = false;
+      item.initializeFuture = null;
+      item.removeListener();
     }
   }
 
@@ -249,7 +267,7 @@ class ReelControllerManager {
       if (item.controller == null) {
         item.controller = VideoPlayerController.networkUrl(Uri.parse(item.videoUrl));
 
-        listener() {
+        void listener() {
           if (item.controller != null && item.controller!.value.isInitialized) {
             if (!item.controller!.value.isLooping) {
               item.controller!.setLooping(true);
@@ -263,8 +281,13 @@ class ReelControllerManager {
         item.initializeFuture = item.controller!.initialize().then((_) {
           item.isInitialized = true;
           item.controller!.setLooping(true);
+
+          if (i == _currentCenterIndex) {
+            item.controller!.play();
+          }
         }).catchError((error) {
           logDebug(message: 'Failed to initialize controller at index: $i - $error');
+          _disposeController(item);
         });
       }
     }
@@ -277,14 +300,10 @@ class ReelControllerManager {
 
   void disposeAll() {
     for (final item in _playableItems) {
-      if (item.controller != null) {
-        if (item.listener != null) {
-          item.controller!.removeListener(item.listener!);
-        }
-        item.controller!.dispose();
-      }
+      _disposeController(item);
     }
     _playableItems.clear();
+    isMuted.dispose();
   }
 
   void toggleMuteAll() {
@@ -301,6 +320,12 @@ class ReelControllerManager {
       if (item.controller != null && item.controller!.value.isPlaying) {
         item.controller!.pause();
       }
+    }
+  }
+
+  void disposeControllerAt(int index) {
+    if (index >= 0 && index < _playableItems.length) {
+      _disposeController(_playableItems[index]);
     }
   }
 
