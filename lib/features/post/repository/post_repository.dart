@@ -41,6 +41,21 @@ class PostRepository {
     }
   }
 
+  /// POST: GET ALL USER POST
+  Future<PostDataModel> getAllUserPost(dynamic body) async {
+    try {
+      Map<String, dynamic> json = await apiClient.postApiCall(
+        endPoint: getUserPostApiEndPoint,
+        isAccessToken: accessToken,
+        postBody: body,
+      );
+
+      return PostDataModel.fromJson(json);
+    } on CustomException {
+      rethrow;
+    }
+  }
+
   /// POST: GET ALL POST COMMENTS
   Future<PostCommentDataModel> getPostComment(dynamic body) async {
     try {
@@ -164,6 +179,21 @@ class PostRepository {
     try {
       Map<String, dynamic> json = await apiClient.postApiCall(
         endPoint: togglePostArchiveApiEndPoint,
+        isAccessToken: accessToken,
+        postBody: body,
+      );
+
+      return CommonMessageModel.fromJson(json);
+    } on CustomException {
+      rethrow;
+    }
+  }
+
+  /// POST: TOGGLE REPOST
+  Future<CommonMessageModel> toggleRePostLike(dynamic body) async {
+    try {
+      Map<String, dynamic> json = await apiClient.postApiCall(
+        endPoint: toggleRepostApiEndPoint,
         isAccessToken: accessToken,
         postBody: body,
       );

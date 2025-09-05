@@ -7,6 +7,7 @@ class PostData {
   String? caption;
   int? likeCount;
   int? commentCount;
+  int? repostCount;
   int? shareCount;
   int? saveCount;
   int? viewCount;
@@ -15,6 +16,7 @@ class PostData {
   bool? isLiked;
   bool? isSaved;
   bool? isArchived;
+  bool? isRepost;
   List<MediaData>? mediaData;
   User? userData;
   PostData({
@@ -23,6 +25,7 @@ class PostData {
     this.caption,
     this.likeCount,
     this.commentCount,
+    this.repostCount,
     this.shareCount,
     this.saveCount,
     this.viewCount,
@@ -30,6 +33,7 @@ class PostData {
     this.updatedAt,
     this.isLiked,
     this.isSaved,
+    this.isRepost,
     this.isArchived,
     this.mediaData,
     this.userData,
@@ -41,6 +45,7 @@ class PostData {
     caption = json['caption'];
     likeCount = json['likeCount'];
     commentCount = json['commentCount'];
+    repostCount = json['repostCount'];
     shareCount = json['shareCount'];
     saveCount = json['saveCount'];
     viewCount = json['viewCount'];
@@ -49,6 +54,7 @@ class PostData {
     isLiked = json['isLiked'];
     isSaved = json['isSaved'];
     isArchived = json['isArchived'];
+    isRepost = json['isRepost'];
     if (json['mediaData'] != null) {
       mediaData = <MediaData>[];
       json['mediaData'].forEach((v) {
@@ -65,6 +71,7 @@ class PostData {
     data['caption'] = caption;
     data['likeCount'] = likeCount;
     data['commentCount'] = commentCount;
+    data['repostCount'] = repostCount;
     data['shareCount'] = shareCount;
     data['saveCount'] = saveCount;
     data['viewCount'] = viewCount;
@@ -73,6 +80,7 @@ class PostData {
     data['isLiked'] = isLiked;
     data['isSaved'] = isSaved;
     data['isArchived'] = isArchived;
+    data['isRepost'] = isRepost;
     if (mediaData != null) {
       data['mediaData'] = mediaData!.map((v) => v.toJson()).toList();
     }
@@ -88,6 +96,7 @@ class PostData {
     String? caption,
     int? likeCount,
     int? commentCount,
+    int? repostCount,
     int? shareCount,
     int? saveCount,
     int? viewCount,
@@ -96,6 +105,7 @@ class PostData {
     bool? isLiked,
     bool? isSaved,
     bool? isArchived,
+    bool? isRepost,
     List<MediaData>? mediaData,
     User? userData,
   }) {
@@ -105,6 +115,7 @@ class PostData {
       caption: caption ?? this.caption,
       likeCount: likeCount ?? this.likeCount,
       commentCount: commentCount ?? this.commentCount,
+      repostCount: repostCount ?? this.repostCount,
       shareCount: shareCount ?? this.shareCount,
       saveCount: saveCount ?? this.saveCount,
       viewCount: viewCount ?? this.viewCount,
@@ -113,6 +124,7 @@ class PostData {
       isLiked: isLiked ?? this.isLiked,
       isSaved: isSaved ?? this.isSaved,
       isArchived: isArchived ?? this.isArchived,
+      isRepost: isRepost ?? this.isRepost,
       mediaData: mediaData ?? this.mediaData,
       userData: userData ?? this.userData,
     );

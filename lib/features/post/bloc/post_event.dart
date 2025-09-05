@@ -150,6 +150,16 @@ class TogglePostSaveEvent extends PostEvent {
   });
 }
 
+class ToggleRePostEvent extends PostEvent {
+  final String postId;
+  final bool isRepost;
+
+  ToggleRePostEvent({
+    required this.postId,
+    required this.isRepost,
+  });
+}
+
 class DeletePostEvent extends PostEvent {
   final String postId;
   DeletePostEvent({required this.postId});

@@ -19,6 +19,8 @@ String togglePostLikeApiEndPoint = "$postRoute/like";
 
 String togglePostSaveApiEndPoint = "$postRoute/save";
 
+String toggleRepostApiEndPoint = "$postRoute/repost";
+
 String togglePostArchiveApiEndPoint = "$postRoute/archive";
 
 String getLikedByUserApiEndPoint = "$postRoute/liked-by";
@@ -30,6 +32,8 @@ String getSavedPostByUserApiEndPoint = "$postRoute/saved-post";
 String getArchivedPostByUserApiEndPoint = "$postRoute/archived-post";
 
 String getAllReelsApiEndPoint = "$postRoute/reels";
+
+String getUserPostApiEndPoint = "$postRoute/user-post";
 
 /// Comment Api Route
 String commentRoute = '/comment';

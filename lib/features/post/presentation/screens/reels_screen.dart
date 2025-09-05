@@ -115,18 +115,15 @@ class ReelsScreenState extends State<ReelsScreen> {
   void _handleVisibilityChanged(VisibilityInfo info, int index) {
     if (index != _currentIndex) return;
 
-    final controller = _controllerManager.getControllerForIndex(index);
-
-    if (controller != null && controller.value.isInitialized) {
-      if (info.visibleFraction > 0.1) {
-        if (!controller.value.isPlaying) {
-          controller.play();
-          controller.setLooping(true);
-        }
-      } else {
-        if (controller.value.isPlaying) {
-          controller.pause();
-        }
+    if (info.visibleFraction > 0.7) {
+      final controller = _controllerManager.getControllerForIndex(index);
+      if (controller != null && controller.value.isInitialized && !controller.value.isPlaying) {
+        controller.play();
+      }
+    } else if (info.visibleFraction < 0.3) {
+      final controller = _controllerManager.getControllerForIndex(index);
+      if (controller != null && controller.value.isPlaying) {
+        controller.pause();
       }
     }
   }
@@ -203,8 +200,9 @@ class ReelsScreenState extends State<ReelsScreen> {
               controller: _pageController,
               scrollDirection: Axis.vertical,
               itemCount: _reelData.length,
-              physics: const ClampingScrollPhysics(),
+              physics: const PageScrollPhysics(parent: ClampingScrollPhysics()),
               onPageChanged: _handlePageChanged,
+              // cacheExtent: 2,
               itemBuilder: (context, index) {
                 if (!mounted) return const SizedBox();
                 final reel = _reelData[index];

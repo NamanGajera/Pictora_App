@@ -6,7 +6,6 @@ import 'package:flutter/material.dart';
 
 // Third-party
 import 'package:go_router/go_router.dart';
-import 'package:pictora/core/utils/services/service.dart';
 
 // Project
 import '../utils/constants/constants.dart';

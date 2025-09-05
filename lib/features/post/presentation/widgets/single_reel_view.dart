@@ -53,6 +53,7 @@ class _SingleReelViewState extends State<SingleReelView> with AutomaticKeepAlive
     }
     _tapPosition.dispose();
     _showMuteIconNotifier.dispose();
+    _muteIconTimer?.cancel();
 
     super.dispose();
   }
@@ -60,6 +61,7 @@ class _SingleReelViewState extends State<SingleReelView> with AutomaticKeepAlive
   final ValueNotifier<Offset?> _tapPosition = ValueNotifier(null);
   Map<String, ValueNotifier<bool>> isLikedNotifierAnimation = {};
   final ValueNotifier<bool> _showMuteIconNotifier = ValueNotifier(false);
+  Timer? _muteIconTimer;
 
   void _handleDoubleTap() {
     isLikedNotifierAnimation[widget.reel.id]?.value = true;
@@ -77,8 +79,9 @@ class _SingleReelViewState extends State<SingleReelView> with AutomaticKeepAlive
     super.build(context);
     return GestureDetector(
       onTap: () {
+        _muteIconTimer?.cancel(); // Cancel previous timer
         _showMuteIconNotifier.value = true;
-        Timer(const Duration(seconds: 1), () {
+        _muteIconTimer = Timer(const Duration(seconds: 1), () {
           _showMuteIconNotifier.value = false;
         });
         widget.reelControllerManager.toggleMuteAll();
@@ -207,14 +210,27 @@ class _SingleReelViewState extends State<SingleReelView> with AutomaticKeepAlive
     );
   }
 
+  // In SingleReelView, improve the loading placeholder
   Widget _buildLoadingPlaceholder(PostData reel) {
-    return Container(
-      color: Colors.grey[900],
-      child: Center(
-        child: CircularProgressIndicator(
-          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+    return Stack(
+      children: [
+        // Blurred thumbnail as background (if available)
+        if (reel.mediaData?.first.thumbnail != null)
+          Image.network(
+            reel.mediaData?.first.thumbnail!,
+            fit: BoxFit.cover,
+            width: double.infinity,
+            height: double.infinity,
+          )
+        else
+          Container(color: Colors.grey[900]),
+        // Loading indicator
+        Center(
+          child: CircularProgressIndicator(
+            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+          ),
         ),
-      ),
+      ],
     );
   }
 
@@ -226,12 +242,10 @@ class ReelControllerManager {
   final List<PlayableItem> _playableItems;
   static const int _preloadRange = 1;
   final ValueNotifier<bool> isMuted = ValueNotifier(false);
-  int _currentCenterIndex = 0;
 
   ReelControllerManager(List<String> videoUrls) : _playableItems = videoUrls.map((url) => PlayableItem(videoUrl: url)).toList();
 
   void handlePageChanged(int newIndex) {
-    _currentCenterIndex = newIndex;
     _disposeControllersOutsideRange(newIndex);
     _preloadControllersInRange(newIndex);
   }
@@ -239,7 +253,7 @@ class ReelControllerManager {
   void _disposeControllersOutsideRange(int centerIndex) {
     for (int i = 0; i < _playableItems.length; i++) {
       final item = _playableItems[i];
-      if ((i < centerIndex - _preloadRange) || (i > centerIndex + _preloadRange)) {
+      if ((i < centerIndex - _preloadRange - 1) || (i > centerIndex + _preloadRange + 1)) {
         _disposeController(item);
       }
     }
@@ -265,13 +279,13 @@ class ReelControllerManager {
     for (int i = start; i <= end; i++) {
       final item = _playableItems[i];
       if (item.controller == null) {
-        item.controller = VideoPlayerController.networkUrl(Uri.parse(item.videoUrl));
+        item.controller = VideoPlayerController.networkUrl(Uri.parse(item.videoUrl))
+          ..setLooping(true)
+          ..setVolume(isMuted.value ? 0.0 : 1.0);
 
         void listener() {
           if (item.controller != null && item.controller!.value.isInitialized) {
-            if (!item.controller!.value.isLooping) {
-              item.controller!.setLooping(true);
-            }
+            item.controller!.removeListener(listener);
           }
         }
 
@@ -280,14 +294,18 @@ class ReelControllerManager {
 
         item.initializeFuture = item.controller!.initialize().then((_) {
           item.isInitialized = true;
-          item.controller!.setLooping(true);
-
-          if (i == _currentCenterIndex) {
+          if (i == centerIndex) {
             item.controller!.play();
           }
         }).catchError((error) {
           logDebug(message: 'Failed to initialize controller at index: $i - $error');
           _disposeController(item);
+        });
+      } else if (item.controller != null && !item.controller!.value.isInitialized) {
+        item.initializeFuture?.then((_) {
+          if (i == centerIndex) {
+            item.controller!.play();
+          }
         });
       }
     }

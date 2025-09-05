@@ -365,7 +365,10 @@ class _VideoPlayer extends StatelessWidget {
               aspectRatio: controller.value.aspectRatio,
               child: Stack(
                 children: [
-                  VideoPlayer(controller),
+                  VideoPlayer(
+                    controller,
+                    key: ValueKey(videoKey),
+                  ),
                   if (!controller.value.isPlaying)
                     const Center(
                       child: Icon(

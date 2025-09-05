@@ -55,6 +55,7 @@ class PostBloc extends Bloc<PostEvent, PostState> {
     on<ToggleCommentLikeEvent>(_toggleCommentLike, transformer: sequential());
     on<TogglePostLikeEvent>(_togglePostLike, transformer: sequential());
     on<TogglePostSaveEvent>(_togglePostSave, transformer: sequential());
+    on<ToggleRePostEvent>(_toggleRePost, transformer: sequential());
     on<DeletePostEvent>(_deletePost, transformer: droppable());
     on<ArchivePostEvent>(_archivePost, transformer: droppable());
     on<GetLikedByUserEvent>(_getLikedByUser, transformer: droppable());
@@ -267,7 +268,7 @@ class PostBloc extends Bloc<PostEvent, PostState> {
   Future<void> _loadMoreOtherUserPost(LoadMoreOtherUserPostEvent event, Emitter<PostState> emit) async {
     try {
       emit(state.copyWith(isLoadMoreOtherUserPost: true));
-      final data = await postRepository.getAllPost(event.body);
+      final data = await postRepository.getAllUserPost(event.body);
 
       emit(state.copyWith(
         isLoadMoreOtherUserPost: false,
@@ -284,7 +285,7 @@ class PostBloc extends Bloc<PostEvent, PostState> {
   Future<void> _loadMoreMyPost(LoadMoreMyPostEvent event, Emitter<PostState> emit) async {
     try {
       emit(state.copyWith(isLoadMoreMyPost: true));
-      final data = await postRepository.getAllPost(event.body);
+      final data = await postRepository.getAllUserPost(event.body);
 
       emit(state.copyWith(
         isLoadMoreMyPost: false,
@@ -301,7 +302,7 @@ class PostBloc extends Bloc<PostEvent, PostState> {
   Future<void> _getMyPost(GetMyPostEvent event, Emitter<PostState> emit) async {
     try {
       emit(state.copyWith(getMyPostApiStatus: ApiStatus.loading));
-      final data = await postRepository.getAllPost(event.body);
+      final data = await postRepository.getAllUserPost(event.body);
       emit(state.copyWith(
         getMyPostApiStatus: ApiStatus.success,
         myPostData: data.data ?? [],
@@ -317,8 +318,7 @@ class PostBloc extends Bloc<PostEvent, PostState> {
   Future<void> _getOtherUserPost(GetOtherUserPostsEvent event, Emitter<PostState> emit) async {
     try {
       emit(state.copyWith(getOtherUserPostApiStatus: ApiStatus.loading));
-      final data = await postRepository.getAllPost(event.body);
-      logDebug(message: "Get all post data OTHER:${(data.data ?? []).length} <<<< ${(data.total ?? 0)}");
+      final data = await postRepository.getAllUserPost(event.body);
       emit(state.copyWith(
         getOtherUserPostApiStatus: ApiStatus.success,
         otherUserPostData: data.data ?? [],
@@ -589,6 +589,20 @@ class PostBloc extends Bloc<PostEvent, PostState> {
     }
   }
 
+  Future<void> _toggleRePost(ToggleRePostEvent event, Emitter<PostState> emit) async {
+    try {
+      _updatePostLists(postId: event.postId, emit: emit, isRepost: event.isRepost);
+      await postRepository.toggleRePostLike({
+        "postId": event.postId,
+        "isRepost": event.isRepost,
+      });
+    } catch (error, stackTrace) {
+      _updatePostLists(postId: event.postId, emit: emit, isRepost: !event.isRepost);
+      ThemeHelper.showToastMessage("$error");
+      handleApiError(error, stackTrace, emit);
+    }
+  }
+
   Future<void> _deletePost(DeletePostEvent event, Emitter<PostState> emit) async {
     try {
       emit(state.copyWith(deletePostApiStatus: ApiStatus.loading));
@@ -848,6 +862,7 @@ class PostBloc extends Bloc<PostEvent, PostState> {
     bool? isSaved,
     bool? isDelete,
     bool? isArchived,
+    bool? isRepost,
   }) {
     emit(state.copyWith(
       allPostData: _updatePostData(
@@ -859,6 +874,7 @@ class PostBloc extends Bloc<PostEvent, PostState> {
         isSaved: isSaved,
         isDelete: isDelete,
         isArchived: isArchived,
+        isRepost: isRepost,
       ),
       myPostData: _updatePostData(
         postList: state.myPostData ?? [],
@@ -869,6 +885,7 @@ class PostBloc extends Bloc<PostEvent, PostState> {
         isSaved: isSaved,
         isDelete: isDelete,
         isArchived: isArchived,
+        isRepost: isRepost,
       ),
       otherUserPostData: _updatePostData(
         postList: state.otherUserPostData ?? [],
@@ -879,6 +896,7 @@ class PostBloc extends Bloc<PostEvent, PostState> {
         isSaved: isSaved,
         isDelete: isDelete,
         isArchived: isArchived,
+        isRepost: isRepost,
       ),
       likedPostData: _updatePostData(
         postList: state.likedPostData ?? [],
@@ -889,6 +907,7 @@ class PostBloc extends Bloc<PostEvent, PostState> {
         isSaved: isSaved,
         isDelete: isDelete,
         isArchived: isArchived,
+        isRepost: isRepost,
       ),
       savedPostData: _updatePostData(
         postList: state.savedPostData ?? [],
@@ -899,6 +918,7 @@ class PostBloc extends Bloc<PostEvent, PostState> {
         isSaved: isSaved,
         isDelete: isDelete,
         isArchived: isArchived,
+        isRepost: isRepost,
       ),
       archivedPostData: _updatePostData(
         postList: state.archivedPostData ?? [],
@@ -909,6 +929,7 @@ class PostBloc extends Bloc<PostEvent, PostState> {
         isSaved: isSaved,
         isDelete: isDelete,
         isArchived: isArchived,
+        isRepost: isRepost,
         isArchivedPostList: true,
       ),
       reelsData: _updatePostData(
@@ -920,6 +941,7 @@ class PostBloc extends Bloc<PostEvent, PostState> {
         isSaved: isSaved,
         isDelete: isDelete,
         isArchived: isArchived,
+        isRepost: isRepost,
       ),
     ));
   }
@@ -934,6 +956,7 @@ class PostBloc extends Bloc<PostEvent, PostState> {
     bool? isDelete,
     bool? isArchived,
     bool? isArchivedPostList,
+    bool? isRepost,
   }) {
     final List<PostData> updatedList = postList.where((post) {
       if (post.id == postId && isDelete == true) {
@@ -945,6 +968,7 @@ class PostBloc extends Bloc<PostEvent, PostState> {
         int commentCount = post.commentCount ?? 0;
         int likeCount = post.likeCount ?? 0;
         int saveCount = post.saveCount ?? 0;
+        int repostCount = post.repostCount ?? 0;
         return post.copyWith(
           commentCount: updateCommentCount != null
               ? (updateCommentCount ? commentCount + 1 + (repliesCount ?? 0) : math.max(0, (commentCount - (1 + (repliesCount ?? 0)))))
@@ -954,6 +978,12 @@ class PostBloc extends Bloc<PostEvent, PostState> {
               ? isLiked
                   ? ++likeCount
                   : --likeCount
+              : post.likeCount,
+          isRepost: isRepost ?? post.isRepost,
+          repostCount: isRepost != null
+              ? isRepost
+                  ? ++repostCount
+                  : --repostCount
               : post.likeCount,
           isSaved: isSaved ?? post.isSaved,
           saveCount: isSaved != null
