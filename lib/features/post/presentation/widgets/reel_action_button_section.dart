@@ -50,6 +50,36 @@ class ReelActionButtonSection extends StatelessWidget {
               fontSize: 12,
               color: Colors.white,
             ),
+            if (reelData.userId != userId) ...[
+              const SizedBox(height: 12),
+              GestureDetector(
+                onTap: () {
+                  postBloc.add(TogglePostLikeEvent(
+                    postId: reelData.id ?? '',
+                    isLike: !(reelData.isRepost ?? false),
+                  ));
+                },
+                child: Container(
+                  padding: const EdgeInsets.all(8),
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    child: SvgPicture.asset(
+                      AppAssets.repost,
+                      color: (reelData.isRepost ?? false) ? Colors.red : Colors.white,
+                      height: 32,
+                      width: 32,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 2),
+              CustomText(
+                formattedCount(reelData.repostCount ?? 0),
+                fontWeight: FontWeight.w600,
+                fontSize: 12,
+                color: Colors.white,
+              ),
+            ],
             const SizedBox(height: 12),
             GestureDetector(
               onTap: () {

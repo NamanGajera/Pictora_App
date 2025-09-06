@@ -259,33 +259,34 @@ class _PostWidgetState extends State<PostWidget> with AutomaticKeepAliveClientMi
             ),
           ),
           SizedBox(width: widget.post?.commentCount != 0 ? 8 : 0),
-          GestureDetector(
-            onTap: () {
-              postBloc.add(ToggleRePostEvent(
-                postId: widget.post?.id ?? '',
-                isRepost: !(widget.post?.isRepost ?? false),
-              ));
-            },
-            child: Row(
-              children: [
-                SvgPicture.asset(
-                  AppAssets.repost,
-                  color: Colors.black87,
-                  height: 28,
-                  width: 28,
-                ),
-                SizedBox(width: widget.post?.repostCount != 0 ? 3 : 5),
-                if (widget.post?.repostCount != 0)
-                  CustomText(
-                    formattedCount(widget.post?.repostCount ?? 0),
-                    fontWeight: FontWeight.w600,
-                    fontSize: 14,
+          if (widget.post?.userId != userId)
+            GestureDetector(
+              onTap: () {
+                postBloc.add(ToggleRePostEvent(
+                  postId: widget.post?.id ?? '',
+                  isRepost: !(widget.post?.isRepost ?? false),
+                ));
+              },
+              child: Row(
+                children: [
+                  SvgPicture.asset(
+                    AppAssets.repost,
                     color: Colors.black87,
+                    height: 28,
+                    width: 28,
                   ),
-              ],
+                  SizedBox(width: widget.post?.repostCount != 0 ? 3 : 5),
+                  if (widget.post?.repostCount != 0)
+                    CustomText(
+                      formattedCount(widget.post?.repostCount ?? 0),
+                      fontWeight: FontWeight.w600,
+                      fontSize: 14,
+                      color: Colors.black87,
+                    ),
+                ],
+              ),
             ),
-          ),
-          SizedBox(width: widget.post?.repostCount != 0 ? 8 : 0),
+          if (widget.post?.userId != userId) SizedBox(width: widget.post?.repostCount != 0 ? 8 : 0),
           GestureDetector(
             onTap: () {},
             child: SvgPicture.asset(
