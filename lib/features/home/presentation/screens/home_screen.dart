@@ -1,4 +1,5 @@
 // Dart SDK
+import 'dart:async';
 import 'dart:io';
 
 // Flutter
@@ -6,6 +7,8 @@ import 'package:flutter/material.dart';
 
 // Third-party
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:pictora/core/utils/services/service.dart';
+import 'package:pictora/core/utils/services/socket_service.dart';
 
 // Project
 import '../../../../core/utils/helper/helper.dart';
@@ -26,11 +29,20 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  StreamSubscription? _userPresenceSubscription;
+
   @override
   void initState() {
     super.initState();
+    _userPresenceSubscription = SocketService().eventManager.eventStream('user_presence').listen(_userPresence);
+    SocketService().eventManager.eventStream('user_typing').listen(_userPresence);
+    logDebug(message: "Socket ID: ${SocketService().id}", tag: "Socket Service");
     postBloc.add(GetAllPostEvent(body: postBody));
     _scrollController.addListener(_scrollListener);
+  }
+
+  void _userPresence(dynamic data) {
+    logDebug(message: "User Presence Data: $data", tag: "Socket Event");
   }
 
   final postBody = {"skip": 0, "take": 4};
@@ -168,7 +180,10 @@ class _HomeScreenState extends State<HomeScreen> {
       elevation: 0,
       title: InkWell(
         onTap: () {
-          appRouter.go(RouterName.profile.path);
+          // SocketService().emit("join_conversation", {"conversationId": "e872651b-5e4d-483e-8dbd-230986f29e0d"});
+          SocketService().emit("leave_conversation", {"conversationId": "e872651b-5e4d-483e-8dbd-230986f29e0d"});
+
+          // appRouter.go(RouterName.profile.path);
         },
         child: BlocBuilder<ProfileBloc, ProfileState>(
           buildWhen: (previous, current) => previous.userData?.userName != current.userData?.userName,

@@ -42,6 +42,7 @@ class LoginFrom extends StatelessWidget {
               controller: emailController,
               hintText: 'Enter your email',
               labelText: 'Email',
+              keyboardType: TextInputType.emailAddress,
               isRequired: true,
               labelStyle: const TextStyle(
                 fontSize: 16,

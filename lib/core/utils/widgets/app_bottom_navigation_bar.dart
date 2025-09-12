@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 // Third-party
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
+import 'package:pictora/core/utils/services/socket_service.dart';
 
 // Project
 import '../constants/constants.dart';
@@ -24,6 +25,19 @@ class AppBottomNavigationBar extends StatefulWidget {
 }
 
 class _AppBottomNavigationBarState extends State<AppBottomNavigationBar> {
+  @override
+  void initState() {
+    super.initState();
+    SocketService().connect(uri: baseUrlWithoutPrefix, extraHeaders: {"access_token": accessToken});
+
+    SocketService().registerGlobalEvents([
+      'new_message',
+      'conversation_joined',
+      'user_presence',
+      'user_typing',
+    ]);
+  }
+
   final List<BottomBarItem> screenList = [
     BottomBarItem(
       path: RouterName.home.path,

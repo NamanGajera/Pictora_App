@@ -3,6 +3,8 @@ import '../services/service.dart';
 
 String baseUrl = "${AppEnvManager.baseUrl}$apiPreFix";
 
+String baseUrlWithoutPrefix = AppEnvManager.baseUrl;
+
 String apiPreFix = "/api";
 
 /// Auth api
