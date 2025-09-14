@@ -7,11 +7,11 @@ import 'package:flutter/material.dart';
 
 // Third-party
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:pictora/core/utils/services/service.dart';
-import 'package:pictora/core/utils/services/socket_service.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 // Project
 import '../../../../core/utils/helper/helper.dart';
+import '../../../../core/utils/services/service.dart';
 import '../../../post/post.dart';
 import '../../../../core/utils/extensions/extensions.dart';
 import '../../../../core/config/router.dart';
@@ -29,23 +29,14 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  StreamSubscription? _userPresenceSubscription;
-
   @override
   void initState() {
     super.initState();
-    _userPresenceSubscription = SocketService().eventManager.eventStream('user_presence').listen(_userPresence);
-    SocketService().eventManager.eventStream('user_typing').listen(_userPresence);
-    logDebug(message: "Socket ID: ${SocketService().id}", tag: "Socket Service");
     postBloc.add(GetAllPostEvent(body: postBody));
     _scrollController.addListener(_scrollListener);
   }
 
-  void _userPresence(dynamic data) {
-    logDebug(message: "User Presence Data: $data", tag: "Socket Event");
-  }
-
-  final postBody = {"skip": 0, "take": 4};
+  final postBody = {"skip": 0, "take": 20};
   final ScrollController _scrollController = ScrollController();
 
   void _scrollListener() {
@@ -59,7 +50,7 @@ class _HomeScreenState extends State<HomeScreen> {
     if (currentState.hasMorePost) {
       final body = {
         "skip": currentState.allPostData?.length,
-        "take": 4,
+        "take": 10,
         "seed": currentState.seedForGetAllPost,
       };
       postBloc.add(LoadMorePostEvent(body: body));
@@ -75,7 +66,7 @@ class _HomeScreenState extends State<HomeScreen> {
         backgroundColor: Colors.white,
         color: primaryColor,
         onRefresh: () async {
-          postBloc.add(GetAllPostEvent(body: {"skip": 0, "take": 4}));
+          postBloc.add(GetAllPostEvent(body: {"skip": 0, "take": 20}));
         },
         child: Column(
           children: [
@@ -180,10 +171,7 @@ class _HomeScreenState extends State<HomeScreen> {
       elevation: 0,
       title: InkWell(
         onTap: () {
-          // SocketService().emit("join_conversation", {"conversationId": "e872651b-5e4d-483e-8dbd-230986f29e0d"});
-          SocketService().emit("leave_conversation", {"conversationId": "e872651b-5e4d-483e-8dbd-230986f29e0d"});
-
-          // appRouter.go(RouterName.profile.path);
+          appRouter.go(RouterName.profile.path);
         },
         child: BlocBuilder<ProfileBloc, ProfileState>(
           buildWhen: (previous, current) => previous.userData?.userName != current.userData?.userName,
@@ -197,6 +185,19 @@ class _HomeScreenState extends State<HomeScreen> {
           },
         ),
       ),
+      actions: [
+        GestureDetector(
+          onTap: () {
+            appRouter.push(RouterName.conversationList.path);
+          },
+          child: SvgPicture.asset(
+            AppAssets.chat,
+            height: 25,
+            width: 25,
+          ),
+        ),
+        const SizedBox(width: 10),
+      ],
     );
   }
 }

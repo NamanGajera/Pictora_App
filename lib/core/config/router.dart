@@ -16,6 +16,7 @@ import '../../features/home/home.dart';
 import '../../features/post/post.dart';
 import '../../features/profile/profile.dart';
 import '../../features/search/search.dart';
+import '../../features/conversation/conversation.dart';
 import 'router_name.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
@@ -373,6 +374,15 @@ final GoRouter appRouter = GoRouter(
       name: RouterName.accountPrivacy.name,
       pageBuilder: (context, state) {
         return SlideTransitionPage(child: AccountPrivacyScreen());
+      },
+    ),
+
+    /// Conversation list
+    GoRoute(
+      path: RouterName.conversationList.path,
+      name: RouterName.conversationList.name,
+      pageBuilder: (context, state) {
+        return SlideTransitionPage(child: ConversationListScreen());
       },
     ),
   ],

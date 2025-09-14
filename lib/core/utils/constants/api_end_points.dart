@@ -66,3 +66,8 @@ String toggleFollowUserApiEndPoint = "$userRoute/follow";
 String searchUserApiEndPoint = "$userRoute/search";
 
 String updateProfilePictureApiEndPoint = "$userRoute/update-profilePic";
+
+/// Conversation Api Routes
+String conversationRoute = "/conversation";
+
+String createConversationApiEndPoint = "$conversationRoute/create";

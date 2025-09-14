@@ -10,6 +10,7 @@ import 'features/profile/profile.dart';
 import 'features/auth/auth.dart';
 import 'features/post/post.dart';
 import 'features/search/search.dart';
+import 'features/conversation/conversation.dart';
 import 'core/database/hive/hive_service.dart';
 import 'core/utils/services/service.dart';
 import 'core/utils/constants/constants.dart';
@@ -19,7 +20,7 @@ import 'core/utils/helper/helper.dart';
 
 void main() async {
   AppEnvManager.currentEnv = AppEnv.local;
-  AppEnvManager.setLocalBaseUrl("http://192.168.1.120:5000");
+  AppEnvManager.setLocalBaseUrl("http://192.168.1.8:5000");
 
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -44,6 +45,7 @@ class MyApp extends StatelessWidget {
         BlocProvider(create: (_) => getIt<ProfileBloc>()),
         BlocProvider(create: (_) => getIt<FollowSectionBloc>()),
         BlocProvider(create: (_) => getIt<SearchBloc>()),
+        BlocProvider(create: (_) => getIt<ConversationBloc>()),
       ],
       child: MediaQuery(
         data: MediaQuery.of(context).copyWith(textScaler: TextScaler.noScaling),

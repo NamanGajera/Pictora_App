@@ -338,7 +338,7 @@ class _PostMediaDisplayState extends State<PostMediaDisplay> with AutomaticKeepA
   bool get wantKeepAlive => true;
 }
 
-class _VideoPlayer extends StatelessWidget {
+class _VideoPlayer extends StatefulWidget {
   final String videoKey;
   final String thumbnailUrl;
   final String mediaId;
@@ -354,70 +354,74 @@ class _VideoPlayer extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
-    final controller = controllers[videoKey];
-    final initialized = isInitialized[videoKey] ?? false;
+  State<_VideoPlayer> createState() => _VideoPlayerState();
+}
 
-    return SizedBox(
-      width: double.infinity,
-      child: initialized && controller != null
-          ? AspectRatio(
-              aspectRatio: controller.value.aspectRatio,
-              child: Stack(
-                children: [
-                  VideoPlayer(
-                    controller,
-                    key: ValueKey(videoKey),
-                  ),
-                  if (!controller.value.isPlaying)
-                    const Center(
-                      child: Icon(
-                        Icons.play_circle_fill,
-                        color: Colors.white54,
-                        size: 50,
-                      ),
-                    ),
-                ],
-              ),
-            )
-          : CachedNetworkImage(
-              imageUrl: thumbnailUrl,
-              cacheKey: mediaId,
-              key: ValueKey(mediaId),
-              fit: BoxFit.cover,
-              placeholder: (context, url) => Container(
-                color: Colors.grey[100],
-                child: const Center(
-                  child: SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      valueColor: AlwaysStoppedAnimation<Color>(Color(0xff9CA3AF)),
-                    ),
-                  ),
-                ),
-              ),
-              errorWidget: (context, url, error) => Container(
-                color: const Color(0xffF3F4F6),
-                height: double.infinity,
-                child: const Icon(
-                  Icons.image_outlined,
-                  color: Color(0xff9CA3AF),
-                  size: 32,
-                ),
-              ),
-              imageBuilder: (context, imageProvider) => Container(
-                decoration: BoxDecoration(
-                  image: DecorationImage(
-                    image: imageProvider,
-                    fit: BoxFit.cover,
-                  ),
-                ),
+class _VideoPlayerState extends State<_VideoPlayer> with AutomaticKeepAliveClientMixin {
+  bool _showThumbnail = true;
+
+  @override
+  void didUpdateWidget(covariant _VideoPlayer oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.videoKey != widget.videoKey) {
+      setState(() {
+        _showThumbnail = true;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    super.build(context);
+
+    final controller = widget.controllers[widget.videoKey];
+    final initialized = widget.isInitialized[widget.videoKey] ?? false;
+
+    return Stack(
+      alignment: Alignment.center,
+      children: [
+        Positioned.fill(
+          child: CachedNetworkImage(
+            imageUrl: widget.thumbnailUrl,
+            cacheKey: widget.mediaId,
+            fit: BoxFit.cover,
+            placeholder: (context, url) => Container(
+              color: Colors.grey[200],
+              child: const Center(
+                child: CircularProgressIndicator(strokeWidth: 2),
               ),
             ),
+            errorWidget: (context, url, error) => Container(
+              color: Colors.grey[300],
+              child: const Icon(Icons.broken_image, color: Colors.grey),
+            ),
+          ),
+        ),
+
+        // Actual video on top (fade in when ready)
+        if (initialized && controller != null)
+          AnimatedOpacity(
+            opacity: _showThumbnail ? 0 : 1,
+            duration: const Duration(milliseconds: 300),
+            onEnd: () {
+              if (_showThumbnail) {
+                setState(() => _showThumbnail = false);
+              }
+            },
+            child: AspectRatio(
+              aspectRatio: controller.value.aspectRatio,
+              child: VideoPlayer(controller),
+            ),
+          ),
+
+        // Play icon overlay
+        if (controller != null && !controller.value.isPlaying) const Icon(Icons.play_circle_fill, color: Colors.white70, size: 50),
+      ],
     );
   }
+
+  @override
+  bool get wantKeepAlive => true;
 }
 
 class _ImageDisplay extends StatefulWidget {

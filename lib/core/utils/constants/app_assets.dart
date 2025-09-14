@@ -22,4 +22,6 @@ class AppAssets {
   static const String reel = '${svgFolderPath}reel.svg';
   static const String reelFill = '${svgFolderPath}reel_fill.svg';
   static const String repost = '${svgFolderPath}repost.svg';
+  static const String chat = '${svgFolderPath}chat.svg';
+  static const String chatFill = '${svgFolderPath}chat_fill.svg';
 }

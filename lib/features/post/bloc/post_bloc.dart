@@ -984,7 +984,7 @@ class PostBloc extends Bloc<PostEvent, PostState> {
               ? isRepost
                   ? ++repostCount
                   : --repostCount
-              : post.likeCount,
+              : post.repostCount,
           isSaved: isSaved ?? post.isSaved,
           saveCount: isSaved != null
               ? isSaved

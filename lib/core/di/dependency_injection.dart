@@ -11,6 +11,7 @@ import '../../features/profile/bloc/profile_bloc/profile_bloc.dart';
 import '../../features/search/bloc/search_bloc.dart';
 import '../../features/search/repository/search_repository.dart';
 import '../../features/profile/repository/profile_repository.dart';
+import '../../features/conversation/conversation.dart';
 import '../network/api_client.dart';
 
 final getIt = GetIt.instance;
@@ -29,6 +30,8 @@ Future<void> setupDependencies() async {
 
   getIt.registerSingleton<SearchRepository>(SearchRepository(getIt<ApiClient>()));
 
+  getIt.registerSingleton<ConversationRepository>(ConversationRepository(getIt<ApiClient>()));
+
   /// Blocs
   getIt.registerSingleton<AuthBloc>(AuthBloc(getIt<AuthRepository>()));
 
@@ -39,4 +42,6 @@ Future<void> setupDependencies() async {
   getIt.registerSingleton<FollowSectionBloc>(FollowSectionBloc(getIt<ProfileRepository>()));
 
   getIt.registerSingleton<SearchBloc>(SearchBloc(getIt<SearchRepository>()));
+
+  getIt.registerSingleton<ConversationBloc>(ConversationBloc(getIt<ConversationRepository>()));
 }

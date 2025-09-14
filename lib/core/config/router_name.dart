@@ -20,7 +20,8 @@ enum RouterName {
   archivedPost('/archivedPost', "archivedPost"),
   userComments('/userComments', "userComments"),
   accountPrivacy('/accountPrivacy', "accountPrivacy"),
-  reels('/reels', "reels");
+  reels('/reels', "reels"),
+  conversationList('/conversationList', "conversationList");
 
   final String path;
   final String name;
