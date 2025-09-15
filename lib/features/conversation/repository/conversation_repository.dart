@@ -19,4 +19,18 @@ class ConversationRepository {
       rethrow;
     }
   }
+
+  Future<ConversationMessagesListModel> getConversationMessagesData({required Map<String, dynamic> postBody}) async {
+    try {
+      final Map<String, dynamic> json = await apiClient.postApiCall(
+        endPoint: getConversationMessagesApiEndPoint,
+        isAccessToken: accessToken,
+        postBody: postBody,
+      );
+
+      return ConversationMessagesListModel.fromJson(json);
+    } on CustomException {
+      rethrow;
+    }
+  }
 }

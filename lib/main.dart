@@ -20,7 +20,7 @@ import 'core/utils/helper/helper.dart';
 
 void main() async {
   AppEnvManager.currentEnv = AppEnv.local;
-  AppEnvManager.setLocalBaseUrl("http://192.168.1.110:5000");
+  AppEnvManager.setLocalBaseUrl("http://192.168.1.8:5000");
 
   WidgetsFlutterBinding.ensureInitialized();
 

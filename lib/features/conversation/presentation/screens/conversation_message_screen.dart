@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:pictora/core/utils/constants/bloc_instances.dart';
+import 'package:pictora/core/utils/extensions/widget_extension.dart';
+import 'package:pictora/features/conversation/presentation/widgets/message_input_field.dart';
+import 'package:pictora/features/conversation/presentation/widgets/message_screen_app_bar.dart';
+import 'package:pictora/features/conversation/presentation/widgets/messages_view.dart';
 
-import '../../../../core/config/router.dart';
 import '../../../../core/utils/services/service.dart';
-import '../../../../core/utils/widgets/custom_widget.dart';
 import '../../conversation.dart';
 
 class ConversationMessageScreen extends StatefulWidget {
@@ -22,6 +24,11 @@ class _ConversationMessageScreenState extends State<ConversationMessageScreen> {
   void initState() {
     super.initState();
     SocketService().emit("join_conversation", {"conversationId": widget.conversationData?.id});
+    conversationBloc.add(GetConversationMessagesEvent(body: {
+      "conversationId": widget.conversationData?.id,
+      "skip": 0,
+      "take": 50,
+    }));
   }
 
   @override
@@ -34,57 +41,9 @@ class _ConversationMessageScreenState extends State<ConversationMessageScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        titleSpacing: 0,
-        title: Row(
-          children: [
-            Stack(
-              children: [
-                RoundProfileAvatar(
-                  radius: 18,
-                  userId: '',
-                  imageUrl: widget.conversationData?.otherUser?[0].userData?.profile?.profilePicture ?? '',
-                ),
-                Positioned(
-                  right: 0,
-                  bottom: 0,
-                  child: BlocBuilder<ConversationBloc, ConversationState>(
-                    buildWhen: (previous, current) => previous.onlineUserIds != current.onlineUserIds,
-                    builder: (context, state) {
-                      final bool isOnline = (state.onlineUserIds ?? []).contains(widget.conversationData?.otherUser?[0].userId);
-                      if(!isOnline){
-                        return SizedBox.shrink();
-                      }
-                      return Container(
-                        height: 12,
-                        width: 12,
-                        decoration: BoxDecoration(
-                          color: const Color(0XFF3EB838),
-                          shape: BoxShape.circle,
-                          border: Border.all(color: Colors.white, width: 2),
-                        ),
-                      );
-                    },
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(width: 10),
-            CustomText(
-              widget.conversationData?.title ?? widget.conversationData?.otherUser?[0].userData?.fullName ?? '',
-              fontWeight: FontWeight.w500,
-              color: Colors.black87,
-              fontSize: 18,
-            ),
-          ],
-        ),
-        backgroundColor: Colors.white,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black87),
-          onPressed: () => appRouter.pop(),
-        ),
-      ),
+      appBar: MessageScreenAppBar(conversationData: widget.conversationData),
+      bottomSheet: MessageInputField(),
+      body: MessagesView().withPadding(const EdgeInsets.only(bottom: 50)),
     );
   }
 }

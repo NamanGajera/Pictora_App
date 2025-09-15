@@ -55,6 +55,7 @@ dependencies:
   rxdart: ^0.28.0
   chewie: ^1.11.3
   socket_io_client: ^3.1.2
+  sticky_headers: ^0.3.0+2
 
 dev_dependencies:
   flutter_test:

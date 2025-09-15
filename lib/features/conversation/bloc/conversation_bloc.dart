@@ -17,6 +17,7 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
   ConversationBloc(this.conversationRepository) : super(ConversationState()) {
     on<GetConversationsEvent>(_getConversations);
     on<UpdateUserOnlineDataEvent>(_updateUserOnlineIds);
+    on<GetConversationMessagesEvent>(_getConversationMessages);
 
     conversationSocketListen();
   }
@@ -37,7 +38,23 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
     }
   }
 
-  void _updateUserOnlineIds(UpdateUserOnlineDataEvent event, Emitter<ConversationState> emit){
+  Future<void> _getConversationMessages(GetConversationMessagesEvent event, Emitter<ConversationState> emit) async {
+    try {
+      emit(state.copyWith(getConversationMessagesDataApiStatus: ApiStatus.loading));
+
+      final data = await conversationRepository.getConversationMessagesData(postBody: event.body);
+      emit(state.copyWith(
+        getConversationMessagesDataApiStatus: ApiStatus.success,
+        conversationMessages: data.data ?? [],
+      ));
+    } catch (error, stackTrace) {
+      emit(state.copyWith(getConversationMessagesDataApiStatus: ApiStatus.failure));
+      ThemeHelper.showToastMessage("$error");
+      handleApiError(error, stackTrace, emit);
+    }
+  }
+
+  void _updateUserOnlineIds(UpdateUserOnlineDataEvent event, Emitter<ConversationState> emit) {
     logDebug(message: "User online list updated ${event.data}");
     emit(state.copyWith(onlineUserIds: event.data));
   }
@@ -47,9 +64,9 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
       logInfo(message: "User Presence Listen $data", tag: "Socket Log");
       List<String> onlineUserIds = List.from(state.onlineUserIds ?? []);
 
-      if(data["status"] == false){
-        onlineUserIds.removeWhere((id)=> id == data["userId"]);
-      }else if(data["status"] == true){
+      if (data["status"] == false) {
+        onlineUserIds.removeWhere((id) => id == data["userId"]);
+      } else if (data["status"] == true) {
         onlineUserIds.add(data["userId"]);
       }
 
@@ -58,12 +75,11 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
       ));
     });
 
-    SocketService().eventManager.eventStream('online_users').listen((data){
+    SocketService().eventManager.eventStream('online_users').listen((data) {
       add(UpdateUserOnlineDataEvent(
         data: data,
       ));
     });
-
   }
 
   void handleApiError(dynamic error, dynamic stackTrace, Emitter<ConversationState> emit) {

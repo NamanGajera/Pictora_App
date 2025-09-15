@@ -54,7 +54,7 @@ class DateFormatter {
   static DateTime? _tryParseString(String dateString) {
     // Try ISO8601 first
     try {
-      return DateTime.parse(dateString);
+      return DateTime.parse(dateString).toLocal();
     } catch (_) {}
 
     // Try common formats
@@ -147,31 +147,36 @@ class ShortEnMessages implements timeago.LookupMessages {
   @override
   String prefixFromNow() => '';
   @override
-  String suffixAgo() => 'ago';
+  String suffixAgo() => '';
   @override
   String suffixFromNow() => 'from now';
   @override
-  String lessThanOneMinute(int seconds) => 'now';
+  String lessThanOneMinute(int seconds) => 'Just now';
+
   @override
-  String aboutAMinute(int minutes) => '1m';
+  String aboutAMinute(int minutes) => '1 minute ago';
   @override
-  String minutes(int minutes) => '${minutes}m';
+  String minutes(int minutes) => '$minutes minutes ago';
+
   @override
-  String aboutAnHour(int minutes) => '1h';
+  String aboutAnHour(int minutes) => '1 hour ago';
   @override
-  String hours(int hours) => '${hours}h';
+  String hours(int hours) => '$hours hours ago';
+
   @override
-  String aDay(int hours) => '1d';
+  String aDay(int hours) => '1 day ago';
   @override
-  String days(int days) => '${days}d';
+  String days(int days) => '$days days ago';
+
   @override
-  String aboutAMonth(int days) => '1mo';
+  String aboutAMonth(int days) => '1 month ago';
   @override
-  String months(int months) => '${months}mo';
+  String months(int months) => '$months months ago';
+
   @override
-  String aboutAYear(int year) => '1y';
+  String aboutAYear(int year) => '1 year ago';
   @override
-  String years(int years) => '${years}y';
+  String years(int years) => '$years years ago';
   @override
   String wordSeparator() => ' ';
 }

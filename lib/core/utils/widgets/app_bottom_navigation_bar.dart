@@ -32,9 +32,13 @@ class _AppBottomNavigationBarState extends State<AppBottomNavigationBar> {
 
     SocketService().registerGlobalEvents([
       'new_message',
+      'message_read',
+      'user_typing',
+      'conversation_left',
       'conversation_joined',
       'user_presence',
-      'user_typing',
+      'online_users',
+      'error',
     ]);
   }
 

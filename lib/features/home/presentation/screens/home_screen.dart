@@ -11,7 +11,6 @@ import 'package:flutter_svg/flutter_svg.dart';
 
 // Project
 import '../../../../core/utils/helper/helper.dart';
-import '../../../../core/utils/services/service.dart';
 import '../../../post/post.dart';
 import '../../../../core/utils/extensions/extensions.dart';
 import '../../../../core/config/router.dart';

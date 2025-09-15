@@ -71,3 +71,5 @@ String updateProfilePictureApiEndPoint = "$userRoute/update-profilePic";
 String conversationRoute = "/conversation";
 
 String createConversationApiEndPoint = "$conversationRoute/create";
+
+String getConversationMessagesApiEndPoint = "$conversationRoute/messages";
