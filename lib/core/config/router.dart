@@ -327,6 +327,10 @@ final GoRouter appRouter = GoRouter(
     GoRoute(
       path: RouterName.menu.path,
       name: RouterName.menu.name,
+      onExit: (context, state) {
+        FocusManager.instance.primaryFocus?.unfocus();
+        return true;
+      },
       pageBuilder: (context, state) {
         return SlideTransitionPage(child: MenuScreen());
       },
@@ -336,6 +340,10 @@ final GoRouter appRouter = GoRouter(
     GoRoute(
       path: RouterName.likedPost.path,
       name: RouterName.likedPost.name,
+      onExit: (context, state) {
+        FocusManager.instance.primaryFocus?.unfocus();
+        return true;
+      },
       pageBuilder: (context, state) {
         return SlideTransitionPage(child: LikedPostScreen());
       },
@@ -345,6 +353,10 @@ final GoRouter appRouter = GoRouter(
     GoRoute(
       path: RouterName.savedPost.path,
       name: RouterName.savedPost.name,
+      onExit: (context, state) {
+        FocusManager.instance.primaryFocus?.unfocus();
+        return true;
+      },
       pageBuilder: (context, state) {
         return SlideTransitionPage(child: SavedPostScreen());
       },
@@ -354,6 +366,10 @@ final GoRouter appRouter = GoRouter(
     GoRoute(
       path: RouterName.archivedPost.path,
       name: RouterName.archivedPost.name,
+      onExit: (context, state) {
+        FocusManager.instance.primaryFocus?.unfocus();
+        return true;
+      },
       pageBuilder: (context, state) {
         return SlideTransitionPage(child: ArchivedPostScreen());
       },
@@ -363,6 +379,10 @@ final GoRouter appRouter = GoRouter(
     GoRoute(
       path: RouterName.userComments.path,
       name: RouterName.userComments.name,
+      onExit: (context, state) {
+        FocusManager.instance.primaryFocus?.unfocus();
+        return true;
+      },
       pageBuilder: (context, state) {
         return SlideTransitionPage(child: UserCommentScreen());
       },
@@ -372,6 +392,10 @@ final GoRouter appRouter = GoRouter(
     GoRoute(
       path: RouterName.accountPrivacy.path,
       name: RouterName.accountPrivacy.name,
+      onExit: (context, state) {
+        FocusManager.instance.primaryFocus?.unfocus();
+        return true;
+      },
       pageBuilder: (context, state) {
         return SlideTransitionPage(child: AccountPrivacyScreen());
       },
@@ -383,6 +407,23 @@ final GoRouter appRouter = GoRouter(
       name: RouterName.conversationList.name,
       pageBuilder: (context, state) {
         return SlideTransitionPage(child: ConversationListScreen());
+      },
+    ),
+
+    /// Conversation list
+    GoRoute(
+      path: RouterName.conversationMessage.path,
+      name: RouterName.conversationMessage.name,
+      onExit: (context, state) {
+        FocusManager.instance.primaryFocus?.unfocus();
+        return true;
+      },
+      pageBuilder: (context, state) {
+        final ConversationMessageScreenDataModel screenData = state.extra as ConversationMessageScreenDataModel;
+        return SlideTransitionPage(
+            child: ConversationMessageScreen(
+          conversationData: screenData.conversationData,
+        ));
       },
     ),
   ],

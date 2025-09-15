@@ -1,10 +1,13 @@
 import 'package:pictora/core/utils/model/user_model.dart';
 
+import 'conversation_message_data_model.dart';
+
 class ConversationData {
   String? id;
   String? type;
   String? title;
-  LastMessage? lastMessage;
+  int? unreadCount;
+  ConversationMessage? lastMessage;
   List<OtherUser>? otherUser;
   String? updatedAt;
 
@@ -15,13 +18,15 @@ class ConversationData {
     this.lastMessage,
     this.otherUser,
     this.updatedAt,
+    this.unreadCount,
   });
 
   ConversationData.fromJson(Map<String, dynamic> json) {
     id = json['id'];
     type = json['type'];
     title = json['title'];
-    lastMessage = json['lastMessage'] != null ? new LastMessage.fromJson(json['lastMessage']) : null;
+    unreadCount = json['unreadCount'];
+    lastMessage = json['lastMessage'] != null ? new ConversationMessage.fromJson(json['lastMessage']) : null;
     if (json['otherUser'] != null) {
       otherUser = <OtherUser>[];
       json['otherUser'].forEach((v) {
@@ -43,54 +48,7 @@ class ConversationData {
       data['otherUser'] = this.otherUser!.map((v) => v.toJson()).toList();
     }
     data['updatedAt'] = this.updatedAt;
-    return data;
-  }
-}
-
-class LastMessage {
-  String? id;
-  String? conversationId;
-  String? senderId;
-  String? message;
-  String? postId;
-  String? replyToMessageId;
-  String? createdAt;
-  String? updatedAt;
-  List<Null>? attachments;
-
-  LastMessage(
-      {this.id,
-      this.conversationId,
-      this.senderId,
-      this.message,
-      this.postId,
-      this.replyToMessageId,
-      this.createdAt,
-      this.updatedAt,
-      this.attachments});
-
-  LastMessage.fromJson(Map<String, dynamic> json) {
-    id = json['id'];
-    conversationId = json['conversationId'];
-    senderId = json['senderId'];
-    message = json['message'];
-    postId = json['postId'];
-    replyToMessageId = json['replyToMessageId'];
-    createdAt = json['createdAt'];
-    updatedAt = json['updatedAt'];
-  }
-
-  Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['id'] = this.id;
-    data['conversationId'] = this.conversationId;
-    data['senderId'] = this.senderId;
-    data['message'] = this.message;
-    data['postId'] = this.postId;
-    data['replyToMessageId'] = this.replyToMessageId;
-    data['createdAt'] = this.createdAt;
-    data['updatedAt'] = this.updatedAt;
-
+    data['unreadCount'] = this.unreadCount;
     return data;
   }
 }

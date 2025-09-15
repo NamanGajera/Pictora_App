@@ -61,3 +61,14 @@ enum Gender {
 
   const Gender(this.name);
 }
+
+enum ConversationMessageAttachmentType {
+  image("Image"),
+  video("Video"),
+  audio("Audio"),
+  link("Link");
+
+  final String name;
+
+  const ConversationMessageAttachmentType(this.name);
+}

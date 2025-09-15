@@ -1,6 +1,8 @@
 // Flutter
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:pictora/core/config/router_name.dart';
+import 'package:pictora/features/conversation/presentation/widgets/conversation_card_view.dart';
 
 // Project
 import '../../../../core/config/router.dart';
@@ -22,8 +24,11 @@ class _ConversationListScreenState extends State<ConversationListScreen> {
   void initState() {
     super.initState();
     conversationBloc.add(GetConversationsEvent());
-    SocketService().eventManager.eventStream('user_presence').listen(_userPresence);
     SocketService().eventManager.eventStream('user_typing').listen(_userPresence);
+    SocketService().eventManager.eventStream('online_users').listen(_userPresence);
+    SocketService().eventManager.eventStream('conversation_joined').listen(_userPresence);
+    SocketService().eventManager.eventStream('conversation_left').listen(_userPresence);
+
     logDebug(message: "Socket ID: ${SocketService().id}", tag: "Socket Service");
   }
 
@@ -80,28 +85,17 @@ class _ConversationListScreenState extends State<ConversationListScreen> {
                   itemCount: (state.conversationsList ?? []).length,
                   itemBuilder: (context, index) {
                     final conversationData = state.conversationsList?[index];
-                    return Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        RoundProfileAvatar(
-                          radius: 25,
-                          userId: '',
-                          imageUrl: conversationData?.otherUser?[0].userData?.profile?.profilePicture ?? '',
-                        ),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const SizedBox(height: 5),
-                              CustomText(
-                                conversationData?.otherUser?[0].userData?.fullName ?? '',
-                                fontSize: 16,
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
+                    return InkWell(
+                      highlightColor: Colors.transparent,
+                      splashColor: Colors.transparent,
+                      onTap: (){
+                        appRouter.push(RouterName.conversationMessage.path, extra:  ConversationMessageScreenDataModel(conversationData: conversationData,));
+                      },
+                      child: ConversationCardView(
+                        key: ValueKey('${conversationData?.id}'),
+                        conversationData: conversationData,
+
+                      ),
                     );
                   },
                 ),
