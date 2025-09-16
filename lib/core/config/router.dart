@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 
 // Third-party
 import 'package:go_router/go_router.dart';
+import 'package:pictora/features/conversation/presentation/screens/create_conversation_screen.dart';
 
 // Project
 import '../utils/constants/constants.dart';
@@ -405,6 +406,10 @@ final GoRouter appRouter = GoRouter(
     GoRoute(
       path: RouterName.conversationList.path,
       name: RouterName.conversationList.name,
+      onExit: (context, state) {
+        FocusManager.instance.primaryFocus?.unfocus();
+        return true;
+      },
       pageBuilder: (context, state) {
         return SlideTransitionPage(child: ConversationListScreen());
       },
@@ -424,6 +429,19 @@ final GoRouter appRouter = GoRouter(
             child: ConversationMessageScreen(
           conversationData: screenData.conversationData,
         ));
+      },
+    ),
+
+    /// Create Conversation
+    GoRoute(
+      path: RouterName.createConversation.path,
+      name: RouterName.createConversation.name,
+      onExit: (context, state) {
+        FocusManager.instance.primaryFocus?.unfocus();
+        return true;
+      },
+      pageBuilder: (context, state) {
+        return SlideTransitionPage(child: CreateConversationScreen());
       },
     ),
   ],

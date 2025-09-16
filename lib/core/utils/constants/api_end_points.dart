@@ -73,3 +73,5 @@ String conversationRoute = "/conversation";
 String createConversationApiEndPoint = "$conversationRoute/create";
 
 String getConversationMessagesApiEndPoint = "$conversationRoute/messages";
+
+String createConversationMessagesApiEndPoint = "$conversationRoute/create-message";

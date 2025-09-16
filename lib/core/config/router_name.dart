@@ -22,7 +22,8 @@ enum RouterName {
   accountPrivacy('/accountPrivacy', "accountPrivacy"),
   reels('/reels', "reels"),
   conversationList('/conversationList', "conversationList"),
-  conversationMessage('/conversationMessage', "conversationMessage");
+  conversationMessage('/conversationMessage', "conversationMessage"),
+  createConversation('/createConversation', "createConversation");
 
   final String path;
   final String name;

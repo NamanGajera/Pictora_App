@@ -27,7 +27,7 @@ class _ConversationMessageScreenState extends State<ConversationMessageScreen> {
     conversationBloc.add(GetConversationMessagesEvent(body: {
       "conversationId": widget.conversationData?.id,
       "skip": 0,
-      "take": 50,
+      "take": 40,
     }));
   }
 
@@ -42,8 +42,12 @@ class _ConversationMessageScreenState extends State<ConversationMessageScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: MessageScreenAppBar(conversationData: widget.conversationData),
-      bottomSheet: MessageInputField(),
-      body: MessagesView().withPadding(const EdgeInsets.only(bottom: 50)),
+      bottomSheet: MessageInputField(
+        conversationId: widget.conversationData?.id,
+      ),
+      body: MessagesView(
+        conversationData: widget.conversationData,
+      ).withPadding(const EdgeInsets.only(bottom: 50)),
     );
   }
 }

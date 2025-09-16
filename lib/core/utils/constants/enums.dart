@@ -72,3 +72,10 @@ enum ConversationMessageAttachmentType {
 
   const ConversationMessageAttachmentType(this.name);
 }
+
+enum MessageStatus {
+  sending,
+  sent,
+  read,
+  failed,
+}

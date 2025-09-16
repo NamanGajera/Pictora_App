@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:pictora/core/utils/constants/app_constants.dart';
+import 'package:pictora/core/utils/constants/bloc_instances.dart';
 import 'package:pictora/core/utils/constants/colors.dart';
+import 'package:pictora/core/utils/model/user_model.dart';
+import 'package:pictora/features/conversation/bloc/conversation_bloc.dart';
 
 class MessageInputField extends StatefulWidget {
-  const MessageInputField({super.key});
+  final String? conversationId;
+  const MessageInputField({super.key, required this.conversationId});
 
   @override
   State<MessageInputField> createState() => _MessageInputFieldState();
@@ -17,7 +22,7 @@ class _MessageInputFieldState extends State<MessageInputField> {
     messageInputController = TextEditingController();
 
     messageInputController.addListener(() {
-      setState(() {}); // rebuild when text changes
+      setState(() {});
     });
   }
 
@@ -66,13 +71,33 @@ class _MessageInputFieldState extends State<MessageInputField> {
           ),
           const SizedBox(width: 8),
           if (messageInputController.text.isNotEmpty)
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: primaryColor,
-                shape: BoxShape.circle,
+            InkWell(
+              onTap: () {
+                final text = messageInputController.text.trim();
+                if (text.isEmpty) return;
+
+                conversationBloc.add(CreateMessageEvent(
+                  conversationId: widget.conversationId ?? "",
+                  message: text,
+                  senderData: User(
+                    userName: userName,
+                    id: userId,
+                    profile: Profile(
+                      profilePicture: userProfilePic,
+                    ),
+                    fullName: userFullName,
+                  ),
+                ));
+                messageInputController.clear();
+              },
+              child: Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: primaryColor,
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.send, color: Colors.white),
               ),
-              child: const Icon(Icons.send, color: Colors.white),
             ),
         ],
       ),

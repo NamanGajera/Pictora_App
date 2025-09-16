@@ -5,6 +5,9 @@ class ConversationState extends Equatable {
   final ApiStatus getConversationMessagesDataApiStatus;
   final List<ConversationData>? conversationsList;
   final List<ConversationMessage>? conversationMessages;
+  final List<User>? usersList;
+  final bool isLoadingMoreMessages;
+  final bool hasMoreMessages;
   final List<String>? onlineUserIds;
   final String? errorMessage;
   final int? statusCode;
@@ -14,6 +17,9 @@ class ConversationState extends Equatable {
     this.getConversationMessagesDataApiStatus = ApiStatus.initial,
     this.conversationsList,
     this.conversationMessages,
+    this.usersList,
+    this.isLoadingMoreMessages = false,
+    this.hasMoreMessages = true,
     this.onlineUserIds,
     this.errorMessage,
     this.statusCode,
@@ -25,6 +31,9 @@ class ConversationState extends Equatable {
     List<ConversationData>? conversationsList,
     List<ConversationMessage>? conversationMessages,
     List<String>? onlineUserIds,
+    List<User>? usersList,
+    bool? isLoadingMoreMessages,
+    bool? hasMoreMessages,
     String? errorMessage,
     int? statusCode,
   }) {
@@ -34,6 +43,9 @@ class ConversationState extends Equatable {
       conversationsList: conversationsList ?? this.conversationsList,
       conversationMessages: conversationMessages ?? this.conversationMessages,
       onlineUserIds: onlineUserIds ?? this.onlineUserIds,
+      isLoadingMoreMessages: isLoadingMoreMessages ?? this.isLoadingMoreMessages,
+      hasMoreMessages: hasMoreMessages ?? this.hasMoreMessages,
+      usersList: usersList ?? this.usersList,
       statusCode: statusCode,
       errorMessage: errorMessage,
     );
@@ -45,6 +57,9 @@ class ConversationState extends Equatable {
         getConversationMessagesDataApiStatus,
         conversationMessages,
         conversationsList,
+        isLoadingMoreMessages,
+        hasMoreMessages,
+        usersList,
         onlineUserIds,
         errorMessage,
         statusCode,

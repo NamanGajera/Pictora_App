@@ -51,6 +51,26 @@ class ConversationData {
     data['unreadCount'] = this.unreadCount;
     return data;
   }
+
+  ConversationData copyWith({
+    String? id,
+    String? type,
+    String? title,
+    int? unreadCount,
+    ConversationMessage? lastMessage,
+    List<OtherUser>? otherUser,
+    String? updatedAt,
+  }) {
+    return ConversationData(
+      id: id ?? this.id,
+      type: type ?? this.type,
+      title: title ?? this.title,
+      unreadCount: unreadCount ?? this.unreadCount,
+      lastMessage: lastMessage ?? this.lastMessage,
+      otherUser: otherUser ?? this.otherUser,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
+  }
 }
 
 class OtherUser {
@@ -101,5 +121,29 @@ class OtherUser {
       data['userData'] = this.userData!.toJson();
     }
     return data;
+  }
+
+  OtherUser copyWith({
+    String? id,
+    String? conversationId,
+    String? userId,
+    String? lastReadMessageId,
+    int? unreadCount,
+    String? lastReadAt,
+    String? createdAt,
+    String? updatedAt,
+    User? userData,
+  }) {
+    return OtherUser(
+      id: id ?? this.id,
+      conversationId: conversationId ?? this.conversationId,
+      userId: userId ?? this.userId,
+      lastReadMessageId: lastReadMessageId ?? this.lastReadMessageId,
+      unreadCount: unreadCount ?? this.unreadCount,
+      lastReadAt: lastReadAt ?? this.lastReadAt,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      userData: userData ?? this.userData,
+    );
   }
 }

@@ -1,11 +1,16 @@
 // Third-party
+import 'dart:io';
+
+import 'package:bloc_concurrency/bloc_concurrency.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:uuid/uuid.dart';
 
 // Project
 import 'package:pictora/core/utils/constants/constants.dart';
 import 'package:pictora/features/conversation/conversation.dart';
 import '../../../core/utils/helper/helper.dart';
+import '../../../core/utils/model/user_model.dart';
 import '../../../core/utils/services/service.dart';
 
 part 'conversation_event.dart';
@@ -13,11 +18,17 @@ part 'conversation_state.dart';
 
 class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
   final ConversationRepository conversationRepository;
+  final Uuid uuid;
 
-  ConversationBloc(this.conversationRepository) : super(ConversationState()) {
-    on<GetConversationsEvent>(_getConversations);
-    on<UpdateUserOnlineDataEvent>(_updateUserOnlineIds);
-    on<GetConversationMessagesEvent>(_getConversationMessages);
+  ConversationBloc(this.conversationRepository)
+      : uuid = Uuid(),
+        super(ConversationState()) {
+    on<GetConversationsEvent>(_getConversations, transformer: droppable());
+    on<UpdateUserOnlineDataEvent>(_updateUserOnlineIds, transformer: sequential());
+    on<GetConversationMessagesEvent>(_getConversationMessages, transformer: droppable());
+    on<LoadMoreConversationMessagesEvent>(_loadMoreConversationMessages, transformer: droppable());
+    on<CreateMessageEvent>(_createMessage);
+    on<GetUsersListEvent>(_getUserList, transformer: droppable());
 
     conversationSocketListen();
   }
@@ -43,15 +54,121 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
       emit(state.copyWith(getConversationMessagesDataApiStatus: ApiStatus.loading));
 
       final data = await conversationRepository.getConversationMessagesData(postBody: event.body);
+
+      final conversation = state.conversationsList?.firstWhere((con) => con.id == event.body["conversationId"], orElse: () => ConversationData());
+      final lastReadMessageId = conversation?.otherUser?[0].lastReadMessageId;
+      final lastMessageIndex = data.data?.indexWhere((msg) => msg.id == lastReadMessageId) ?? -1;
+
+      if (lastMessageIndex != -1) {
+        for (int i = lastMessageIndex; i < (data.data ?? []).length; i++) {
+          data.data?[i].messageStatus = MessageStatus.read;
+        }
+      }
+
       emit(state.copyWith(
         getConversationMessagesDataApiStatus: ApiStatus.success,
         conversationMessages: data.data ?? [],
+        hasMoreMessages: (data.data ?? []).length < (data.total ?? 0),
       ));
     } catch (error, stackTrace) {
       emit(state.copyWith(getConversationMessagesDataApiStatus: ApiStatus.failure));
       ThemeHelper.showToastMessage("$error");
       handleApiError(error, stackTrace, emit);
     }
+  }
+
+  Future<void> _loadMoreConversationMessages(LoadMoreConversationMessagesEvent event, Emitter<ConversationState> emit) async {
+    try {
+      emit(state.copyWith(isLoadingMoreMessages: true));
+
+      await Future.delayed(Duration(milliseconds: 500));
+      final data = await conversationRepository.getConversationMessagesData(postBody: event.body);
+      emit(state.copyWith(
+        isLoadingMoreMessages: false,
+        conversationMessages: [...?state.conversationMessages, ...?data.data],
+        hasMoreMessages: [...?state.conversationMessages, ...?data.data].length < (data.total ?? 0),
+      ));
+    } catch (error, stackTrace) {
+      emit(state.copyWith(isLoadingMoreMessages: false));
+      ThemeHelper.showToastMessage("$error");
+      handleApiError(error, stackTrace, emit);
+    }
+  }
+
+  Future<void> _createMessage(CreateMessageEvent event, Emitter<ConversationState> emit) async {
+    final tempId = uuid.v4();
+    final newMessage = ConversationMessage(
+      id: tempId,
+      conversationId: event.conversationId,
+      senderId: userId,
+      message: event.message,
+      replyToMessageId: event.replyToMessageId,
+      postId: event.postId,
+      createdAt: DateTime.now().toIso8601String(),
+      updatedAt: DateTime.now().toIso8601String(),
+      messageStatus: MessageStatus.sending,
+      senderData: event.senderData,
+      attachments: [],
+    );
+
+    emit(state.copyWith(conversationMessages: [newMessage, ...?state.conversationMessages]));
+
+    try {
+      Map<String, dynamic> fields = {
+        "conversationId": event.conversationId,
+        if (event.message != null) "message": event.message,
+        if (event.postId != null) "postId": event.postId,
+        if (event.replyToMessageId != null) "replyToMessageId": event.replyToMessageId,
+        if (event.link != null) "link": event.link,
+      };
+
+      Map<String, dynamic> fileFields = {
+        if (event.mediaData != null && event.mediaData!.isNotEmpty) "media": event.mediaData!,
+        if (event.thumbnailData != null && event.thumbnailData!.isNotEmpty) "thumbnails": event.thumbnailData!,
+      };
+
+      final message = await conversationRepository.createMessage(fields: fields, fileFields: fileFields);
+      _updateMessages(tempId: tempId, messageStatus: MessageStatus.sent, conversationMessage: message, emit: emit);
+    } catch (error, stackTrace) {
+      _updateMessages(tempId: tempId, messageStatus: MessageStatus.failed, emit: emit);
+      ThemeHelper.showToastMessage("$error");
+      handleApiError(error, stackTrace, emit);
+    }
+  }
+
+  Future<void> _getUserList(GetUsersListEvent event, Emitter<ConversationState> emit) async {
+    try {
+      final data = await conversationRepository.getAllUserList({"isPrivate": false});
+      emit(state.copyWith(usersList: data.data ?? []));
+    } catch (error, stackTrace) {
+      ThemeHelper.showToastMessage("$error");
+      handleApiError(error, stackTrace, emit);
+    }
+  }
+
+  void _updateMessages({String? tempId, MessageStatus? messageStatus, ConversationMessage? conversationMessage, Emitter<ConversationState>? emit}) {
+    if (emit == null) return;
+
+    final updatedMessages = state.conversationMessages?.map((msg) {
+      if (tempId != null && msg.id == tempId) {
+        return msg.copyWith(
+          messageStatus: messageStatus,
+          id: conversationMessage?.id,
+        );
+      }
+      return msg;
+    }).toList();
+
+    final updatedConversation = (state.conversationsList ?? []).map(
+      (con) {
+        if (con.id == conversationMessage?.conversationId) {
+          return con.copyWith(lastMessage: conversationMessage);
+        }
+        return con;
+      },
+    ).toList();
+
+    emit(state.copyWith(conversationMessages: updatedMessages, conversationsList: updatedConversation));
   }
 
   void _updateUserOnlineIds(UpdateUserOnlineDataEvent event, Emitter<ConversationState> emit) {
@@ -77,7 +194,7 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
 
     SocketService().eventManager.eventStream('online_users').listen((data) {
       add(UpdateUserOnlineDataEvent(
-        data: data,
+        data: List<String>.from(data ?? []),
       ));
     });
   }

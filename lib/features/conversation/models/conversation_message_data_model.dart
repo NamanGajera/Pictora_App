@@ -1,5 +1,6 @@
 import 'package:pictora/core/utils/model/user_model.dart';
 
+import '../../../core/utils/constants/constants.dart';
 import '../../post/models/post_data.dart';
 
 class ConversationMessage {
@@ -11,24 +12,27 @@ class ConversationMessage {
   String? replyToMessageId;
   String? createdAt;
   String? updatedAt;
+  MessageStatus? messageStatus;
   User? senderData;
   PostData? postData;
   List<MessageAttachments>? attachments;
   ConversationMessage? repliedMessageData;
 
-  ConversationMessage(
-      {this.id,
-      this.conversationId,
-      this.senderId,
-      this.message,
-      this.postId,
-      this.replyToMessageId,
-      this.createdAt,
-      this.updatedAt,
-      this.senderData,
-      this.postData,
-      this.attachments,
-      this.repliedMessageData});
+  ConversationMessage({
+    this.id,
+    this.conversationId,
+    this.senderId,
+    this.message,
+    this.postId,
+    this.replyToMessageId,
+    this.createdAt,
+    this.updatedAt,
+    this.senderData,
+    this.postData,
+    this.attachments,
+    this.repliedMessageData,
+    this.messageStatus = MessageStatus.sent,
+  });
 
   ConversationMessage.fromJson(Map<String, dynamic> json) {
     id = json['id'];
@@ -60,6 +64,7 @@ class ConversationMessage {
     data['replyToMessageId'] = this.replyToMessageId;
     data['createdAt'] = this.createdAt;
     data['updatedAt'] = this.updatedAt;
+    data['messageStatus'] = this.messageStatus;
     if (this.senderData != null) {
       data['senderData'] = this.senderData!.toJson();
     }
@@ -71,6 +76,38 @@ class ConversationMessage {
     }
     data['repliedMessageData'] = this.repliedMessageData;
     return data;
+  }
+
+  ConversationMessage copyWith({
+    String? id,
+    String? conversationId,
+    String? senderId,
+    String? message,
+    String? postId,
+    String? replyToMessageId,
+    String? createdAt,
+    String? updatedAt,
+    MessageStatus? messageStatus,
+    User? senderData,
+    PostData? postData,
+    List<MessageAttachments>? attachments,
+    ConversationMessage? repliedMessageData,
+  }) {
+    return ConversationMessage(
+      id: id ?? this.id,
+      conversationId: conversationId ?? this.conversationId,
+      senderId: senderId ?? this.senderId,
+      message: message ?? this.message,
+      postId: postId ?? this.postId,
+      replyToMessageId: replyToMessageId ?? this.replyToMessageId,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      messageStatus: messageStatus ?? this.messageStatus,
+      senderData: senderData ?? this.senderData,
+      postData: postData ?? this.postData,
+      attachments: attachments ?? this.attachments,
+      repliedMessageData: repliedMessageData ?? this.repliedMessageData,
+    );
   }
 }
 
@@ -105,5 +142,25 @@ class MessageAttachments {
     data['metadata'] = this.metadata;
     data['type'] = this.type;
     return data;
+  }
+
+  MessageAttachments copyWith({
+    String? id,
+    String? messageId,
+    String? url,
+    String? thumbnailUrl,
+    String? publicId,
+    String? metadata,
+    String? type,
+  }) {
+    return MessageAttachments(
+      id: id ?? this.id,
+      messageId: messageId ?? this.messageId,
+      url: url ?? this.url,
+      thumbnailUrl: thumbnailUrl ?? this.thumbnailUrl,
+      publicId: publicId ?? this.publicId,
+      metadata: metadata ?? this.metadata,
+      type: type ?? this.type,
+    );
   }
 }
