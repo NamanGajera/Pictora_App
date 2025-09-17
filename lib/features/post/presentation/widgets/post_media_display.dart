@@ -67,36 +67,6 @@ class _PostMediaDisplayState extends State<PostMediaDisplay> with AutomaticKeepA
     }
   }
 
-  @override
-  void didUpdateWidget(PostMediaDisplay oldWidget) {
-    super.didUpdateWidget(oldWidget);
-
-    if (oldWidget.postId != widget.postId || !_areMediaListsEqual(oldWidget.mediaData, widget.mediaData)) {
-      _disposeVideoControllers();
-      _initializeMedia();
-    }
-  }
-
-  bool _areMediaListsEqual(List<MediaData>? list1, List<MediaData>? list2) {
-    if (list1 == null && list2 == null) return true;
-    if (list1 == null || list2 == null) return false;
-    if (list1.length != list2.length) return false;
-
-    for (int i = 0; i < list1.length; i++) {
-      if (list1[i].mediaUrl != list2[i].mediaUrl) return false;
-    }
-    return true;
-  }
-
-  void _disposeVideoControllers() {
-    _videoControllers.value.forEach((key, controller) {
-      controller.dispose();
-    });
-    _videoControllers.value.clear();
-    _isInitialized.value.clear();
-    _isPlaying.clear();
-  }
-
   void _togglePlay(String videoKey) {
     if (_videoControllers.value[videoKey]?.value.isInitialized ?? false) {
       if (_isPlaying[videoKey] == true) {
@@ -149,31 +119,16 @@ class _PostMediaDisplayState extends State<PostMediaDisplay> with AutomaticKeepA
     return VisibilityDetector(
       key: Key(widget.postId),
       onVisibilityChanged: (info) {
-        // Cancel any previous delayed call
-        Future.delayed(Duration(milliseconds: 100), () {
-          if (!mounted) return;
-
-          final currentMedia = mediaItems[_currentPage.value];
-          if (currentMedia['type'] == 'video') {
-            final videoKey = '${widget.postId}_${_currentPage.value}';
-
-            // Only handle visibility changes if the video controller exists and is initialized
-            if (_videoControllers.value.containsKey(videoKey) && (_isInitialized.value[videoKey] ?? false)) {
-              if (info.visibleFraction > 0.8) {
-                // Lower the threshold slightly
-                if (!(_isPlaying[videoKey] ?? false)) {
-                  _togglePlay(videoKey);
-                }
-              } else {
-                if (_isPlaying[videoKey] ?? false) {
-                  _videoControllers.value[videoKey]?.pause();
-                  _isPlaying[videoKey] = false;
-                  _updateState();
-                }
-              }
-            }
+        final currentMedia = mediaItems[_currentPage.value];
+        if (currentMedia['type'] == 'video') {
+          final videoKey = '${widget.postId}_${_currentPage.value}';
+          if (info.visibleFraction > 0.9) {
+            _togglePlay(videoKey);
+          } else {
+            _videoControllers.value[videoKey]?.pause();
+            _isPlaying[videoKey] = false;
           }
-        });
+        }
       },
       child: GestureDetector(
         onDoubleTap: _handleDoubleTap,
@@ -338,7 +293,7 @@ class _PostMediaDisplayState extends State<PostMediaDisplay> with AutomaticKeepA
   bool get wantKeepAlive => true;
 }
 
-class _VideoPlayer extends StatefulWidget {
+class _VideoPlayer extends StatelessWidget {
   final String videoKey;
   final String thumbnailUrl;
   final String mediaId;
@@ -354,74 +309,67 @@ class _VideoPlayer extends StatefulWidget {
   });
 
   @override
-  State<_VideoPlayer> createState() => _VideoPlayerState();
-}
-
-class _VideoPlayerState extends State<_VideoPlayer> with AutomaticKeepAliveClientMixin {
-  bool _showThumbnail = true;
-
-  @override
-  void didUpdateWidget(covariant _VideoPlayer oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.videoKey != widget.videoKey) {
-      setState(() {
-        _showThumbnail = true;
-      });
-    }
-  }
-
-  @override
   Widget build(BuildContext context) {
-    super.build(context);
+    final controller = controllers[videoKey];
+    final initialized = isInitialized[videoKey] ?? false;
 
-    final controller = widget.controllers[widget.videoKey];
-    final initialized = widget.isInitialized[widget.videoKey] ?? false;
-
-    return Stack(
-      alignment: Alignment.center,
-      children: [
-        Positioned.fill(
-          child: CachedNetworkImage(
-            imageUrl: widget.thumbnailUrl,
-            cacheKey: widget.mediaId,
-            fit: BoxFit.cover,
-            placeholder: (context, url) => Container(
-              color: Colors.grey[200],
-              child: const Center(
-                child: CircularProgressIndicator(strokeWidth: 2),
+    return SizedBox(
+      width: double.infinity,
+      child: initialized && controller != null
+          ? AspectRatio(
+              aspectRatio: controller.value.aspectRatio,
+              child: Stack(
+                children: [
+                  VideoPlayer(controller),
+                  if (!controller.value.isPlaying)
+                    const Center(
+                      child: Icon(
+                        Icons.play_circle_fill,
+                        color: Colors.white54,
+                        size: 50,
+                      ),
+                    ),
+                ],
+              ),
+            )
+          : CachedNetworkImage(
+              imageUrl: thumbnailUrl,
+              cacheKey: mediaId,
+              key: ValueKey(mediaId),
+              fit: BoxFit.cover,
+              placeholder: (context, url) => Container(
+                color: Colors.grey[100],
+                child: const Center(
+                  child: SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation<Color>(Color(0xff9CA3AF)),
+                    ),
+                  ),
+                ),
+              ),
+              errorWidget: (context, url, error) => Container(
+                color: const Color(0xffF3F4F6),
+                height: double.infinity,
+                child: const Icon(
+                  Icons.image_outlined,
+                  color: Color(0xff9CA3AF),
+                  size: 32,
+                ),
+              ),
+              imageBuilder: (context, imageProvider) => Container(
+                decoration: BoxDecoration(
+                  image: DecorationImage(
+                    image: imageProvider,
+                    fit: BoxFit.cover,
+                  ),
+                ),
               ),
             ),
-            errorWidget: (context, url, error) => Container(
-              color: Colors.grey[300],
-              child: const Icon(Icons.broken_image, color: Colors.grey),
-            ),
-          ),
-        ),
-
-        // Actual video on top (fade in when ready)
-        if (initialized && controller != null)
-          AnimatedOpacity(
-            opacity: _showThumbnail ? 0 : 1,
-            duration: const Duration(milliseconds: 300),
-            onEnd: () {
-              if (_showThumbnail) {
-                setState(() => _showThumbnail = false);
-              }
-            },
-            child: AspectRatio(
-              aspectRatio: controller.value.aspectRatio,
-              child: VideoPlayer(controller),
-            ),
-          ),
-
-        // Play icon overlay
-        if (controller != null && !controller.value.isPlaying) const Icon(Icons.play_circle_fill, color: Colors.white70, size: 50),
-      ],
     );
   }
-
-  @override
-  bool get wantKeepAlive => true;
 }
 
 class _ImageDisplay extends StatefulWidget {
