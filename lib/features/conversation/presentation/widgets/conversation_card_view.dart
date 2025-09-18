@@ -134,7 +134,10 @@ class _ConversationCardViewState extends State<ConversationCardView> {
                       ),
                     ),
                     CustomText(
-                      TimeFormatter.formatTimeDifference(DateTime.parse('${widget.conversationData?.lastMessage?.updatedAt}'.replaceAll('Z', ''))),
+                      widget.conversationData?.lastMessage?.updatedAt == null
+                          ? ''
+                          : TimeFormatter.formatTimeDifference(
+                              DateTime.parse('${widget.conversationData?.lastMessage?.updatedAt}'.replaceAll('Z', ''))),
                       color: Colors.grey,
                       fontSize: 11,
                     ),

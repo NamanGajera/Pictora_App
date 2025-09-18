@@ -21,10 +21,24 @@ class ApiClient {
 
     _dio.interceptors.add(InterceptorsWrapper(
       onRequest: (options, handler) {
+        String bodyLog = "";
+
+        if (options.data is FormData) {
+          final formData = options.data as FormData;
+
+          final fields = formData.fields.map((e) => "${e.key}: ${e.value}").join(", ");
+          final files = formData.files.map((e) => "${e.key}: ${e.value.filename}").join(", ");
+
+          bodyLog = "FormData => Fields: {$fields}, Files: {$files}";
+        } else {
+          bodyLog = options.data.toString();
+        }
+
         logDebug(
-          message: 'URL: ${options.uri}, headers: ${options.headers}, body: ${options.data}',
+          message: 'URL: ${options.uri}, headers: ${options.headers}, body: $bodyLog',
           tag: "${options.method} API CALL",
         );
+
         return handler.next(options);
       },
       onResponse: (response, handler) {

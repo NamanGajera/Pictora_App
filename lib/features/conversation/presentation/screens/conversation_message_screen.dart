@@ -46,6 +46,7 @@ class _ConversationMessageScreenState extends State<ConversationMessageScreen> {
       appBar: MessageScreenAppBar(conversationData: widget.conversationData),
       bottomSheet: MessageInputField(
         conversationId: widget.conversationData?.id,
+        receiverUserId: widget.conversationData?.members?[0].userId,
       ),
       body: MessagesView(
         conversationData: widget.conversationData,

@@ -71,7 +71,7 @@ class ConversationRepository {
   Future<ConversationData> createConversation({dynamic fields, dynamic fileFields}) async {
     try {
       Map<String, dynamic> json = await apiClient.multipartPostApiCall(
-        endPoint: conversationRoute,
+        endPoint: createConversationApiEndPoint,
         fields: fields,
         fileFields: fileFields,
         authorizationToken: accessToken,

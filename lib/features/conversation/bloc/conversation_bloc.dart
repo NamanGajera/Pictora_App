@@ -130,17 +130,19 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
         _pendingMessages[receiverId]!.add(event);
 
         if (_isCreatingConversation[receiverId] == true) {
-          // Already creating -> just wait, queue will flush later
           return;
         }
 
         _isCreatingConversation[receiverId] = true;
 
         // Create conversation only once
-        final conversationData = await createConversation(CreateConversationEvent(
-          conversationType: ConversationType.private,
-          userId: receiverId,
-        ));
+        final conversationData = await createConversation(
+          CreateConversationEvent(
+            conversationType: ConversationType.private,
+            userId: receiverId,
+          ),
+          emit,
+        );
 
         if (conversationData == null) {
           // Fail all pending messages for this receiver
@@ -156,11 +158,6 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
           return;
         }
 
-        // Add to conversation list
-        emit(state.copyWith(
-          conversationsList: [conversationData, ...?state.conversationsList],
-        ));
-
         conversationId = conversationData.id;
 
         // Flush all pending messages
@@ -173,13 +170,14 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
             pending,
             conversationId: conversationId,
             emit: emit,
+            tempId: tempId,
           );
         }
         return; // already handled sending
       }
 
       // Conversation exists -> send immediately
-      await _sendMessage(event, conversationId: conversationId, emit: emit);
+      await _sendMessage(event, conversationId: conversationId, emit: emit, tempId: tempId);
     } catch (error, stackTrace) {
       if (event.conversationId != null) {
         _updateMessages(tempId: tempId, messageStatus: MessageStatus.failed, emit: emit);
@@ -193,9 +191,8 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
     CreateMessageEvent event, {
     required String? conversationId,
     required Emitter<ConversationState> emit,
+    required String? tempId,
   }) async {
-    final tempId = uuid.v4();
-
     try {
       final message = await conversationRepository.createMessage(
         fields: {
@@ -221,15 +218,14 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
 
   Future<void> _createConversation(CreateConversationEvent event, Emitter<ConversationState> emit) async {
     try {
-      final conversation = await createConversation(event);
-      emit(state.copyWith(conversationsList: [conversation ?? ConversationData(), ...?state.conversationsList]));
+      await createConversation(event, emit);
     } catch (error, stackTrace) {
       ThemeHelper.showToastMessage("$error");
       handleApiError(error, stackTrace, emit);
     }
   }
 
-  Future<ConversationData?> createConversation(CreateConversationEvent event) async {
+  Future<ConversationData?> createConversation(CreateConversationEvent event, Emitter<ConversationState> emit) async {
     try {
       Map<String, dynamic> fields = {
         "type": event.conversationType.name,
@@ -254,7 +250,7 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
       }
 
       final conversation = await conversationRepository.createConversation(fields: fields, fileFields: fileFields);
-
+      emit(state.copyWith(conversationsList: [conversation, ...?state.conversationsList]));
       return conversation;
     } catch (error) {
       rethrow;
@@ -275,6 +271,7 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
     if (emit == null) return;
 
     final updatedMessages = state.conversationMessages?.map((msg) {
+      logInfo(message: "Conversatino ====???????? ${tempId}  =>>> ${msg.id}");
       if (tempId != null && msg.id == tempId) {
         return msg.copyWith(
           messageStatus: messageStatus,

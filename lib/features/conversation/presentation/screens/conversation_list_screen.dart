@@ -71,7 +71,9 @@ class _ConversationListScreenState extends State<ConversationListScreen> {
         ],
       ),
       body: BlocBuilder<ConversationBloc, ConversationState>(
-        buildWhen: (previous, current) => previous.getConversationsDataApiStatus != current.getConversationsDataApiStatus,
+        buildWhen: (previous, current) =>
+            previous.getConversationsDataApiStatus != current.getConversationsDataApiStatus ||
+            previous.conversationsList != current.conversationsList,
         builder: (context, state) {
           if ((state.conversationsList ?? []).isEmpty) {
             return Center(
@@ -111,7 +113,7 @@ class _ConversationListScreenState extends State<ConversationListScreen> {
                       child: ConversationCardView(
                         key: ValueKey('${conversationData?.id}'),
                         conversationData: conversationData,
-                      ),
+                      ).withPadding(const EdgeInsets.only(bottom: 12)),
                     );
                   },
                 ),

@@ -82,7 +82,7 @@ enum MessageStatus {
 
 enum ConversationType {
   group("Group"),
-  private("Public");
+  private("Private");
 
   final String name;
 
