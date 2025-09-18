@@ -160,7 +160,7 @@ class _MessagesViewState extends State<MessagesView> {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
           decoration: BoxDecoration(
-            color: Colors.black.withOpacity(0.6),
+            color: Colors.black.withValues(alpha: 0.6),
             borderRadius: BorderRadius.circular(12),
           ),
           child: CustomText(
@@ -220,7 +220,7 @@ class _MessagesViewState extends State<MessagesView> {
               child: Column(
                 crossAxisAlignment: isMyMessage ? CrossAxisAlignment.end : CrossAxisAlignment.start,
                 children: [
-                  if (!isMyMessage && message?.senderData?.fullName != null && (widget.conversationData?.otherUser ?? []).length > 1)
+                  if (!isMyMessage && message?.senderData?.fullName != null && (widget.conversationData?.members ?? []).length > 1)
                     Padding(
                       padding: const EdgeInsets.only(bottom: 4),
                       child: CustomText(

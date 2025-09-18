@@ -93,7 +93,7 @@ class _ConversationCardViewState extends State<ConversationCardView> {
               RoundProfileAvatar(
                 radius: 25,
                 userId: '',
-                imageUrl: widget.conversationData?.otherUser?[0].userData?.profile?.profilePicture ?? '',
+                imageUrl: widget.conversationData?.members?[0].userData?.profile?.profilePicture ?? '',
               ),
               Positioned(
                 right: 0,
@@ -101,7 +101,7 @@ class _ConversationCardViewState extends State<ConversationCardView> {
                 child: BlocBuilder<ConversationBloc, ConversationState>(
                   buildWhen: (previous, current) => previous.onlineUserIds != current.onlineUserIds,
                   builder: (context, state) {
-                    final bool isOnline = (state.onlineUserIds ?? []).contains(widget.conversationData?.otherUser?[0].userId);
+                    final bool isOnline = (state.onlineUserIds ?? []).contains(widget.conversationData?.members?[0].userId);
                     if (!isOnline) {
                       return SizedBox.shrink();
                     }
@@ -129,7 +129,7 @@ class _ConversationCardViewState extends State<ConversationCardView> {
                   children: [
                     Expanded(
                       child: CustomText(
-                        widget.conversationData?.title ?? widget.conversationData?.otherUser?[0].userData?.fullName ?? '',
+                        widget.conversationData?.title ?? widget.conversationData?.members?[0].userData?.fullName ?? '',
                         fontSize: 16,
                       ),
                     ),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:pictora/core/config/router_name.dart';
 
 import '../../../../core/config/router.dart';
 import '../../../../core/utils/constants/constants.dart';
@@ -46,8 +47,22 @@ class _CreateConversationScreenState extends State<CreateConversationScreen> {
             itemCount: state.usersList?.length ?? 0,
             itemBuilder: (context, index) {
               final User? user = state.usersList?[index];
+              if (user?.id == userId) {
+                return SizedBox.shrink();
+              }
               return InkWell(
-                onTap: () async {},
+                onTap: () async {
+                  appRouter.push(RouterName.conversationMessage.path,
+                      extra: ConversationMessageScreenDataModel(
+                          conversationData: ConversationData(
+                        members: [
+                          ConversationMemberModel(
+                            userId: user?.id,
+                            userData: user,
+                          ),
+                        ],
+                      )));
+                },
                 child: _buildUserTile(user),
               );
             },

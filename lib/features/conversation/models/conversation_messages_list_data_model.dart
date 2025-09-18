@@ -14,20 +14,20 @@ class ConversationMessagesListModel {
     if (json['data'] != null) {
       data = <ConversationMessage>[];
       json['data'].forEach((v) {
-        data!.add(new ConversationMessage.fromJson(v));
+        data!.add(ConversationMessage.fromJson(v));
       });
     }
     total = json['total'];
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['statusCode'] = this.statusCode;
-    data['message'] = this.message;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['statusCode'] = statusCode;
+    data['message'] = message;
     if (this.data != null) {
       data['data'] = this.data!.map((v) => v.toJson()).toList();
     }
-    data['total'] = this.total;
+    data['total'] = total;
     return data;
   }
 }

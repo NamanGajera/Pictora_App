@@ -194,7 +194,20 @@ class ApiClient {
     Map<String, dynamic> fields,
     Map<String, dynamic> fileFields,
   ) async {
-    final formData = FormData.fromMap(fields);
+    final formData = FormData();
+
+    for (final entry in fields.entries) {
+      final fieldName = entry.key;
+      final fieldValue = entry.value;
+
+      if (fieldValue is List) {
+        for (final item in fieldValue) {
+          formData.fields.add(MapEntry(fieldName, item.toString()));
+        }
+      } else {
+        formData.fields.add(MapEntry(fieldName, fieldValue.toString()));
+      }
+    }
 
     for (final entry in fileFields.entries) {
       final fieldName = entry.key;

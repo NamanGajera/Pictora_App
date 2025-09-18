@@ -21,10 +21,11 @@ class LoadMoreConversationMessagesEvent extends ConversationEvent {
 
 class CreateMessageEvent extends ConversationEvent {
   final String? message;
-  final String conversationId;
+  final String? conversationId;
   final String? replyToMessageId;
   final String? link;
   final String? postId;
+  final String? receiverId;
   final List<File>? mediaData;
   final List<File>? thumbnailData;
   final User? senderData;
@@ -38,7 +39,24 @@ class CreateMessageEvent extends ConversationEvent {
     this.replyToMessageId,
     this.link,
     this.senderData,
+    this.receiverId,
   });
 }
 
 class GetUsersListEvent extends ConversationEvent {}
+
+class CreateConversationEvent extends ConversationEvent {
+  final String? userId;
+  final List<String>? members;
+  final List<File>? groupImage;
+  final ConversationType conversationType;
+  final String? title;
+
+  CreateConversationEvent({
+    this.userId,
+    this.members,
+    this.conversationType = ConversationType.private,
+    this.groupImage,
+    this.title,
+  });
+}

@@ -23,12 +23,14 @@ class _ConversationMessageScreenState extends State<ConversationMessageScreen> {
   @override
   void initState() {
     super.initState();
-    SocketService().emit("join_conversation", {"conversationId": widget.conversationData?.id});
-    conversationBloc.add(GetConversationMessagesEvent(body: {
-      "conversationId": widget.conversationData?.id,
-      "skip": 0,
-      "take": 40,
-    }));
+    if (widget.conversationData?.id != null) {
+      SocketService().emit("join_conversation", {"conversationId": widget.conversationData?.id});
+      conversationBloc.add(GetConversationMessagesEvent(body: {
+        "conversationId": widget.conversationData?.id,
+        "skip": 0,
+        "take": 40,
+      }));
+    }
   }
 
   @override

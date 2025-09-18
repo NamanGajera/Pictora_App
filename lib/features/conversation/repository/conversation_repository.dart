@@ -52,6 +52,7 @@ class ConversationRepository {
     }
   }
 
+  /// POST: GET USER LIST
   Future<UserListDataModel> getAllUserList(dynamic body) async {
     try {
       Map<String, dynamic> json = await apiClient.postApiCall(
@@ -61,6 +62,22 @@ class ConversationRepository {
       );
 
       return UserListDataModel.fromJson(json);
+    } on CustomException {
+      rethrow;
+    }
+  }
+
+  /// POST: CREATE CONVERSATION
+  Future<ConversationData> createConversation({dynamic fields, dynamic fileFields}) async {
+    try {
+      Map<String, dynamic> json = await apiClient.multipartPostApiCall(
+        endPoint: conversationRoute,
+        fields: fields,
+        fileFields: fileFields,
+        authorizationToken: accessToken,
+      );
+
+      return ConversationData.fromJson(json["data"]);
     } on CustomException {
       rethrow;
     }

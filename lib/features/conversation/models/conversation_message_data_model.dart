@@ -43,38 +43,38 @@ class ConversationMessage {
     replyToMessageId = json['replyToMessageId'];
     createdAt = json['createdAt'];
     updatedAt = json['updatedAt'];
-    senderData = json['senderData'] != null ? new User.fromJson(json['senderData']) : null;
-    postData = json['postData'] != null ? new PostData.fromJson(json['postData']) : null;
+    senderData = json['senderData'] != null ? User.fromJson(json['senderData']) : null;
+    postData = json['postData'] != null ? PostData.fromJson(json['postData']) : null;
     if (json['attachments'] != null) {
       attachments = <MessageAttachments>[];
       json['attachments'].forEach((v) {
-        attachments!.add(new MessageAttachments.fromJson(v));
+        attachments!.add(MessageAttachments.fromJson(v));
       });
     }
     repliedMessageData = json['repliedMessageData'];
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['id'] = this.id;
-    data['conversationId'] = this.conversationId;
-    data['senderId'] = this.senderId;
-    data['message'] = this.message;
-    data['postId'] = this.postId;
-    data['replyToMessageId'] = this.replyToMessageId;
-    data['createdAt'] = this.createdAt;
-    data['updatedAt'] = this.updatedAt;
-    data['messageStatus'] = this.messageStatus;
-    if (this.senderData != null) {
-      data['senderData'] = this.senderData!.toJson();
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['id'] = id;
+    data['conversationId'] = conversationId;
+    data['senderId'] = senderId;
+    data['message'] = message;
+    data['postId'] = postId;
+    data['replyToMessageId'] = replyToMessageId;
+    data['createdAt'] = createdAt;
+    data['updatedAt'] = updatedAt;
+    data['messageStatus'] = messageStatus;
+    if (senderData != null) {
+      data['senderData'] = senderData!.toJson();
     }
-    if (this.postData != null) {
-      data['postData'] = this.postData!.toJson();
+    if (postData != null) {
+      data['postData'] = postData!.toJson();
     }
-    if (this.attachments != null) {
-      data['attachments'] = this.attachments!.map((v) => v.toJson()).toList();
+    if (attachments != null) {
+      data['attachments'] = attachments!.map((v) => v.toJson()).toList();
     }
-    data['repliedMessageData'] = this.repliedMessageData;
+    data['repliedMessageData'] = repliedMessageData;
     return data;
   }
 
@@ -133,14 +133,14 @@ class MessageAttachments {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['id'] = this.id;
-    data['messageId'] = this.messageId;
-    data['url'] = this.url;
-    data['thumbnailUrl'] = this.thumbnailUrl;
-    data['publicId'] = this.publicId;
-    data['metadata'] = this.metadata;
-    data['type'] = this.type;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['id'] = id;
+    data['messageId'] = messageId;
+    data['url'] = url;
+    data['thumbnailUrl'] = thumbnailUrl;
+    data['publicId'] = publicId;
+    data['metadata'] = metadata;
+    data['type'] = type;
     return data;
   }
 

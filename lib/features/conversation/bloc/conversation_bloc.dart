@@ -19,6 +19,8 @@ part 'conversation_state.dart';
 class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
   final ConversationRepository conversationRepository;
   final Uuid uuid;
+  final Map<String, List<CreateMessageEvent>> _pendingMessages = {};
+  final Map<String, bool> _isCreatingConversation = {};
 
   ConversationBloc(this.conversationRepository)
       : uuid = Uuid(),
@@ -29,6 +31,7 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
     on<LoadMoreConversationMessagesEvent>(_loadMoreConversationMessages, transformer: droppable());
     on<CreateMessageEvent>(_createMessage);
     on<GetUsersListEvent>(_getUserList, transformer: droppable());
+    on<CreateConversationEvent>(_createConversation, transformer: droppable());
 
     conversationSocketListen();
   }
@@ -56,7 +59,7 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
       final data = await conversationRepository.getConversationMessagesData(postBody: event.body);
 
       final conversation = state.conversationsList?.firstWhere((con) => con.id == event.body["conversationId"], orElse: () => ConversationData());
-      final lastReadMessageId = conversation?.otherUser?[0].lastReadMessageId;
+      final lastReadMessageId = conversation?.members?[0].lastReadMessageId;
       final lastMessageIndex = data.data?.indexWhere((msg) => msg.id == lastReadMessageId) ?? -1;
 
       if (lastMessageIndex != -1) {
@@ -97,6 +100,8 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
 
   Future<void> _createMessage(CreateMessageEvent event, Emitter<ConversationState> emit) async {
     final tempId = uuid.v4();
+
+    // Optimistic UI update
     final newMessage = ConversationMessage(
       id: tempId,
       conversationId: event.conversationId,
@@ -111,28 +116,148 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
       attachments: [],
     );
 
-    emit(state.copyWith(conversationMessages: [newMessage, ...?state.conversationMessages]));
+    emit(state.copyWith(
+      conversationMessages: [newMessage, ...?state.conversationMessages],
+    ));
 
     try {
-      Map<String, dynamic> fields = {
-        "conversationId": event.conversationId,
-        if (event.message != null) "message": event.message,
-        if (event.postId != null) "postId": event.postId,
-        if (event.replyToMessageId != null) "replyToMessageId": event.replyToMessageId,
-        if (event.link != null) "link": event.link,
-      };
+      String? conversationId = event.conversationId;
 
-      Map<String, dynamic> fileFields = {
-        if (event.mediaData != null && event.mediaData!.isNotEmpty) "media": event.mediaData!,
-        if (event.thumbnailData != null && event.thumbnailData!.isNotEmpty) "thumbnails": event.thumbnailData!,
-      };
+      // If conversationId is missing -> queue
+      if (conversationId == null) {
+        final receiverId = event.receiverId!;
+        _pendingMessages.putIfAbsent(receiverId, () => []);
+        _pendingMessages[receiverId]!.add(event);
 
-      final message = await conversationRepository.createMessage(fields: fields, fileFields: fileFields);
+        if (_isCreatingConversation[receiverId] == true) {
+          // Already creating -> just wait, queue will flush later
+          return;
+        }
+
+        _isCreatingConversation[receiverId] = true;
+
+        // Create conversation only once
+        final conversationData = await createConversation(CreateConversationEvent(
+          conversationType: ConversationType.private,
+          userId: receiverId,
+        ));
+
+        if (conversationData == null) {
+          // Fail all pending messages for this receiver
+          for (var pending in _pendingMessages[receiverId] ?? []) {
+            _updateMessages(
+              tempId: tempId,
+              messageStatus: MessageStatus.failed,
+              emit: emit,
+            );
+          }
+          _pendingMessages.remove(receiverId);
+          _isCreatingConversation[receiverId] = false;
+          return;
+        }
+
+        // Add to conversation list
+        emit(state.copyWith(
+          conversationsList: [conversationData, ...?state.conversationsList],
+        ));
+
+        conversationId = conversationData.id;
+
+        // Flush all pending messages
+        final queued = List<CreateMessageEvent>.from(_pendingMessages[receiverId]!);
+        _pendingMessages.remove(receiverId);
+        _isCreatingConversation[receiverId] = false;
+
+        for (var pending in queued) {
+          await _sendMessage(
+            pending,
+            conversationId: conversationId,
+            emit: emit,
+          );
+        }
+        return; // already handled sending
+      }
+
+      // Conversation exists -> send immediately
+      await _sendMessage(event, conversationId: conversationId, emit: emit);
+    } catch (error, stackTrace) {
+      if (event.conversationId != null) {
+        _updateMessages(tempId: tempId, messageStatus: MessageStatus.failed, emit: emit);
+      }
+      ThemeHelper.showToastMessage("$error");
+      handleApiError(error, stackTrace, emit);
+    }
+  }
+
+  Future<void> _sendMessage(
+    CreateMessageEvent event, {
+    required String? conversationId,
+    required Emitter<ConversationState> emit,
+  }) async {
+    final tempId = uuid.v4();
+
+    try {
+      final message = await conversationRepository.createMessage(
+        fields: {
+          "conversationId": conversationId,
+          if (event.message != null) "message": event.message,
+          if (event.postId != null) "postId": event.postId,
+          if (event.replyToMessageId != null) "replyToMessageId": event.replyToMessageId,
+          if (event.link != null) "link": event.link,
+        },
+        fileFields: {
+          if (event.mediaData != null && event.mediaData!.isNotEmpty) "media": event.mediaData!,
+          if (event.thumbnailData != null && event.thumbnailData!.isNotEmpty) "thumbnails": event.thumbnailData!,
+        },
+      );
+
       _updateMessages(tempId: tempId, messageStatus: MessageStatus.sent, conversationMessage: message, emit: emit);
     } catch (error, stackTrace) {
       _updateMessages(tempId: tempId, messageStatus: MessageStatus.failed, emit: emit);
       ThemeHelper.showToastMessage("$error");
       handleApiError(error, stackTrace, emit);
+    }
+  }
+
+  Future<void> _createConversation(CreateConversationEvent event, Emitter<ConversationState> emit) async {
+    try {
+      final conversation = await createConversation(event);
+      emit(state.copyWith(conversationsList: [conversation ?? ConversationData(), ...?state.conversationsList]));
+    } catch (error, stackTrace) {
+      ThemeHelper.showToastMessage("$error");
+      handleApiError(error, stackTrace, emit);
+    }
+  }
+
+  Future<ConversationData?> createConversation(CreateConversationEvent event) async {
+    try {
+      Map<String, dynamic> fields = {
+        "type": event.conversationType.name,
+      };
+
+      Map<String, dynamic> fileFields = {};
+
+      if ((event.members ?? []).isNotEmpty) {
+        fields["members"] = event.members;
+      }
+
+      if ((event.title ?? '').isNotEmpty) {
+        fields["title"] = event.title;
+      }
+
+      if ((event.userId ?? '').isNotEmpty) {
+        fields["userId"] = event.userId;
+      }
+
+      if ((event.groupImage ?? []).isNotEmpty) {
+        fileFields["groupImage"] = event.groupImage;
+      }
+
+      final conversation = await conversationRepository.createConversation(fields: fields, fileFields: fileFields);
+
+      return conversation;
+    } catch (error) {
+      rethrow;
     }
   }
 

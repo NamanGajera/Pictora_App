@@ -13,15 +13,15 @@ class ConversationListModel {
     if (json['data'] != null) {
       data = <ConversationData>[];
       json['data'].forEach((v) {
-        data!.add(new ConversationData.fromJson(v));
+        data!.add(ConversationData.fromJson(v));
       });
     }
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['statusCode'] = this.statusCode;
-    data['message'] = this.message;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['statusCode'] = statusCode;
+    data['message'] = message;
     if (this.data != null) {
       data['data'] = this.data!.map((v) => v.toJson()).toList();
     }

@@ -79,3 +79,12 @@ enum MessageStatus {
   read,
   failed,
 }
+
+enum ConversationType {
+  group("Group"),
+  private("Public");
+
+  final String name;
+
+  const ConversationType(this.name);
+}

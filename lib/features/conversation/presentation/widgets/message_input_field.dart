@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pictora/core/utils/constants/app_constants.dart';
 import 'package:pictora/core/utils/constants/bloc_instances.dart';
 import 'package:pictora/core/utils/constants/colors.dart';
 import 'package:pictora/core/utils/model/user_model.dart';
 import 'package:pictora/features/conversation/bloc/conversation_bloc.dart';
+import 'package:pictora/features/conversation/conversation.dart';
 
 class MessageInputField extends StatefulWidget {
   final String? conversationId;
-  const MessageInputField({super.key, required this.conversationId});
+  final String? receiverUserId;
+  const MessageInputField({super.key, required this.conversationId, required this.receiverUserId});
 
   @override
   State<MessageInputField> createState() => _MessageInputFieldState();
@@ -71,33 +74,43 @@ class _MessageInputFieldState extends State<MessageInputField> {
           ),
           const SizedBox(width: 8),
           if (messageInputController.text.isNotEmpty)
-            InkWell(
-              onTap: () {
-                final text = messageInputController.text.trim();
-                if (text.isEmpty) return;
+            BlocBuilder<ConversationBloc, ConversationState>(
+              buildWhen: (previous, current) => previous.conversationsList != current.conversationsList,
+              builder: (context, state) {
+                final conversationData = (state.conversationsList ?? []).firstWhere(
+                  (con) => con.members?[0].userId == widget.receiverUserId,
+                  orElse: () => ConversationData(),
+                );
+                return InkWell(
+                  onTap: () {
+                    final text = messageInputController.text.trim();
+                    if (text.isEmpty) return;
 
-                conversationBloc.add(CreateMessageEvent(
-                  conversationId: widget.conversationId ?? "",
-                  message: text,
-                  senderData: User(
-                    userName: userName,
-                    id: userId,
-                    profile: Profile(
-                      profilePicture: userProfilePic,
+                    conversationBloc.add(CreateMessageEvent(
+                      conversationId: widget.conversationId ?? conversationData.id,
+                      message: text,
+                      receiverId: widget.receiverUserId,
+                      senderData: User(
+                        userName: userName,
+                        id: userId,
+                        profile: Profile(
+                          profilePicture: userProfilePic,
+                        ),
+                        fullName: userFullName,
+                      ),
+                    ));
+                    messageInputController.clear();
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: primaryColor,
+                      shape: BoxShape.circle,
                     ),
-                    fullName: userFullName,
+                    child: const Icon(Icons.send, color: Colors.white),
                   ),
-                ));
-                messageInputController.clear();
+                );
               },
-              child: Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: primaryColor,
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(Icons.send, color: Colors.white),
-              ),
             ),
         ],
       ),

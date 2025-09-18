@@ -20,7 +20,7 @@ class MessageScreenAppBar extends StatelessWidget implements PreferredSizeWidget
               RoundProfileAvatar(
                 radius: 18,
                 userId: '',
-                imageUrl: conversationData?.otherUser?[0].userData?.profile?.profilePicture ?? '',
+                imageUrl: conversationData?.members?[0].userData?.profile?.profilePicture ?? '',
               ),
               Positioned(
                 right: 0,
@@ -28,7 +28,7 @@ class MessageScreenAppBar extends StatelessWidget implements PreferredSizeWidget
                 child: BlocBuilder<ConversationBloc, ConversationState>(
                   buildWhen: (previous, current) => previous.onlineUserIds != current.onlineUserIds,
                   builder: (context, state) {
-                    final bool isOnline = (state.onlineUserIds ?? []).contains(conversationData?.otherUser?[0].userId);
+                    final bool isOnline = (state.onlineUserIds ?? []).contains(conversationData?.members?[0].userId);
                     if (!isOnline) {
                       return SizedBox.shrink();
                     }
@@ -48,7 +48,7 @@ class MessageScreenAppBar extends StatelessWidget implements PreferredSizeWidget
           ),
           const SizedBox(width: 10),
           CustomText(
-            conversationData?.title ?? conversationData?.otherUser?[0].userData?.fullName ?? '',
+            conversationData?.title ?? conversationData?.members?[0].userData?.fullName ?? '',
             fontWeight: FontWeight.w500,
             color: Colors.black87,
             fontSize: 18,
