@@ -32,6 +32,8 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
     on<CreateMessageEvent>(_createMessage);
     on<GetUsersListEvent>(_getUserList, transformer: droppable());
     on<CreateConversationEvent>(_createConversation, transformer: droppable());
+    on<SocketNewMessageReceiveEvent>(_socketNewMessage, transformer: sequential());
+    on<ConversationConnectionHandleEvent>(_conversationConnectionHandle, transformer: sequential());
 
     conversationSocketListen();
   }
@@ -68,9 +70,13 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
         }
       }
 
+      final updatedData = Map<String, List<ConversationMessage>?>.from(state.conversationMessages);
+
+      updatedData[event.body["conversationId"]] = data.data ?? [];
+
       emit(state.copyWith(
         getConversationMessagesDataApiStatus: ApiStatus.success,
-        conversationMessages: data.data ?? [],
+        conversationMessages: updatedData,
         hasMoreMessages: (data.data ?? []).length < (data.total ?? 0),
       ));
     } catch (error, stackTrace) {
@@ -86,10 +92,18 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
 
       await Future.delayed(Duration(milliseconds: 500));
       final data = await conversationRepository.getConversationMessagesData(postBody: event.body);
+
+      final updatedData = Map<String, List<ConversationMessage>?>.from(state.conversationMessages);
+      final existingMessages = updatedData[event.body["conversationId"]] ?? [];
+
+      updatedData[event.body["conversationId"]] = [
+        ...existingMessages,
+        ...?data.data,
+      ];
       emit(state.copyWith(
         isLoadingMoreMessages: false,
-        conversationMessages: [...?state.conversationMessages, ...?data.data],
-        hasMoreMessages: [...?state.conversationMessages, ...?data.data].length < (data.total ?? 0),
+        conversationMessages: updatedData,
+        hasMoreMessages: [...?state.conversationMessages["conversationId"], ...?data.data].length < (data.total ?? 0),
       ));
     } catch (error, stackTrace) {
       emit(state.copyWith(isLoadingMoreMessages: false));
@@ -116,8 +130,15 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
       attachments: [],
     );
 
+    final updatedData = Map<String, List<ConversationMessage>?>.from(state.conversationMessages);
+    final existingMessages = updatedData[event.conversationId] ?? [];
+
+    updatedData[event.conversationId ?? event.receiverId ?? ''] = [
+      newMessage,
+      ...existingMessages,
+    ];
     emit(state.copyWith(
-      conversationMessages: [newMessage, ...?state.conversationMessages],
+      conversationMessages: updatedData,
     ));
 
     try {
@@ -145,11 +166,11 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
         );
 
         if (conversationData == null) {
-          // Fail all pending messages for this receiver
           for (var pending in _pendingMessages[receiverId] ?? []) {
             _updateMessages(
               tempId: tempId,
               messageStatus: MessageStatus.failed,
+              conversationId: event.conversationId ?? event.receiverId,
               emit: emit,
             );
           }
@@ -169,6 +190,7 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
           await _sendMessage(
             pending,
             conversationId: conversationId,
+            receiverId: event.receiverId,
             emit: emit,
             tempId: tempId,
           );
@@ -190,6 +212,7 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
   Future<void> _sendMessage(
     CreateMessageEvent event, {
     required String? conversationId,
+    String? receiverId,
     required Emitter<ConversationState> emit,
     required String? tempId,
   }) async {
@@ -208,9 +231,10 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
         },
       );
 
-      _updateMessages(tempId: tempId, messageStatus: MessageStatus.sent, conversationMessage: message, emit: emit);
+      _updateMessages(
+          tempId: tempId, conversationId: receiverId ?? conversationId, messageStatus: MessageStatus.sent, conversationMessage: message, emit: emit);
     } catch (error, stackTrace) {
-      _updateMessages(tempId: tempId, messageStatus: MessageStatus.failed, emit: emit);
+      _updateMessages(tempId: tempId, conversationId: receiverId ?? conversationId, messageStatus: MessageStatus.failed, emit: emit);
       ThemeHelper.showToastMessage("$error");
       handleApiError(error, stackTrace, emit);
     }
@@ -267,11 +291,15 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
     }
   }
 
-  void _updateMessages({String? tempId, MessageStatus? messageStatus, ConversationMessage? conversationMessage, Emitter<ConversationState>? emit}) {
+  void _updateMessages(
+      {String? tempId,
+      String? conversationId,
+      MessageStatus? messageStatus,
+      ConversationMessage? conversationMessage,
+      Emitter<ConversationState>? emit}) {
     if (emit == null) return;
 
-    final updatedMessages = state.conversationMessages?.map((msg) {
-      logInfo(message: "Conversatino ====???????? ${tempId}  =>>> ${msg.id}");
+    final updatedMessages = (state.conversationMessages[conversationId] ?? []).map((msg) {
       if (tempId != null && msg.id == tempId) {
         return msg.copyWith(
           messageStatus: messageStatus,
@@ -290,12 +318,79 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
       },
     ).toList();
 
-    emit(state.copyWith(conversationMessages: updatedMessages, conversationsList: updatedConversation));
+    final updatedData = Map<String, List<ConversationMessage>?>.from(state.conversationMessages);
+
+    updatedData[conversationId ?? ''] = updatedMessages;
+
+    emit(state.copyWith(conversationMessages: updatedData, conversationsList: updatedConversation));
   }
 
   void _updateUserOnlineIds(UpdateUserOnlineDataEvent event, Emitter<ConversationState> emit) {
     logDebug(message: "User online list updated ${event.data}");
     emit(state.copyWith(onlineUserIds: event.data));
+  }
+
+  void _socketNewMessage(SocketNewMessageReceiveEvent event, Emitter<ConversationState> emit) {
+    logInfo(message: "${event.message.toJson()}", tag: "New Messages =====================>>");
+
+    final updatedConversation = (state.conversationsList ?? []).map(
+      (con) {
+        if (con.id == event.message.conversationId) {
+          final joinConversationUserIds = state.conversationJoinedUserData[event.message.conversationId];
+          final bool isConversationJoined = (joinConversationUserIds ?? []).contains(userId);
+          int unreadCount = isConversationJoined ? 0 : (con.unreadCount ?? 0) + 1;
+          return con.copyWith(lastMessage: event.message, unreadCount: unreadCount);
+        }
+        return con;
+      },
+    ).toList();
+
+    final updatedData = Map<String, List<ConversationMessage>?>.from(state.conversationMessages);
+    final existingMessages = updatedData[event.message.conversationId] ?? [];
+
+    updatedData[event.message.conversationId ?? ''] = [
+      ...existingMessages,
+      event.message,
+    ];
+
+    emit(state.copyWith(conversationMessages: updatedData, conversationsList: updatedConversation));
+  }
+
+  void _conversationConnectionHandle(ConversationConnectionHandleEvent event, Emitter<ConversationState> emit) {
+    final updatedData = Map<String, List<String>>.from(state.conversationJoinedUserData);
+
+    final userIds = List<String>.from(updatedData[event.conversationId] ?? []);
+
+    if (userIds.contains(event.userId)) {
+      userIds.removeWhere((id) => id == event.userId);
+    } else {
+      userIds.add(event.userId);
+    }
+    List<ConversationData> updatedConversation = List<ConversationData>.from(state.conversationsList ?? []);
+    if (event.updateConversationData == true) {
+      updatedConversation = (state.conversationsList ?? []).map(
+        (con) {
+          if (con.id == event.conversationId) {
+            return con.copyWith(
+                unreadCount: 0,
+                members: (con.members ?? []).map((mem) {
+                  final lastMessage = state.conversationMessages[event.conversationId]?[0];
+                  return mem.copyWith(
+                    lastReadMessageId: lastMessage?.id,
+                  );
+                }).toList());
+          }
+          return con;
+        },
+      ).toList();
+    }
+
+    updatedData[event.conversationId] = userIds;
+
+    emit(state.copyWith(
+      conversationJoinedUserData: updatedData,
+      conversationsList: updatedConversation,
+    ));
   }
 
   void conversationSocketListen() {
@@ -317,6 +412,30 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
     SocketService().eventManager.eventStream('online_users').listen((data) {
       add(UpdateUserOnlineDataEvent(
         data: List<String>.from(data ?? []),
+      ));
+    });
+
+    SocketService().eventManager.eventStream('new_message').listen((data) {
+      final newMessage = ConversationMessage.fromJson(data["data"]);
+
+      if (newMessage.senderId != userId) {
+        add(SocketNewMessageReceiveEvent(message: newMessage));
+      }
+    });
+
+    SocketService().eventManager.eventStream('conversation_joined').listen((data) {
+      add(ConversationConnectionHandleEvent(
+        conversationId: data["conversationId"],
+        userId: data["userId"],
+        updateConversationData: true,
+      ));
+    });
+
+    SocketService().eventManager.eventStream('conversation_left').listen((data) {
+      add(ConversationConnectionHandleEvent(
+        conversationId: data["conversationId"],
+        userId: data["userId"],
+        updateConversationData: false,
       ));
     });
   }

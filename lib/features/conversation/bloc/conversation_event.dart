@@ -60,3 +60,19 @@ class CreateConversationEvent extends ConversationEvent {
     this.title,
   });
 }
+
+class SocketNewMessageReceiveEvent extends ConversationEvent {
+  final ConversationMessage message;
+  SocketNewMessageReceiveEvent({required this.message});
+}
+
+class ConversationConnectionHandleEvent extends ConversationEvent {
+  final String conversationId;
+  final String userId;
+  final bool? updateConversationData;
+  ConversationConnectionHandleEvent({
+    required this.conversationId,
+    required this.userId,
+    this.updateConversationData,
+  });
+}

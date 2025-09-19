@@ -4,11 +4,12 @@ class ConversationState extends Equatable {
   final ApiStatus getConversationsDataApiStatus;
   final ApiStatus getConversationMessagesDataApiStatus;
   final List<ConversationData>? conversationsList;
-  final List<ConversationMessage>? conversationMessages;
+  final Map<String, List<ConversationMessage>?> conversationMessages;
   final List<User>? usersList;
   final bool isLoadingMoreMessages;
   final bool hasMoreMessages;
   final List<String>? onlineUserIds;
+  final Map<String, List<String>> conversationJoinedUserData;
   final String? errorMessage;
   final int? statusCode;
 
@@ -16,11 +17,12 @@ class ConversationState extends Equatable {
     this.getConversationsDataApiStatus = ApiStatus.initial,
     this.getConversationMessagesDataApiStatus = ApiStatus.initial,
     this.conversationsList,
-    this.conversationMessages,
+    this.conversationMessages = const {},
     this.usersList,
     this.isLoadingMoreMessages = false,
     this.hasMoreMessages = true,
     this.onlineUserIds,
+    this.conversationJoinedUserData = const {},
     this.errorMessage,
     this.statusCode,
   });
@@ -29,11 +31,12 @@ class ConversationState extends Equatable {
     ApiStatus? getConversationsDataApiStatus,
     ApiStatus? getConversationMessagesDataApiStatus,
     List<ConversationData>? conversationsList,
-    List<ConversationMessage>? conversationMessages,
+    Map<String, List<ConversationMessage>?>? conversationMessages,
     List<String>? onlineUserIds,
     List<User>? usersList,
     bool? isLoadingMoreMessages,
     bool? hasMoreMessages,
+    Map<String, List<String>>? conversationJoinedUserData,
     String? errorMessage,
     int? statusCode,
   }) {
@@ -46,6 +49,7 @@ class ConversationState extends Equatable {
       isLoadingMoreMessages: isLoadingMoreMessages ?? this.isLoadingMoreMessages,
       hasMoreMessages: hasMoreMessages ?? this.hasMoreMessages,
       usersList: usersList ?? this.usersList,
+      conversationJoinedUserData: conversationJoinedUserData ?? this.conversationJoinedUserData,
       statusCode: statusCode,
       errorMessage: errorMessage,
     );
@@ -61,6 +65,7 @@ class ConversationState extends Equatable {
         hasMoreMessages,
         usersList,
         onlineUserIds,
+        conversationJoinedUserData,
         errorMessage,
         statusCode,
       ];

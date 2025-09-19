@@ -95,28 +95,29 @@ class _ConversationCardViewState extends State<ConversationCardView> {
                 userId: '',
                 imageUrl: widget.conversationData?.members?[0].userData?.profile?.profilePicture ?? '',
               ),
-              Positioned(
-                right: 0,
-                bottom: 0,
-                child: BlocBuilder<ConversationBloc, ConversationState>(
-                  buildWhen: (previous, current) => previous.onlineUserIds != current.onlineUserIds,
-                  builder: (context, state) {
-                    final bool isOnline = (state.onlineUserIds ?? []).contains(widget.conversationData?.members?[0].userId);
-                    if (!isOnline) {
-                      return SizedBox.shrink();
-                    }
-                    return Container(
-                      height: 14,
-                      width: 14,
-                      decoration: BoxDecoration(
-                        color: const Color(0XFF3EB838),
-                        shape: BoxShape.circle,
-                        border: Border.all(color: Colors.white, width: 2),
-                      ),
-                    );
-                  },
+              if (widget.conversationData?.type == ConversationType.private.name)
+                Positioned(
+                  right: 0,
+                  bottom: 0,
+                  child: BlocBuilder<ConversationBloc, ConversationState>(
+                    buildWhen: (previous, current) => previous.onlineUserIds != current.onlineUserIds,
+                    builder: (context, state) {
+                      final bool isOnline = (state.onlineUserIds ?? []).contains(widget.conversationData?.members?[0].userId);
+                      if (!isOnline) {
+                        return SizedBox.shrink();
+                      }
+                      return Container(
+                        height: 14,
+                        width: 14,
+                        decoration: BoxDecoration(
+                          color: const Color(0XFF3EB838),
+                          shape: BoxShape.circle,
+                          border: Border.all(color: Colors.white, width: 2),
+                        ),
+                      );
+                    },
+                  ),
                 ),
-              ),
             ],
           ),
           const SizedBox(width: 10),
@@ -168,7 +169,7 @@ class _ConversationCardViewState extends State<ConversationCardView> {
                         ],
                       ),
                     ),
-                    if (widget.conversationData?.unreadCount != 0) ...[
+                    if ((widget.conversationData?.unreadCount ?? 0) != 0) ...[
                       const SizedBox(width: 3),
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),

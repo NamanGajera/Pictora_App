@@ -52,16 +52,20 @@ class _CreateConversationScreenState extends State<CreateConversationScreen> {
               }
               return InkWell(
                 onTap: () async {
-                  appRouter.push(RouterName.conversationMessage.path,
-                      extra: ConversationMessageScreenDataModel(
-                          conversationData: ConversationData(
+                  appRouter.push(
+                    RouterName.conversationMessage.path,
+                    extra: ConversationMessageScreenDataModel(
+                      conversationData: ConversationData(
+                        id: user?.conversationId,
                         members: [
                           ConversationMemberModel(
                             userId: user?.id,
                             userData: user,
                           ),
                         ],
-                      )));
+                      ),
+                    ),
+                  );
                 },
                 child: _buildUserTile(user),
               );

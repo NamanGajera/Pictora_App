@@ -3,6 +3,7 @@ class User {
   String? userName;
   String? fullName;
   String? email;
+  String? conversationId;
   Profile? profile;
   Counts? counts;
   bool? isFollowed;
@@ -16,6 +17,7 @@ class User {
     this.email,
     this.profile,
     this.counts,
+    this.conversationId,
     this.isFollowed,
     this.followRequestStatus,
     this.showFollowBack,
@@ -26,6 +28,7 @@ class User {
     userName = json['userName'];
     fullName = json['fullName'];
     email = json['email'];
+    conversationId = json['conversationId'];
     profile = json['profile'] != null ? Profile.fromJson(json['profile']) : null;
     counts = json['counts'] != null ? Counts.fromJson(json['counts']) : null;
     isFollowed = json['isFollowed'];
@@ -38,6 +41,7 @@ class User {
     data['id'] = id;
     data['userName'] = userName;
     data['fullName'] = fullName;
+    data['conversationId'] = conversationId;
     data['email'] = email;
     if (profile != null) {
       data['profile'] = profile!.toJson();
@@ -56,6 +60,7 @@ class User {
     String? userName,
     String? fullName,
     String? email,
+    String? conversationId,
     Profile? profile,
     Counts? counts,
     bool? isFollowed,
@@ -67,6 +72,7 @@ class User {
       userName: userName ?? this.userName,
       fullName: fullName ?? this.fullName,
       email: email ?? this.email,
+      conversationId: conversationId ?? this.conversationId,
       profile: profile ?? this.profile,
       counts: counts ?? this.counts,
       isFollowed: isFollowed ?? this.isFollowed,

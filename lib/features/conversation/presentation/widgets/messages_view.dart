@@ -52,7 +52,7 @@ class _MessagesViewState extends State<MessagesView> {
 
     conversationBloc.add(LoadMoreConversationMessagesEvent(body: {
       "conversationId": widget.conversationData?.id,
-      "skip": state.conversationMessages?.length ?? 0,
+      "skip": state.conversationMessages[widget.conversationData?.id ?? widget.conversationData?.members?[0].userId]?.length ?? 0,
       "take": 40,
     }));
   }
@@ -77,7 +77,7 @@ class _MessagesViewState extends State<MessagesView> {
       buildWhen: (previous, current) =>
           previous.conversationMessages != current.conversationMessages || previous.isLoadingMoreMessages != current.isLoadingMoreMessages,
       builder: (context, state) {
-        final messages = state.conversationMessages ?? [];
+        final messages = state.conversationMessages[widget.conversationData?.id ?? widget.conversationData?.members?[0].userId] ?? [];
 
         if (messages.isEmpty) {
           return _buildEmptyState();
