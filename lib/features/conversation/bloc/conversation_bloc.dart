@@ -4,11 +4,11 @@ import 'dart:io';
 import 'package:bloc_concurrency/bloc_concurrency.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:uuid/uuid.dart';
-
 // Project
 import 'package:pictora/core/utils/constants/constants.dart';
 import 'package:pictora/features/conversation/conversation.dart';
+import 'package:uuid/uuid.dart';
+
 import '../../../core/utils/helper/helper.dart';
 import '../../../core/utils/model/user_model.dart';
 import '../../../core/utils/services/service.dart';
@@ -231,8 +231,7 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
         },
       );
 
-      _updateMessages(
-          tempId: tempId, conversationId: receiverId ?? conversationId, messageStatus: MessageStatus.sent, conversationMessage: message, emit: emit);
+      _updateMessages(tempId: tempId, conversationId: receiverId ?? conversationId, messageStatus: MessageStatus.sent, conversationMessage: message, emit: emit);
     } catch (error, stackTrace) {
       _updateMessages(tempId: tempId, conversationId: receiverId ?? conversationId, messageStatus: MessageStatus.failed, emit: emit);
       ThemeHelper.showToastMessage("$error");
@@ -291,12 +290,7 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
     }
   }
 
-  void _updateMessages(
-      {String? tempId,
-      String? conversationId,
-      MessageStatus? messageStatus,
-      ConversationMessage? conversationMessage,
-      Emitter<ConversationState>? emit}) {
+  void _updateMessages({String? tempId, String? conversationId, MessageStatus? messageStatus, ConversationMessage? conversationMessage, Emitter<ConversationState>? emit}) {
     if (emit == null) return;
 
     final updatedMessages = (state.conversationMessages[conversationId] ?? []).map((msg) {
@@ -367,29 +361,48 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
       userIds.add(event.userId);
     }
     List<ConversationData> updatedConversation = List<ConversationData>.from(state.conversationsList ?? []);
+
     if (event.updateConversationData == true) {
-      updatedConversation = (state.conversationsList ?? []).map(
-        (con) {
-          if (con.id == event.conversationId) {
+      updatedConversation = (state.conversationsList ?? []).map((con) {
+        if (con.id == event.conversationId) {
+          final lastMessage = state.conversationMessages[event.conversationId]?[0];
+
+          if (event.userId == userId) {
             return con.copyWith(
-                unreadCount: 0,
-                members: (con.members ?? []).map((mem) {
-                  final lastMessage = state.conversationMessages[event.conversationId]?[0];
-                  return mem.copyWith(
-                    lastReadMessageId: lastMessage?.id,
-                  );
-                }).toList());
+              unreadCount: 0,
+            );
+          } else {
+            return con.copyWith(
+              members: (con.members ?? []).map((mem) {
+                return mem.copyWith(
+                  lastReadMessageId: lastMessage?.id,
+                );
+              }).toList(),
+            );
           }
-          return con;
-        },
-      ).toList();
+        }
+        return con;
+      }).toList();
     }
 
     updatedData[event.conversationId] = userIds;
 
+    final lastMessageIndex = state.conversationMessages[event.conversationId]?.indexWhere((msg) => msg.id == state.conversationMessages[event.conversationId]?[0].id) ?? -1;
+
+    if (lastMessageIndex != -1) {
+      for (int i = lastMessageIndex; i < (state.conversationMessages[event.conversationId] ?? []).length; i++) {
+        state.conversationMessages[event.conversationId]?[i].messageStatus = MessageStatus.read;
+      }
+    }
+
+    final updatedMessagesData = Map<String, List<ConversationMessage>?>.from(state.conversationMessages);
+
+    updatedMessagesData[event.conversationId] = state.conversationMessages[event.conversationId] ?? [];
+
     emit(state.copyWith(
       conversationJoinedUserData: updatedData,
       conversationsList: updatedConversation,
+      conversationMessages: updatedMessagesData,
     ));
   }
 

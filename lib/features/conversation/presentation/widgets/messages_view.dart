@@ -1,7 +1,6 @@
 // Flutter
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-
 // Third-party
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
@@ -9,8 +8,8 @@ import 'package:sticky_headers/sticky_headers.dart';
 
 // Project
 import '../../../../core/utils/constants/constants.dart';
-import '../../../../core/utils/widgets/custom_widget.dart';
 import '../../../../core/utils/helper/helper.dart';
+import '../../../../core/utils/widgets/custom_widget.dart';
 import '../../conversation.dart';
 
 class MessagesView extends StatefulWidget {
@@ -74,8 +73,7 @@ class _MessagesViewState extends State<MessagesView> {
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<ConversationBloc, ConversationState>(
-      buildWhen: (previous, current) =>
-          previous.conversationMessages != current.conversationMessages || previous.isLoadingMoreMessages != current.isLoadingMoreMessages,
+      buildWhen: (previous, current) => previous.conversationMessages != current.conversationMessages || previous.isLoadingMoreMessages != current.isLoadingMoreMessages,
       builder: (context, state) {
         final messages = state.conversationMessages[widget.conversationData?.id ?? widget.conversationData?.members?[0].userId] ?? [];
 
