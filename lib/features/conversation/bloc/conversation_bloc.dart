@@ -352,7 +352,6 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
 
   void _conversationConnectionHandle(ConversationConnectionHandleEvent event, Emitter<ConversationState> emit) {
     final updatedData = Map<String, List<String>>.from(state.conversationJoinedUserData);
-
     final userIds = List<String>.from(updatedData[event.conversationId] ?? []);
 
     if (userIds.contains(event.userId)) {
@@ -360,50 +359,83 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
     } else {
       userIds.add(event.userId);
     }
+
     List<ConversationData> updatedConversation = List<ConversationData>.from(state.conversationsList ?? []);
+    final updatedMessagesData = Map<String, List<ConversationMessage>?>.from(state.conversationMessages);
 
     if (event.updateConversationData == true) {
+      // Get all messages for this conversation
+      List<ConversationMessage>? messageDataList = List<ConversationMessage>.from(state.conversationMessages[event.conversationId] ?? []);
+
+      // Get the last message (most recent)
+      final lastMessage = messageDataList.isNotEmpty ? messageDataList[0] : null;
+
+      // Update conversation data
       updatedConversation = (state.conversationsList ?? []).map((con) {
         if (con.id == event.conversationId) {
-          final lastMessage = state.conversationMessages[event.conversationId]?[0];
-
           if (event.userId == userId) {
-            return con.copyWith(
-              unreadCount: 0,
-            );
+            // Current user opened conversation - set unread count to 0
+            return con.copyWith(unreadCount: 0);
           } else {
+            // Other user opened conversation - update their last read message
             return con.copyWith(
               members: (con.members ?? []).map((mem) {
-                return mem.copyWith(
-                  lastReadMessageId: lastMessage?.id,
-                );
+                if (mem.userId == event.userId) {
+                  return mem.copyWith(lastReadMessageId: lastMessage?.id);
+                }
+                return mem;
               }).toList(),
             );
           }
         }
         return con;
       }).toList();
-    }
 
-    updatedData[event.conversationId] = userIds;
+      // Update message statuses
+      if (event.userId == userId) {
+        // Current user opened conversation - mark all messages as read
+        for (int i = 0; i < messageDataList.length; i++) {
+          messageDataList[i] = messageDataList[i].copyWith(messageStatus: MessageStatus.read);
+        }
+      } else {
+        // Other user opened conversation - find messages up to their last read message and mark as read
+        final conversation = updatedConversation.firstWhere(
+          (con) => con.id == event.conversationId,
+          orElse: () => ConversationData(),
+        );
 
-    final lastMessageIndex = state.conversationMessages[event.conversationId]?.indexWhere((msg) => msg.id == state.conversationMessages[event.conversationId]?[0].id) ?? -1;
+        final member = conversation.members?.firstWhere(
+          (mem) => mem.userId == event.userId,
+          orElse: () => ConversationMemberModel(),
+        );
 
-    if (lastMessageIndex != -1) {
-      for (int i = lastMessageIndex; i < (state.conversationMessages[event.conversationId] ?? []).length; i++) {
-        state.conversationMessages[event.conversationId]?[i].messageStatus = MessageStatus.read;
+        final lastReadMessageId = member?.lastReadMessageId;
+
+        if (lastReadMessageId != null) {
+          bool foundLastRead = false;
+          for (int i = 0; i < messageDataList.length; i++) {
+            if (messageDataList[i].id == lastReadMessageId) {
+              foundLastRead = true;
+            }
+            if (foundLastRead && messageDataList[i].senderId != event.userId) {
+              // Mark messages sent by others as read (from this user's perspective)
+              messageDataList[i] = messageDataList[i].copyWith(messageStatus: MessageStatus.read);
+            }
+          }
+        }
       }
+
+      updatedData[event.conversationId] = userIds;
+      updatedMessagesData[event.conversationId] = messageDataList;
+
+      emit(state.copyWith(
+        conversationJoinedUserData: updatedData,
+        conversationsList: updatedConversation,
+        conversationMessages: updatedMessagesData,
+      ));
+
+      logDebug(message: "Conversation updated for user ${event.userId} - Last message: ${lastMessage?.id}", tag: "ConversationConnection");
     }
-
-    final updatedMessagesData = Map<String, List<ConversationMessage>?>.from(state.conversationMessages);
-
-    updatedMessagesData[event.conversationId] = state.conversationMessages[event.conversationId] ?? [];
-
-    emit(state.copyWith(
-      conversationJoinedUserData: updatedData,
-      conversationsList: updatedConversation,
-      conversationMessages: updatedMessagesData,
-    ));
   }
 
   void conversationSocketListen() {

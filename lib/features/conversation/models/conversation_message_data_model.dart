@@ -43,6 +43,7 @@ class ConversationMessage {
     replyToMessageId = json['replyToMessageId'];
     createdAt = json['createdAt'];
     updatedAt = json['updatedAt'];
+    messageStatus = json['messageStatus'];
     senderData = json['senderData'] != null ? User.fromJson(json['senderData']) : null;
     postData = json['postData'] != null ? PostData.fromJson(json['postData']) : null;
     if (json['attachments'] != null) {

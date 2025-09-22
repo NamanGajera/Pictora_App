@@ -73,7 +73,10 @@ class _MessagesViewState extends State<MessagesView> {
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<ConversationBloc, ConversationState>(
-      buildWhen: (previous, current) => previous.conversationMessages != current.conversationMessages || previous.isLoadingMoreMessages != current.isLoadingMoreMessages,
+      buildWhen: (previous, current) =>
+          previous.conversationMessages[widget.conversationData?.id ?? widget.conversationData?.members?[0].userId] !=
+              current.conversationMessages[widget.conversationData?.id ?? widget.conversationData?.members?[0].userId] ||
+          previous.isLoadingMoreMessages != current.isLoadingMoreMessages,
       builder: (context, state) {
         final messages = state.conversationMessages[widget.conversationData?.id ?? widget.conversationData?.members?[0].userId] ?? [];
 
@@ -173,7 +176,12 @@ class _MessagesViewState extends State<MessagesView> {
   }
 
   Widget _buildCachedMessageBubble(ConversationMessage? message, int index) {
-    final cacheKey = '${message?.id}_$index';
+    final cacheKey = '${message?.id}_${message?.messageStatus}_${message?.updatedAt}_$index';
+
+    if (_messageCache.containsKey(cacheKey) && _messageCache[cacheKey] is Widget && message?.messageStatus != MessageStatus.sending) {
+      _messageCache.remove(cacheKey);
+    }
+
     return _messageCache.putIfAbsent(cacheKey, () => _buildMessageBubble(message));
   }
 
