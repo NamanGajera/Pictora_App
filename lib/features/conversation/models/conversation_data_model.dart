@@ -10,6 +10,8 @@ class ConversationData {
   ConversationMessage? lastMessage;
   List<ConversationMemberModel>? members;
   String? updatedAt;
+  bool? isTyping;
+  String? typingUserId;
 
   ConversationData({
     this.id,
@@ -20,6 +22,8 @@ class ConversationData {
     this.members,
     this.updatedAt,
     this.unreadCount,
+    this.isTyping = false,
+    this.typingUserId,
   });
 
   ConversationData.fromJson(Map<String, dynamic> json) {
@@ -36,6 +40,8 @@ class ConversationData {
       });
     }
     updatedAt = json['updatedAt'];
+    isTyping = json['isTyping'];
+    typingUserId = json['typingUserId'];
   }
 
   Map<String, dynamic> toJson() {
@@ -54,6 +60,8 @@ class ConversationData {
     }
     data['updatedAt'] = updatedAt;
     data['unreadCount'] = unreadCount;
+    data['typingUserId'] = typingUserId;
+    data['isTyping'] = isTyping;
     return data;
   }
 
@@ -65,6 +73,8 @@ class ConversationData {
     ConversationMessage? lastMessage,
     List<ConversationMemberModel>? members,
     String? updatedAt,
+    bool? isTyping,
+    String? typingUserId,
   }) {
     return ConversationData(
       id: id ?? this.id,
@@ -74,6 +84,8 @@ class ConversationData {
       lastMessage: lastMessage ?? this.lastMessage,
       members: members ?? this.members,
       updatedAt: updatedAt ?? this.updatedAt,
+      isTyping: isTyping ?? this.isTyping,
+      typingUserId: typingUserId ?? this.typingUserId,
     );
   }
 }

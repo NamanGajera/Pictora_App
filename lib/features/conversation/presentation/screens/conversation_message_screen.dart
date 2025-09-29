@@ -38,6 +38,7 @@ class _ConversationMessageScreenState extends State<ConversationMessageScreen> {
     super.dispose();
     logDebug(message: "Dispose Called ==>>>");
     SocketService().emit("leave_conversation", {"conversationId": widget.conversationData?.id});
+    SocketService().emit("typing_stop",{"conversationId": widget.conversationData?.id});
   }
 
   @override

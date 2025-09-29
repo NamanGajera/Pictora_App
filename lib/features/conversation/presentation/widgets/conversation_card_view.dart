@@ -61,6 +61,7 @@ class _ConversationCardViewState extends State<ConversationCardView> {
 
   @override
   Widget build(BuildContext context) {
+    bool isTyping = widget.conversationData?.isTyping == true && widget.conversationData?.members?[0].userId == widget.conversationData?.typingUserId;
     return BlocListener<ConversationBloc, ConversationState>(
       listenWhen: (previous, current) {
         final oldConversation = previous.conversationsList?.firstWhere(
@@ -79,10 +80,8 @@ class _ConversationCardViewState extends State<ConversationCardView> {
           orElse: () => ConversationData(),
         );
         if (updatedConversation != null) {
-          setState(() {
-            widget.conversationData?.lastMessage = updatedConversation.lastMessage;
-            getLastMessage();
-          });
+          widget.conversationData?.lastMessage = updatedConversation.lastMessage;
+          getLastMessage();
         }
       },
       child: Row(
@@ -137,8 +136,7 @@ class _ConversationCardViewState extends State<ConversationCardView> {
                     CustomText(
                       widget.conversationData?.lastMessage?.updatedAt == null
                           ? ''
-                          : TimeFormatter.formatTimeDifference(
-                              DateTime.parse('${widget.conversationData?.lastMessage?.updatedAt}'.replaceAll('Z', ''))),
+                          : TimeFormatter.formatTimeDifference(DateTime.parse('${widget.conversationData?.lastMessage?.createdAt}').toLocal()),
                       color: Colors.grey,
                       fontSize: 11,
                     ),
@@ -158,12 +156,12 @@ class _ConversationCardViewState extends State<ConversationCardView> {
                           if (attachmentIcon != null) const SizedBox(width: 5),
                           Expanded(
                             child: CustomText(
-                              "$lastMessage",
+                              isTyping ? "Typing...." : "$lastMessage",
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
-                              color: widget.conversationData?.unreadCount != 0 ? Colors.black54 : Colors.grey,
-                              fontSize: 12,
-                              fontWeight: widget.conversationData?.unreadCount != 0 ? FontWeight.w500 : FontWeight.w400,
+                              color:isTyping?Colors.green.shade700: widget.conversationData?.unreadCount != 0 ? Colors.black54 : Colors.grey,
+                              fontSize: isTyping?13:12,
+                              fontWeight: isTyping?FontWeight.w500: widget.conversationData?.unreadCount != 0 ? FontWeight.w500 : FontWeight.w400,
                             ),
                           ),
                         ],

@@ -76,3 +76,15 @@ class ConversationConnectionHandleEvent extends ConversationEvent {
     this.updateConversationData,
   });
 }
+
+class UserTypingEvent extends ConversationEvent {
+  final String conversationId;
+  final String userId;
+  final bool typing;
+
+  UserTypingEvent({
+    required this.conversationId,
+    required this.typing,
+    required this.userId,
+  });
+}

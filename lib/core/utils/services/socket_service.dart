@@ -168,6 +168,7 @@ class SocketService {
       _socket!.emitWithAck(event, data, ack: ack);
     } else {
       _socket!.emit(event, data);
+      _socket!.io.emit(event, data);
     }
   }
 

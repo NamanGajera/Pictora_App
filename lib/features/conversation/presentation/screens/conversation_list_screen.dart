@@ -26,10 +26,7 @@ class _ConversationListScreenState extends State<ConversationListScreen> {
     super.initState();
     conversationBloc.add(GetConversationsEvent());
     SocketService().eventManager.eventStream('user_typing').listen(_userPresence);
-    SocketService().eventManager.eventStream('online_users').listen(_userPresence);
-    SocketService().eventManager.eventStream('conversation_joined').listen(_userPresence);
-    SocketService().eventManager.eventStream('conversation_left').listen(_userPresence);
-
+   
     logDebug(message: "Socket ID: ${SocketService().id}", tag: "Socket Service");
   }
 

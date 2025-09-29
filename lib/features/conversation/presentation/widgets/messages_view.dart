@@ -112,6 +112,22 @@ class _MessagesViewState extends State<MessagesView> {
               content: Column(
                 children: List.generate(messagesForDate.length, (index) {
                   final message = messagesForDate[index];
+                  if (message?.isTyping == true) {
+                    return Container(
+                      margin: const EdgeInsets.symmetric(vertical: 2),
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Container(
+                            margin: const EdgeInsets.only(right: 40, bottom: 8),
+                            child: TypingIndicator(),
+                          ),
+                        ],
+                      ),
+                    );
+                  }
                   return _buildCachedMessageBubble(message, index);
                 }),
               ),
@@ -479,4 +495,102 @@ class _MessageAttachmentViewState extends State<MessageAttachmentView> with Auto
 
   @override
   bool get wantKeepAlive => true;
+}
+
+class TypingIndicator extends StatefulWidget {
+  const TypingIndicator({super.key});
+
+  @override
+  State<TypingIndicator> createState() => TypingIndicatorState();
+}
+
+class TypingIndicatorState extends State<TypingIndicator> with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: const Duration(milliseconds: 1400),
+      vsync: this,
+    )..repeat();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.symmetric(
+        vertical: 6,
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: const BorderRadius.only(
+          topLeft: Radius.circular(0),
+          topRight: Radius.circular(8),
+          bottomLeft: Radius.circular(8),
+          bottomRight: Radius.circular(8),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 1,
+            offset: const Offset(0, 1),
+          ),
+        ],
+      ),
+      child: AnimatedBuilder(
+        animation: _controller,
+        builder: (context, child) {
+          return Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _buildWaveDot(0, _controller.value),
+              const SizedBox(width: 5),
+              _buildWaveDot(1, _controller.value),
+              const SizedBox(width: 5),
+              _buildWaveDot(2, _controller.value),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildWaveDot(int index, double animationValue) {
+    final double delay = index * 0.15;
+    double value = 0.0;
+
+    // Calculate the bounce animation
+    final adjustedValue = (animationValue + delay) % 1.0;
+
+    if (adjustedValue < 0.5) {
+      value = adjustedValue * 2;
+    } else {
+      value = (1.0 - adjustedValue) * 2;
+    }
+
+    value = value.clamp(0.0, 1.0);
+
+    // Apply ease-in-out for smoother animation
+    final easedValue = value < 0.5 ? 2 * value * value : 1 - ((-2 * value + 2) * (-2 * value + 2)) / 2;
+
+    return Transform.translate(
+      offset: Offset(0, -easedValue * 4),
+      child: Container(
+        width: 8,
+        height: 8,
+        decoration: BoxDecoration(
+          color: const Color(0xFF8696A0),
+          shape: BoxShape.circle,
+        ),
+      ),
+    );
+  }
 }

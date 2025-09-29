@@ -71,6 +71,7 @@ class _HomeScreenState extends State<HomeScreen> {
           children: [
             const SizedBox(height: 15),
             BlocBuilder<PostBloc, PostState>(
+              buildWhen: (previous, current) => previous.createPostApiStatus != current.createPostApiStatus,
               builder: (context, state) {
                 if (state.createPostApiStatus == ApiStatus.loading) {
                   return Container(
@@ -122,6 +123,7 @@ class _HomeScreenState extends State<HomeScreen> {
               },
             ),
             BlocBuilder<PostBloc, PostState>(
+              buildWhen: (previous, current) => previous.getAllPostApiStatus != current.getAllPostApiStatus || previous.allPostData != current.allPostData,
               builder: (context, state) {
                 if (state.getAllPostApiStatus == ApiStatus.loading) {
                   return Expanded(
@@ -134,6 +136,58 @@ class _HomeScreenState extends State<HomeScreen> {
                 }
 
                 final postData = excludeArchivedPosts(state.allPostData);
+
+                if (postData.isEmpty) {
+                  return Expanded(
+                    child: Center(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.photo_library_outlined,
+                            size: 64,
+                            color: Color(0xff9CA3AF),
+                          ),
+                          SizedBox(height: 16),
+                          Text(
+                            'No posts yet',
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Color(0xff6B7280),
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          InkWell(
+                            onTap: () {
+                              postBloc.add(GetAllPostEvent(body: {"skip": 0, "take": 20}));
+                            },
+                            child: Padding(
+                              padding: EdgeInsets.all(12.0),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    Icons.refresh_rounded,
+                                    size: 18,
+                                  ),
+                                  SizedBox(width: 8),
+                                  Text(
+                                    'Refresh',
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                }
 
                 return Expanded(
                   child: ListView.builder(

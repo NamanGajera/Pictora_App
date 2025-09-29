@@ -34,6 +34,7 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
     on<CreateConversationEvent>(_createConversation, transformer: droppable());
     on<SocketNewMessageReceiveEvent>(_socketNewMessage, transformer: sequential());
     on<ConversationConnectionHandleEvent>(_conversationConnectionHandle, transformer: sequential());
+    on<UserTypingEvent>(_userTyping, transformer: sequential());
 
     conversationSocketListen();
   }
@@ -231,7 +232,8 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
         },
       );
 
-      _updateMessages(tempId: tempId, conversationId: receiverId ?? conversationId, messageStatus: MessageStatus.sent, conversationMessage: message, emit: emit);
+      _updateMessages(
+          tempId: tempId, conversationId: receiverId ?? conversationId, messageStatus: MessageStatus.sent, conversationMessage: message, emit: emit);
     } catch (error, stackTrace) {
       _updateMessages(tempId: tempId, conversationId: receiverId ?? conversationId, messageStatus: MessageStatus.failed, emit: emit);
       ThemeHelper.showToastMessage("$error");
@@ -290,7 +292,12 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
     }
   }
 
-  void _updateMessages({String? tempId, String? conversationId, MessageStatus? messageStatus, ConversationMessage? conversationMessage, Emitter<ConversationState>? emit}) {
+  void _updateMessages(
+      {String? tempId,
+      String? conversationId,
+      MessageStatus? messageStatus,
+      ConversationMessage? conversationMessage,
+      Emitter<ConversationState>? emit}) {
     if (emit == null) return;
 
     final updatedMessages = (state.conversationMessages[conversationId] ?? []).map((msg) {
@@ -320,13 +327,10 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
   }
 
   void _updateUserOnlineIds(UpdateUserOnlineDataEvent event, Emitter<ConversationState> emit) {
-    logDebug(message: "User online list updated ${event.data}");
     emit(state.copyWith(onlineUserIds: event.data));
   }
 
   void _socketNewMessage(SocketNewMessageReceiveEvent event, Emitter<ConversationState> emit) {
-    logInfo(message: "${event.message.toJson()}", tag: "New Messages =====================>>");
-
     final updatedConversation = (state.conversationsList ?? []).map(
       (con) {
         if (con.id == event.message.conversationId) {
@@ -352,32 +356,31 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
 
   void _conversationConnectionHandle(ConversationConnectionHandleEvent event, Emitter<ConversationState> emit) {
     final updatedData = Map<String, List<String>>.from(state.conversationJoinedUserData);
-    final userIds = List<String>.from(updatedData[event.conversationId] ?? []);
+    final currentUserIds = updatedData[event.conversationId] ?? [];
+    final newUserIds = List<String>.from(currentUserIds);
 
-    if (userIds.contains(event.userId)) {
-      userIds.removeWhere((id) => id == event.userId);
+    if (newUserIds.contains(event.userId)) {
+      newUserIds.remove(event.userId);
     } else {
-      userIds.add(event.userId);
+      newUserIds.add(event.userId);
     }
+
+    updatedData[event.conversationId] = newUserIds;
+    emit(state.copyWith(conversationJoinedUserData: updatedData));
 
     List<ConversationData> updatedConversation = List<ConversationData>.from(state.conversationsList ?? []);
     final updatedMessagesData = Map<String, List<ConversationMessage>?>.from(state.conversationMessages);
 
     if (event.updateConversationData == true) {
-      // Get all messages for this conversation
       List<ConversationMessage>? messageDataList = List<ConversationMessage>.from(state.conversationMessages[event.conversationId] ?? []);
 
-      // Get the last message (most recent)
       final lastMessage = messageDataList.isNotEmpty ? messageDataList[0] : null;
 
-      // Update conversation data
       updatedConversation = (state.conversationsList ?? []).map((con) {
         if (con.id == event.conversationId) {
           if (event.userId == userId) {
-            // Current user opened conversation - set unread count to 0
             return con.copyWith(unreadCount: 0);
           } else {
-            // Other user opened conversation - update their last read message
             return con.copyWith(
               members: (con.members ?? []).map((mem) {
                 if (mem.userId == event.userId) {
@@ -391,14 +394,11 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
         return con;
       }).toList();
 
-      // Update message statuses
       if (event.userId == userId) {
-        // Current user opened conversation - mark all messages as read
         for (int i = 0; i < messageDataList.length; i++) {
           messageDataList[i] = messageDataList[i].copyWith(messageStatus: MessageStatus.read);
         }
       } else {
-        // Other user opened conversation - find messages up to their last read message and mark as read
         final conversation = updatedConversation.firstWhere(
           (con) => con.id == event.conversationId,
           orElse: () => ConversationData(),
@@ -418,29 +418,65 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
               foundLastRead = true;
             }
             if (foundLastRead && messageDataList[i].senderId != event.userId) {
-              // Mark messages sent by others as read (from this user's perspective)
               messageDataList[i] = messageDataList[i].copyWith(messageStatus: MessageStatus.read);
             }
           }
         }
       }
 
-      updatedData[event.conversationId] = userIds;
       updatedMessagesData[event.conversationId] = messageDataList;
 
       emit(state.copyWith(
-        conversationJoinedUserData: updatedData,
         conversationsList: updatedConversation,
         conversationMessages: updatedMessagesData,
       ));
-
-      logDebug(message: "Conversation updated for user ${event.userId} - Last message: ${lastMessage?.id}", tag: "ConversationConnection");
     }
+  }
+
+  void _userTyping(UserTypingEvent event, Emitter<ConversationState> emit) async {
+    if (event.userId == userId) return;
+
+    final conversationList = List<ConversationData>.from(state.conversationsList ?? []);
+    final updatedList = conversationList.map((conv) {
+      if (event.conversationId == conv.id) {
+        return conv.copyWith(
+          isTyping: event.typing,
+          typingUserId: event.typing ? event.userId : null,
+        );
+      }
+      return conv;
+    }).toList();
+
+    final updatedConversationMessages = Map<String, List<ConversationMessage>>.from(state.conversationMessages);
+    List<ConversationMessage> messagesList = List<ConversationMessage>.from(updatedConversationMessages[event.conversationId] ?? []);
+
+    if (event.typing) {
+      final hasExistingTyping = messagesList.any((message) => message.isTyping == true && message.id?.contains('typing_${event.userId}') == true);
+
+      if (!hasExistingTyping) {
+        final typingMessage = ConversationMessage(
+          id: 'typing_${event.userId}_${DateTime.now().millisecondsSinceEpoch}',
+          isTyping: true,
+          createdAt: DateTime.now().toIso8601String(),
+          updatedAt: DateTime.now().toIso8601String(),
+        );
+
+        messagesList.add(typingMessage);
+      }
+    } else {
+      messagesList.removeWhere((message) => message.isTyping == true && message.id?.contains('typing_${event.userId}') == true);
+    }
+
+    updatedConversationMessages[event.conversationId] = messagesList;
+
+    emit(state.copyWith(
+      conversationsList: updatedList,
+      conversationMessages: updatedConversationMessages,
+    ));
   }
 
   void conversationSocketListen() {
     SocketService().eventManager.eventStream('user_presence').listen((data) {
-      logInfo(message: "User Presence Listen $data", tag: "Socket Log");
       List<String> onlineUserIds = List.from(state.onlineUserIds ?? []);
 
       if (data["status"] == false) {
@@ -481,6 +517,15 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
         conversationId: data["conversationId"],
         userId: data["userId"],
         updateConversationData: false,
+      ));
+    });
+
+    SocketService().eventManager.eventStream('user_typing').listen((data) {
+      logInfo(message: data.toString(), tag: "User Typing");
+      add(UserTypingEvent(
+        conversationId: data["conversationId"],
+        typing: data['typing'],
+        userId: data["userId"],
       ));
     });
   }

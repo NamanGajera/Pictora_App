@@ -15,6 +15,7 @@ class ConversationMessage {
   MessageStatus? messageStatus;
   User? senderData;
   PostData? postData;
+  bool? isTyping;
   List<MessageAttachments>? attachments;
   ConversationMessage? repliedMessageData;
 
@@ -31,6 +32,7 @@ class ConversationMessage {
     this.postData,
     this.attachments,
     this.repliedMessageData,
+    this.isTyping = false,
     this.messageStatus = MessageStatus.sent,
   });
 
@@ -66,6 +68,7 @@ class ConversationMessage {
     data['createdAt'] = createdAt;
     data['updatedAt'] = updatedAt;
     data['messageStatus'] = messageStatus;
+    data['isTyping'] = isTyping;
     if (senderData != null) {
       data['senderData'] = senderData!.toJson();
     }
@@ -91,6 +94,7 @@ class ConversationMessage {
     MessageStatus? messageStatus,
     User? senderData,
     PostData? postData,
+    bool? isTyping,
     List<MessageAttachments>? attachments,
     ConversationMessage? repliedMessageData,
   }) {
@@ -107,6 +111,7 @@ class ConversationMessage {
       senderData: senderData ?? this.senderData,
       postData: postData ?? this.postData,
       attachments: attachments ?? this.attachments,
+      isTyping: isTyping ?? this.isTyping,
       repliedMessageData: repliedMessageData ?? this.repliedMessageData,
     );
   }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pictora/core/utils/constants/constants.dart';
 import 'package:pictora/core/utils/model/user_model.dart';
+import 'package:pictora/core/utils/services/service.dart';
 import 'package:pictora/features/conversation/conversation.dart';
 
 class MessageInputField extends StatefulWidget {
@@ -15,12 +16,13 @@ class MessageInputField extends StatefulWidget {
 
 class _MessageInputFieldState extends State<MessageInputField> {
   late TextEditingController messageInputController;
+  final FocusNode _focusNode = FocusNode();
 
   @override
   void initState() {
     super.initState();
     messageInputController = TextEditingController();
-
+_focusNode.addListener(_handleFocusChange);
     messageInputController.addListener(() {
       setState(() {});
     });
@@ -28,8 +30,25 @@ class _MessageInputFieldState extends State<MessageInputField> {
 
   @override
   void dispose() {
+    _focusNode.removeListener(_handleFocusChange);
+    _focusNode.dispose();
     messageInputController.dispose();
     super.dispose();
+  }
+
+  void _handleFocusChange() {
+    if (!_focusNode.hasFocus) {
+      // When text field loses focus
+      _emitTypingStop();
+    }
+  }
+
+  void _emitTypingStart() {
+    SocketService().emit("typing_start", {"conversationId": widget.conversationId});
+  }
+
+  void _emitTypingStop() {
+    SocketService().emit("typing_stop", {"conversationId": widget.conversationId});
   }
 
   @override
@@ -42,6 +61,13 @@ class _MessageInputFieldState extends State<MessageInputField> {
           Expanded(
             child: TextFormField(
               controller: messageInputController,
+              onTap: _emitTypingStart,
+              onTapOutside: (event) {
+                _focusNode.unfocus();
+              },
+              onEditingComplete: () {
+                _emitTypingStop();
+              },
               decoration: InputDecoration(
                 hintText: "Type a message...",
                 contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -82,7 +108,6 @@ class _MessageInputFieldState extends State<MessageInputField> {
                   onTap: () {
                     final text = messageInputController.text.trim();
                     if (text.isEmpty) return;
-
                     conversationBloc.add(CreateMessageEvent(
                       conversationId: widget.conversationId ?? conversationData.id,
                       message: text,
